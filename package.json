@@ -1,5 +1,7 @@
 {
   "private": true,
+  "name": "it2566-armadillo",
+  "packageManager": "yarn@1.22.19",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -12,8 +14,6 @@
     "tsconfig": "*",
     "turbo": "latest"
   },
-  "name": "IT2566-Armadillo",
-  "packageManager": "yarn@1.22.19",
   "workspaces": [
     "apps/*",
     "packages/*"
