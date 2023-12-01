@@ -1,20 +1,20 @@
 @echo off
 cd apps
 cd backend
-yarn
+CALL yarn
 
 cd ..
 cd wrapper
-yarn
+CALL yarn
 
 cd ..\..
 cd functions
-venv\Scripts\activate
-pip3 install -r requirements.txt
+CALL venv\Scripts\activate
+CALL pip3 install -r requirements.txt
 
 cd ..
-echo ""
-echo "==================================="
-echo "If you do not see any errors above, the installation process should have succeeded"
-echo "==================================="
-echo ""
+echo:
+echo ===================================
+echo If you do not see any errors above, the installation process should have succeeded
+echo ===================================
+echo:
