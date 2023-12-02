@@ -1,5 +1,5 @@
 <script>
-	import '../app.postcss';
+	import '../app.css';
 	import { authStore } from '$lib/stores';
 
 	// Preload auth state
