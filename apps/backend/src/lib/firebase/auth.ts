@@ -14,6 +14,7 @@ export function signOut() {
 
 export async function signUpEmailPassword(email: string, password: string) {
 	try {
+		authStatusStore.set(null);
 		await createUserWithEmailAndPassword(auth, email, password);
 		return authStatusStore.set(null);
 	} catch (error) {
@@ -30,6 +31,7 @@ export async function signUpEmailPassword(email: string, password: string) {
 
 export async function signInEmailPassword(email: string, password: string) {
 	try {
+		authStatusStore.set(null);
 		await signInWithEmailAndPassword(auth, email, password);
 		return authStatusStore.set(null);
 	} catch (error) {
