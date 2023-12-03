@@ -1,6 +1,8 @@
-<!-- JavaScript code for Continue button -->
+<!-- JavaScript code -->
 <script lang="ts">
+    // JavaScript code for Continue button
 	let confirm: boolean = false;
+    
 </script>
 
 <head>
