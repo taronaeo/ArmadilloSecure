@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow } from 'electron';
+import { app, shell, BrowserWindow, ipcMain } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
@@ -7,8 +7,9 @@ function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
-    height: 670,
+    height: 600,
     show: false,
+    resizable: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -19,6 +20,7 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
+    mainWindow.removeMenu();
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -38,6 +40,7 @@ function createWindow(): void {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
+
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');
@@ -50,6 +53,10 @@ app.whenReady().then(() => {
   });
 
   createWindow();
+
+  ipcMain.handle('getAppName', () => {
+    return app.getName();
+  });
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
