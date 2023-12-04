@@ -11,12 +11,21 @@
   "devDependencies": {
     "eslint": "^8.48.0",
     "prettier": "^3.0.3",
-    "tsconfig": "*",
     "turbo": "latest"
   },
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "functions/*"
-  ]
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*",
+      "functions/*"
+    ],
+    "nohoist": [
+      "**/firebase-admin",
+      "**/firebase-admin/**",
+      "**/firebase-functions",
+      "**/firebase-functions/**",
+      "**/@armadillo/",
+      "**/@armadillo/**"
+    ]
+  }
 }
