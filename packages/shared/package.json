@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "name": "@armadillo/shared",
+  "version": "0.0.0",
+  "license": "MIT",
+  "types": "./index.ts",
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "firebase": "^10.7.0",
+    "firebase-admin": "^11.11.1"
+  }
+}

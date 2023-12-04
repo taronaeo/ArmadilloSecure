@@ -1,0 +1,42 @@
+{
+  "private": true,
+  "name": "@armadillo/functions-gcp",
+  "version": "0.0.0",
+  "main": "./lib/index.js",
+  "packageManager": "yarn@1.22.19",
+  "engines": {
+    "node": "18"
+  },
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "dev": "npm-run-all -p build:watch emulators:start",
+    "emulators:start": "firebase emulators:start --import=./firebase-export --export-on-exit --only auth,functions,firestore,pubsub,storage,eventarc,extensions",
+    "build": "webpack",
+    "build:watch": "webpack --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.11.1",
+    "firebase-functions": "^4.3.1"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.1.0",
+    "generate-lockfile": "^0.0.12",
+    "npm-run-all": "^4.1.5",
+    "shx": "^0.3.4",
+    "ts-loader": "^9.5.1",
+    "typescript": "^4.9.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-node-externals": "^3.0.0"
+  }
+}
