@@ -6,5 +6,5 @@
 from firebase import *
 
 # Cloud Functions serverless functions
-from auth.on_user_create import *
-from auth.on_user_signin import *
+# from auth.on_user_create import *
+# from auth.on_user_signin import *
