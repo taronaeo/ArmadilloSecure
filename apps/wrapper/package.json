@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "wrapper",
+  "name": "@armadillo/wrapper",
   "version": "0.0.0",
   "license": "MIT",
   "main": "./out/main/index.js",

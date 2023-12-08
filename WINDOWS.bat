@@ -7,6 +7,10 @@ cd ..
 cd wrapper
 CALL yarn
 
+cd ..\..\packages
+cd functions-gcp
+CALL yarn
+
 cd ..\..
 cd functions
 CALL venv\Scripts\activate
