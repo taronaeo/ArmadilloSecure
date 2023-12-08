@@ -8,4 +8,4 @@ typings/
 node_modules/
 
 # Firebase Emulator Data
-firebase-export/
+firebase-export*/
