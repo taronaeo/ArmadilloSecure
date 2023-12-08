@@ -1,7 +1,13 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
-
+import os from 'os';
 // Custom APIs for renderer
+
+interface Response {
+  code: number;
+  message: string;
+}
+
 const api = {
   getAppName: async (channel: string): Promise<string> => {
     const appName = await ipcRenderer.invoke('getAppName');
@@ -9,6 +15,39 @@ const api = {
       return appName;
     }
     return 'Wrong Channel Received';
+  },
+  secretChecks: async (channel: string): Promise<Response> => {
+    if (channel === 'secretChecks') {
+      const dns = await ipcRenderer.invoke('secretChecks');
+      return dns;
+    }
+    return {
+      code: 500,
+      message: 'Internal Server Error',
+    };
+  },
+  ping: async (channel: string): Promise<Response> => {
+    if (channel === 'ping') {
+      await ipcRenderer.invoke('ping');
+      return {
+        code: 200,
+        message: 'Ping Successful',
+      };
+    }
+    return {
+      code: 500,
+      message: 'Internal Server Error',
+    };
+  },
+  checkPing: async (channel: string): Promise<Response> => {
+    if (channel === 'checkPing') {
+      const response = await ipcRenderer.invoke('checkPing');
+      return response;
+    }
+    return {
+      code: 500,
+      message: 'Internal Server Error',
+    };
   },
 };
 

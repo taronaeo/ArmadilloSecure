@@ -1,36 +1,26 @@
 <script lang="ts">
-  import logo from './assets/logo(normal).png';
-  import { onMount } from 'svelte';
+  import FileClass from './components/Fileclass.svelte';
+  import WifiLogo from './assets/no-wifi.png';
 
-  let appName = '';
-  onMount(async () => {
-    appName = await window.api.getAppName('getAppName');
-    console.log(appName);
-  });
+  let pingFailed = false;
+  setInterval(async () => {
+    await window.api.ping('ping');
+    const response = await window.api.checkPing('checkPing');
+    if (response.code != 200) {
+      pingFailed = true;
+    } else {
+      pingFailed = false;
+    }
+  }, 5000);
 </script>
 
-<div class="text-center mt-20 -mb-24 text-3xl font-bold">Armadillo Verification</div>
-
-<div class="h-screen grid">
-  <div class="place-self-center">
-    <img src={logo} class="h-52 mb-4 m-auto" alt="iwnacry" />
-
-    <h1 class="text-center text-lg"
-      >You are trying to access file:
-      <span class="text-secondary">
-        {#if appName === ''}
-          loading
-        {:else}
-          {appName}
-        {/if}
-      </span>
-    </h1>
-    <h1 class="font-bold text-center text-lg"
-      >File Classification:
-      <span class="font-normal text-secondary">placeholder </span>
-    </h1>
-    <div class="flex justify-center pt-4">
-      <button class="btn bg-secondary text-neutral">Proceed</button>
+{#if pingFailed}
+  <div class="grid h-screen">
+    <div class="place-self-center">
+      <img src={WifiLogo} alt="no internet" class="m-auto h-40" />
+      Internet connection lost. Please check your internet connection.
     </div>
   </div>
-</div>
+{:else if !pingFailed}
+  <FileClass />
+{/if}

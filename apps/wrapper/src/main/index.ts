@@ -2,6 +2,10 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
+import os from 'os';
+import { BlockList } from 'net';
+import { exec } from 'child_process';
+import systeminformation from 'systeminformation';
 
 function createWindow(): void {
   // Create the browser window.
@@ -42,6 +46,7 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 
 app.whenReady().then(() => {
+  let pingFailed: boolean = false;
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');
 
@@ -56,6 +61,115 @@ app.whenReady().then(() => {
 
   ipcMain.handle('getAppName', () => {
     return app.getName();
+  });
+
+  ipcMain.handle('secretChecks', async () => {
+    const orgDNS = '';
+    const domainIpRange = ['192.168.1.0', '192.168.1.255'];
+    //to be changed when firestore cloud func is up
+
+    const response: { code?: number; message?: string } = {};
+
+    const networkInterfaces = os.networkInterfaces();
+    const nonLocalInterfaces = {};
+    for (const inet in networkInterfaces) {
+      const addresses = networkInterfaces[inet];
+      for (let i = 0; i < addresses.length; i++) {
+        const address = addresses[i];
+        if (!address.internal) {
+          if (!nonLocalInterfaces[inet]) {
+            nonLocalInterfaces[inet] = [];
+          }
+          nonLocalInterfaces[inet].push(address);
+        }
+      }
+    }
+    let mainIntType = 'Wi-Fi';
+    let mainInt = nonLocalInterfaces['Wi-Fi'];
+    if (!mainInt) {
+      mainInt = nonLocalInterfaces['Ethernet'];
+      mainIntType = 'Ethernet';
+    }
+    let ipv4 = '';
+    mainInt.forEach((adrs) => {
+      if (adrs.family === 'IPv4') {
+        ipv4 = adrs.address;
+      }
+    });
+
+    const blockList = new BlockList();
+    blockList.addRange(domainIpRange[0], domainIpRange[1]);
+    if (!blockList.check(ipv4)) {
+      response.code = 403;
+      response.message = 'IP Address not part of Organization IP Address Range';
+      return response;
+    }
+
+    const userOS = os.platform();
+
+    if (userOS != 'win32') {
+      response.code = 403;
+      response.message = 'Operating System is not Windows';
+      return response;
+    }
+
+    const si = await systeminformation.networkInterfaces();
+    const siArr = Object.values(si);
+    let dns = '';
+    siArr.forEach((iface) => {
+      if (mainIntType === 'Ethernet') {
+        if (iface.iface === 'Ethernet') {
+          dns = iface.dnsSuffix;
+          console.log(`ethernet dns: ${dns}`);
+        }
+      } else if (mainIntType === 'Wi-Fi') {
+        if (iface.iface === 'Wi-Fi') {
+          dns = iface.dnsSuffix;
+          console.log(`wifi dns: ${dns}`);
+        }
+      }
+    });
+    if (dns != orgDNS) {
+      response.code = 403;
+      response.message = 'Invalid Domain Name';
+      return response;
+    }
+
+    response.code = 200;
+    response.message = 'Check Successful';
+    return response;
+  });
+
+  ipcMain.handle('ping', async () => {
+    const host = 'www.google.com';
+    exec(`ping ${host}`, (error, stdout, stderr) => {
+      if (error) {
+        pingFailed = true;
+      } else if (
+        !(
+          stdout.includes('Packets: Sent = 4, Received = 4') ||
+          stdout.includes('Packets: Sent = 4, Received = 3')
+        )
+      ) {
+        //received = 3 just incase 1 packet is not received
+        pingFailed = true;
+      } else {
+        pingFailed = false;
+      }
+    });
+  });
+
+  ipcMain.handle('checkPing', async () => {
+    if (pingFailed) {
+      return {
+        code: 400,
+        message: 'Loss of Internet Connection',
+      };
+    }
+    return {
+      code: 200,
+      message: 'Client Has Internet Connection',
+    };
   });
 
   app.on('activate', function () {
