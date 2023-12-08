@@ -1,12 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
-import os from 'os';
 // Custom APIs for renderer
-
-interface Response {
-  code: number;
-  message: string;
-}
 
 const api = {
   getAppName: async (channel: string): Promise<string> => {
@@ -16,7 +10,7 @@ const api = {
     }
     return 'Wrong Channel Received';
   },
-  secretChecks: async (channel: string): Promise<Response> => {
+  secretChecks: async (channel: string): Promise<IpcResponse> => {
     if (channel === 'secretChecks') {
       const dns = await ipcRenderer.invoke('secretChecks');
       return dns;

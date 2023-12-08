@@ -1,6 +1,7 @@
 <script lang="ts">
   import logo from '../assets/logo(normal).png';
   import close from '../assets/close.png';
+  import Failed from './Failed.svelte';
   import { onMount } from 'svelte';
 
   const fileClass = '3';
@@ -9,6 +10,7 @@
   let passedCheck = false;
   let proceed = false;
   let checkLoading = false;
+  let proceedToCompromisation = false;
 
   onMount(async () => {
     appName = await window.api.getAppName('getAppName');
@@ -30,6 +32,7 @@
   }
 </script>
 
+<div class:hidden={proceedToCompromisation}>
 <div class="hidden" class:hidden={proceed}>
   <h1 class="text-center mt-20 -mb-24 text-3xl font-bold">Armadillo Verification</h1>
 
@@ -111,20 +114,15 @@
             {/if}
           </div>
           <div class="my-8 text-center">
-            <button class="btn bg-secondary text-neutral">Proceed</button>
+            <button on:click={() => {proceedToCompromisation = true;}} class="btn bg-secondary text-neutral">Proceed</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 {:else if !passedCheck}
-  <div class:hidden={!proceed} class="grid h-screen">
-    <div class="place-self-center">
-      <img src={close} alt="x" class="mx-auto h-32" />
-      <div class="text-center mt-12">
-        You are trying to access a <span class="text-secondary">Top Secret</span> file on a
-        <span class="font-bold">non-corporate</span> computer. Verification failed.
-      </div>
-    </div>
-  </div>
+  <Failed/>
 {/if}
+
+</div>
+
