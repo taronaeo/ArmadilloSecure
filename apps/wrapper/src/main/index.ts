@@ -4,7 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
 import os from 'os';
 import { BlockList } from 'net';
-import { exec } from 'child_process';
+import { exec, execSync } from 'child_process';
 import systeminformation from 'systeminformation';
 
 function createWindow(): void {
@@ -170,6 +170,58 @@ app.whenReady().then(() => {
       code: 200,
       message: 'Client Has Internet Connection',
     };
+  });
+
+  ipcMain.handle('checkCompromisation', async () => {
+    const response: { code?: number; message?: string } = {};
+    function convertToMillis(str) {
+      const dateStr = str.split(' ')[0];
+      const dateParts = dateStr.split('/');
+      const newDateStr =
+        dateParts[1] +
+        '/' +
+        dateParts[0] +
+        '/' +
+        dateParts[2] +
+        ' ' +
+        str.split(' ')[1] +
+        ' ' +
+        str.split(' ')[2];
+      const date = new Date(newDateStr);
+
+      return date.getTime();
+    }
+
+    const defenderStatus = execSync('Get-MpComputerStatus', { shell: 'powershell.exe' }).toString();
+    const defenderStatusArr = defenderStatus.split('\n');
+    let antivirusSignatures: string = '';
+    let fullScanEndTime: string = '';
+    defenderStatusArr.forEach((property) => {
+      if (property.includes('AntivirusSignatureLastUpdated')) {
+        antivirusSignatures = property.split(': ')[1];
+      } else if (property.includes('QuickScanEndTime')) {
+        fullScanEndTime = property.split(': ')[1];
+      }
+      //must change to full scan during production
+    });
+
+    const monthInMillis: number = 2629800000;
+    const dayInMillis: number = 86400000;
+    const antivirusSignaturesMillis: number = convertToMillis(antivirusSignatures);
+    const fullScanEndTimeMillis: number = convertToMillis(fullScanEndTime);
+    if (+new Date().getTime() - antivirusSignaturesMillis >= monthInMillis) {
+      response.code = 403;
+      response.message = 'Signatures Outdated';
+      return response;
+    }
+    if (+new Date().getTime() - fullScanEndTimeMillis >= dayInMillis) {
+      response.code = 403;
+      response.message = 'Full System Scan Outdated';
+      return response;
+    }
+    response.code = 200;
+    response.message = 'Compromisation Check Passed';
+    return response;
   });
 
   app.on('activate', function () {

@@ -1,5 +1,6 @@
 <script lang="ts">
   import FileClass from './components/Fileclass.svelte';
+  import Compromisation from './components/Compromisation.svelte';
   import WifiLogo from './assets/no-wifi.png';
 
   let pingFailed = false;
@@ -22,5 +23,10 @@
     </div>
   </div>
 {:else if !pingFailed}
-  <FileClass />
+  <div>
+    <FileClass />
+  </div>
+  <div>
+  <Compromisation />
+  </div>
 {/if}

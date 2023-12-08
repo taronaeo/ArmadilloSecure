@@ -1,6 +1,5 @@
 <script lang="ts">
   import logo from '../assets/logo(normal).png';
-  import close from '../assets/close.png';
   import Failed from './Failed.svelte';
   import { onMount } from 'svelte';
 

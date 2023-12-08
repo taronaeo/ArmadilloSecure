@@ -2,6 +2,11 @@ import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
 // Custom APIs for renderer
 
+interface IpcResponse {
+  code: number;
+  message: string;
+}
+
 const api = {
   getAppName: async (channel: string): Promise<string> => {
     const appName = await ipcRenderer.invoke('getAppName');
@@ -20,7 +25,7 @@ const api = {
       message: 'Internal Server Error',
     };
   },
-  ping: async (channel: string): Promise<Response> => {
+  ping: async (channel: string): Promise<IpcResponse> => {
     if (channel === 'ping') {
       await ipcRenderer.invoke('ping');
       return {
@@ -33,9 +38,19 @@ const api = {
       message: 'Internal Server Error',
     };
   },
-  checkPing: async (channel: string): Promise<Response> => {
+  checkPing: async (channel: string): Promise<IpcResponse> => {
     if (channel === 'checkPing') {
       const response = await ipcRenderer.invoke('checkPing');
+      return response;
+    }
+    return {
+      code: 500,
+      message: 'Internal Server Error',
+    };
+  },
+  checkCompromisation: async (channel: string): Promise<IpcResponse> => {
+    if (channel === 'checkCompromisation') {
+      const response = await ipcRenderer.invoke('checkCompromisation');
       return response;
     }
     return {
