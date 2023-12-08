@@ -1,3 +1,5 @@
+import * as path from 'path';
+
 module.exports = {
   root: true,
   env: {
@@ -15,6 +17,7 @@ module.exports = {
   parser: "@typescript-eslint/parser",
   parserOptions: {
     project: ["tsconfig.json", "tsconfig.dev.json"],
+    tsConfigRootDir: path.join(__dirname, 'packages', 'functions-gcp'),
     sourceType: "module",
   },
   ignorePatterns: [
