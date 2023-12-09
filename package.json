@@ -18,5 +18,8 @@
     "apps/*",
     "packages/*",
     "functions/*"
-  ]
+  ],
+  "dependencies": {
+    "svelte-forms-lib": "^2.0.1"
+  }
 }
