@@ -1,5 +1,3 @@
-import * as path from 'path';
-
 module.exports = {
   root: true,
   env: {
@@ -13,12 +11,13 @@ module.exports = {
     "plugin:import/typescript",
     "google",
     "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended",
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    project: ["tsconfig.json", "tsconfig.dev.json"],
-    tsConfigRootDir: path.join(__dirname, 'packages', 'functions-gcp'),
     sourceType: "module",
+    tsconfigRootDir: __dirname,
+    project: ["tsconfig.json", "tsconfig.dev.json"],
   },
   ignorePatterns: [
     "/lib/**/*", // Ignore built files.
@@ -26,10 +25,12 @@ module.exports = {
   plugins: [
     "@typescript-eslint",
     "import",
+    "prettier"
   ],
   rules: {
-    "quotes": ["error", "double"],
+    "prettier/prettier": ["error"],
     "import/no-unresolved": 0,
     "indent": ["error", 2],
+    "camelcase": 0,
   },
 };

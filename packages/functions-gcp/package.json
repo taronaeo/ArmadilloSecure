@@ -8,16 +8,16 @@
     "node": "18"
   },
   "scripts": {
-    "lint": "eslint --ext .js,.ts .",
     "dev": "npm-run-all -p build:watch emulators:start",
-    "emulators:start": "firebase emulators:start --import=./firebase-export --export-on-exit --only auth,functions,firestore,pubsub,storage,eventarc,extensions",
     "build": "webpack",
     "build:watch": "webpack --watch",
+    "emulators:start": "firebase emulators:start --import=./firebase-export --export-on-exit --only auth,functions,firestore,pubsub,storage,eventarc,extensions",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "format": "eslint --ext .ts . --fix"
   },
   "dependencies": {
     "firebase-admin": "^11.11.1",
@@ -28,10 +28,13 @@
     "@typescript-eslint/parser": "^5.12.0",
     "eslint": "^8.9.0",
     "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-prettier": "^5.0.1",
     "firebase-functions-test": "^3.1.0",
     "generate-lockfile": "^0.0.12",
     "npm-run-all": "^4.1.5",
+    "prettier-plugin-svelte": "^3.1.2",
     "shx": "^0.3.4",
     "ts-loader": "^9.5.1",
     "typescript": "^4.9.0",

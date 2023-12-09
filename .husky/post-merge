@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+yarn install
+yarn workspace @armadillo/backend install
+yarn workspace @armadillo/wrapper install
+yarn workspace @armadillo/functions-gcp install
+yarn workspace @armadillo/shared install
+
+echo ""
+echo "==================================="
+echo "If you do not see any errors above, the installation process should have succeeded"
+echo "==================================="
+echo ""
+
+# Omitting Cloud Functions Python3.11 for now
