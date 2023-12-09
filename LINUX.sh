@@ -6,6 +6,10 @@ cd ..
 cd wrapper
 yarn
 
+cd ../../packages
+cd functions-gcp
+yarn
+
 cd ../..
 cd functions
 source venv/bin/activate

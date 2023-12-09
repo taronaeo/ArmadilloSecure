@@ -11,9 +11,9 @@
   "devDependencies": {
     "eslint": "^8.48.0",
     "prettier": "^3.0.3",
-    "tsconfig": "*",
     "turbo": "latest"
   },
+<<<<<<< HEAD
   "workspaces": [
     "apps/*",
     "packages/*",
@@ -21,5 +21,21 @@
   ],
   "dependencies": {
     "svelte-forms-lib": "^2.0.1"
+=======
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*",
+      "functions/*"
+    ],
+    "nohoist": [
+      "**/firebase-admin",
+      "**/firebase-admin/**",
+      "**/firebase-functions",
+      "**/firebase-functions/**",
+      "**/@armadillo/",
+      "**/@armadillo/**"
+    ]
+>>>>>>> 2fa450f1a31b8bc38a74cc9866a34b9504010f34
   }
 }

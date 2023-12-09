@@ -1,0 +1,7 @@
+# DO NOT USE RELATIVE IMPORTS SUCH AS
+
+```py
+from ..models import User
+```
+
+# DO NOT DO THAT! DEPLOYMENT WILL FAIL
