@@ -27,7 +27,8 @@
         "firebase-debug.*.log"
       ],
       "predeploy": [
-        "npm --prefix \"packages/functions-gcp\" run build"
+        "yarn --cwd \"packages/functions-gcp\" run lint",
+        "yarn --cwd \"packages/functions-gcp\" run build"
       ]
     }
   ],
