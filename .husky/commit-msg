@@ -1,6 +1,11 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# Skip commit message if the message is automatically generated
+if [[ "$(head -1 "$1")" =~ ^Merge\ branch\.* ]]; then
+  exit 0
+fi
+
 if ! head -1 "$1" | grep -qE "^(feat|fix|chore|docs|test|style|refactor|perf|build|ci|revert)(\(.+?\)): .{1,}$"; then
   echo "husky:git:commit-msg: Commit aborted. Your commit message is invalid." >&2
   echo "husky:git:commit-msg: " >&2
