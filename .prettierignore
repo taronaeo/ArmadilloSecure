@@ -1,0 +1,19 @@
+# Ignore MacOS files
+.DS_Store
+
+# Ignore NodeJS dependencies
+node_modules
+
+# Ignore build output
+out
+dist
+build
+.svelte-kit
+
+# Ignore environment files
+.env
+.env.*
+!.env.example
+
+# Ignore files for Yarn
+yarn.lock
