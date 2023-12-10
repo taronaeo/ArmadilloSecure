@@ -24,8 +24,15 @@
 						type="text"
 						name="email"
 						placeholder="Name@example.com"
-						class="input input-bordered w-full max-w-md
-                    focus:ring-primary focus:border-primary duration-300 focus:outline-none" />
+						class="
+							input 
+							input-bordered 
+							w-full 
+							max-w-md 
+                    		focus:ring-primary 
+							focus:border-primary duration-300 
+							focus:outline-none
+						" />
 				</label>
 			</div>
 
@@ -39,8 +46,16 @@
 						type="text"
 						name="pass"
 						placeholder="••••••••"
-						class="input input-bordered w-full max-w-md
-                    focus:ring-primary focus:border-primary duration-300 focus:outline-none" />
+						class="
+							input 
+							input-bordered 
+							w-full 
+							max-w-md
+                    		focus:ring-primary 
+							focus:border-primary 
+							duration-300 
+							focus:outline-none
+						" />
 				</label>
 			</div>
 
