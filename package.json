@@ -13,15 +13,6 @@
     "prettier": "^3.0.3",
     "turbo": "latest"
   },
-<<<<<<< HEAD
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "functions/*"
-  ],
-  "dependencies": {
-    "svelte-forms-lib": "^2.0.1"
-=======
   "workspaces": {
     "packages": [
       "apps/*",
@@ -36,6 +27,5 @@
       "**/@armadillo/",
       "**/@armadillo/**"
     ]
->>>>>>> 2fa450f1a31b8bc38a74cc9866a34b9504010f34
   }
 }
