@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>Armadillo Project</title>
+  <title>Armadillo Project</title>
 </svelte:head>
 
 <h1>Welcome to SvelteKit</h1>
