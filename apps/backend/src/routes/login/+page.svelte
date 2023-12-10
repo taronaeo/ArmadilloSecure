@@ -4,7 +4,6 @@
 	import { createForm } from 'svelte-forms-lib';
 
 	let confirm: boolean = false;
-    
 </script>
 
 <div class="flex items-center justify-center h-screen">
@@ -26,8 +25,7 @@
 						name="email"
 						placeholder="Name@example.com"
 						class="input input-bordered w-full max-w-md
-                    focus:ring-primary focus:border-primary duration-300 focus:outline-none"
-					/>
+                    focus:ring-primary focus:border-primary duration-300 focus:outline-none" />
 				</label>
 			</div>
 
@@ -42,8 +40,7 @@
 						name="pass"
 						placeholder="••••••••"
 						class="input input-bordered w-full max-w-md
-                    focus:ring-primary focus:border-primary duration-300 focus:outline-none"
-					/>
+                    focus:ring-primary focus:border-primary duration-300 focus:outline-none" />
 				</label>
 			</div>
 
@@ -54,8 +51,7 @@
 					class="btn btn-primary w-full max-w-2xl mt-8 mb-2 focus:ring-2 focus:ring-success"
 					on:click={() => {
 						confirm = true;
-					}}>Continue</button
-				>
+					}}>Continue</button>
 
 				<!-- Form Content - Submit/Continue Button with animation -->
 			{:else}

@@ -26,8 +26,7 @@
 						name="fullname"
 						placeholder="John Doe"
 						class="input input-bordered w-full max-w-xl
-					focus:ring-primary focus:border-primary duration-300 focus:outline-none"
-					/>
+					focus:ring-primary focus:border-primary duration-300 focus:outline-none" />
 				</label>
 			</div>
 
@@ -42,11 +41,10 @@
 						name="domainaddress"
 						placeholder="nyp.edu.sg"
 						class="input input-bordered w-full max-w-xl
-					focus:ring-primary focus:border-primary duration-300 focus:outline-none"
-					/>
+					focus:ring-primary focus:border-primary duration-300 focus:outline-none" />
 				</label>
 			</div>
-
+      
 			<!-- Onboard Form - Headshot Photo Input -->
 			<div>
 				<label class="form-control w-full max-w-xl">
@@ -56,8 +54,7 @@
 					<input
 						type="file"
 						name="headshot"
-						class="file-input file-input-bordered file-input-primary w-full max-w-xl"
-					/>
+						class="file-input file-input-bordered file-input-primary w-full max-w-xl" />
 				</label>
 			</div>
 
@@ -68,8 +65,7 @@
 					class="btn btn-primary w-full max-w-xl mt-8 mb-2 focus:ring-2 focus:ring-success"
 					on:click={() => {
 						confirm = true;
-					}}>Create Account</button
-				>
+					}}>Create Account</button>
 
 				<!-- <button type="submit" id="continueButton" class="btn btn-primary w-80 mt-8 mb-2 focus:ring-2 focus:ring-success" on:click={startLoading}>Continue</button> -->
 
@@ -84,9 +80,7 @@
 		<!-- Onboard Form - Link to Login -->
 		<p class="text-center">
 			Already have an account?
-			<a class="text-primary hover:text-accent duration-300" href="/login"> 
-				Log in 
-			</a>
+			<a class="text-primary hover:text-accent duration-300" href="/login"> Log in </a>
 		</p>
 	</div>
 </div>

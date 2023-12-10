@@ -39,8 +39,7 @@
 						name="email"
 						placeholder="Name@example.com"
 						class="input input-bordered w-full max-w-2xl
-                  focus:ring-primary focus:border-primary duration-300 focus:outline-none"
-					/>
+                  focus:ring-primary focus:border-primary duration-300 focus:outline-none" />
 				</label>
 			</div>
 
@@ -55,8 +54,7 @@
 						name="pass"
 						placeholder="••••••••"
 						class="input input-bordered w-full max-w-2xl
-                  focus:ring-primary focus:border-primary duration-300 focus:outline-none"
-					/>
+                  focus:ring-primary focus:border-primary duration-300 focus:outline-none" />
 				</label>
 			</div>
 
@@ -71,8 +69,7 @@
 						name="confirmpass"
 						placeholder="••••••••"
 						class="input input-bordered w-full max-w-2xl
-                  focus:ring-primary focus:border-primary duration-300 focus:outline-none"
-					/>
+                  focus:ring-primary focus:border-primary duration-300 focus:outline-none" />
 				</label>
 			</div>
 
@@ -82,8 +79,7 @@
 						type="checkbox"
 						class="checkbox checkbox-primary mr-5"
 						bind:checked={trigger}
-						on:click={toggleCheckbox}
-					/>
+						on:click={toggleCheckbox} />
 					<span class="label-text"
 						>By signing up, you are creating a Armadillo account, and you agree to Armadillo's
 						<a class="text-primary hover:text-accent duration-300" href="/login"> Terms of Use </a>
@@ -110,8 +106,7 @@
 					"
 					on:click={() => {
 						confirm = true;
-					}}>Create Account</button
-				>
+					}}>Create Account</button>
 
 				<!-- Signup Form - Submit/Continue Button with animation -->
 			{:else}
@@ -124,9 +119,7 @@
 		<!-- Signup Form - Link to Login -->
 		<p class="text-center">
 			Already have an account?
-			<a class="text-primary hover:text-accent duration-300" href="/login"> 
-        Log in 
-      </a>
+			<a class="text-primary hover:text-accent duration-300" href="/login"> Log in </a>
 		</p>
 	</div>
 </div>
