@@ -18,7 +18,7 @@ export const onCall_getFilePassword = onCall<CFCallableFilePasswordRequest>(
   async ({ auth, data, rawRequest }) => {
     logger.log(rawRequest);
 
-    const { clientId, file_id: fileId, file_encryption_hash: fileEncryptionHash } = data;
+    const { client_id: clientId, file_id: fileId, file_encryption_hash: fileEncryptionHash } = data;
 
     // Check if request is authenticated
     if (!auth) throw new HttpsError('failed-precondition', 'Authentication Error');
