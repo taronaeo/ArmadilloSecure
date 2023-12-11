@@ -3,9 +3,20 @@ import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
 import os from 'os';
+import fs, { promises as fsPromises } from 'fs';
 import { BlockList } from 'net';
-import { exec, execSync } from 'child_process';
+import { exec, execFile, execFileSync, execSync } from 'child_process';
 import systeminformation from 'systeminformation';
+import crypto from 'crypto';
+const { copyFile } = fsPromises;
+import https from 'https';
+import util from 'util';
+import { paths } from './absolutePaths';
+
+interface IpcResponse {
+  code: number;
+  message: string;
+}
 
 function createWindow(): void {
   // Create the browser window.
@@ -47,6 +58,7 @@ function createWindow(): void {
 
 app.whenReady().then(() => {
   let pingFailed: boolean = false;
+  let fileClass: string = '';
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');
 
@@ -59,16 +71,49 @@ app.whenReady().then(() => {
 
   createWindow();
 
-  ipcMain.handle('getAppName', () => {
-    return app.getName();
+  ipcMain.handle('getAppName', (): Promise<IpcResponse> => {
+    return {
+      code: 200,
+      message: app.getName(),
+    };
   });
 
-  ipcMain.handle('secretChecks', async () => {
+  ipcMain.handle('getFileClass', async (evt, fileId): Promise<void> => {
+    const options = {
+      hostname: 'asia-southeast1-it2566-armadillo.cloudfunctions.net',
+      path: '/http_onRequest_fileClassification',
+      method: 'POST',
+      headers: {
+        'X-ARMADILLO-CLIENTID': 'helloworld',
+        'X-ARMADILLO-FILEUUID': fileId,
+        'Content-Length': 0,
+      },
+    };
+    const req = https.request(options, (res) => {
+      res.on('data', (chunk) => {
+        fileClass = JSON.parse(chunk).data;
+      });
+    });
+    req.end();
+  });
+
+  ipcMain.handle('checkFileClass', async (): Promise<IpcResponse> => {
+    if (fileClass != '') {
+      return {
+        code: 200,
+        message: fileClass,
+      };
+    }
+    return {
+      code: 503,
+      message: 'File Class Unavailable',
+    };
+  });
+
+  ipcMain.handle('secretChecks', async (): Promise<IpcResponse> => {
     const orgDNS = '';
     const domainIpRange = ['192.168.1.0', '192.168.1.255'];
     //to be changed when firestore cloud func is up
-
-    const response: { code?: number; message?: string } = {};
 
     const networkInterfaces = os.networkInterfaces();
     const nonLocalInterfaces = {};
@@ -100,17 +145,19 @@ app.whenReady().then(() => {
     const blockList = new BlockList();
     blockList.addRange(domainIpRange[0], domainIpRange[1]);
     if (!blockList.check(ipv4)) {
-      response.code = 403;
-      response.message = 'IP Address not part of Organization IP Address Range';
-      return response;
+      return {
+        code: 403,
+        message: 'IP Address not part of Organization IP Address Range',
+      };
     }
 
     const userOS = os.platform();
 
     if (userOS != 'win32') {
-      response.code = 403;
-      response.message = 'Operating System is not Windows';
-      return response;
+      return {
+        code: 403,
+        message: 'OS must be Windows',
+      };
     }
 
     const si = await systeminformation.networkInterfaces();
@@ -125,22 +172,23 @@ app.whenReady().then(() => {
       } else if (mainIntType === 'Wi-Fi') {
         if (iface.iface === 'Wi-Fi') {
           dns = iface.dnsSuffix;
-          console.log(`wifi dns: ${dns}`);
         }
       }
     });
     if (dns != orgDNS) {
-      response.code = 403;
-      response.message = 'Invalid Domain Name';
-      return response;
+      return {
+        code: 403,
+        message: 'Invalid Domain Name',
+      };
     }
 
-    response.code = 200;
-    response.message = 'Check Successful';
-    return response;
+    return {
+      code: 200,
+      message: 'Top Secret Checks Successful',
+    };
   });
 
-  ipcMain.handle('ping', async () => {
+  ipcMain.handle('ping', async (): Promise<void> => {
     const host = 'www.google.com';
     exec(`ping ${host}`, (error, stdout, stderr) => {
       if (error) {
@@ -159,7 +207,7 @@ app.whenReady().then(() => {
     });
   });
 
-  ipcMain.handle('checkPing', async () => {
+  ipcMain.handle('checkPing', async (): Promise<IpcResponse> => {
     if (pingFailed) {
       return {
         code: 400,
@@ -172,8 +220,7 @@ app.whenReady().then(() => {
     };
   });
 
-  ipcMain.handle('checkCompromisation', async () => {
-    const response: { code?: number; message?: string } = {};
+  ipcMain.handle('checkCompromisation', async (): Promise<IpcResponse> => {
     function convertToMillis(str) {
       const dateStr = str.split(' ')[0];
       const dateParts = dateStr.split('/');
@@ -210,18 +257,150 @@ app.whenReady().then(() => {
     const antivirusSignaturesMillis: number = convertToMillis(antivirusSignatures);
     const fullScanEndTimeMillis: number = convertToMillis(fullScanEndTime);
     if (+new Date().getTime() - antivirusSignaturesMillis >= monthInMillis) {
-      response.code = 403;
-      response.message = 'Signatures Outdated';
-      return response;
+      return {
+        code: 403,
+        message: 'Signatures Outdated',
+      };
     }
     if (+new Date().getTime() - fullScanEndTimeMillis >= dayInMillis) {
-      response.code = 403;
-      response.message = 'Full System Scan Outdated';
-      return response;
+      return {
+        code: 403,
+        message: 'Full System Scan Outdated',
+      };
     }
-    response.code = 200;
-    response.message = 'Compromisation Check Passed';
-    return response;
+    return {
+      code: 200,
+      message: 'Compromisation Check Passed',
+    };
+  });
+
+  ipcMain.handle('launchFile', async (evt, fileId): Promise<void> => {
+    //code to get file from firebase and decrypt
+    const filePath =
+      'C:\\Users\\dexte\\Documents\\Year 2 Sem 2\\InfoSecurity Project\\Tutorials\\T01A.pdf';
+    const tempPath = 'C:\\Users\\dexte\\Pictures\\testFile';
+    //const tempPath = app.getPath('temp');
+    //WIP TEST CODE
+    let fileBlob: any;
+
+    const filePathArr = filePath.split('.');
+    const fileExtension = filePathArr[filePathArr.length - 1];
+
+    function genRandomString() {
+      const length = 16;
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let randomString = '';
+      const charactersLength = characters.length;
+      const randomValues1 = new Uint8Array(length);
+      crypto.getRandomValues(randomValues1);
+      for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor((randomValues1[i] / 256) * charactersLength);
+        randomString += characters.charAt(randomIndex);
+      }
+      return randomString;
+    }
+
+    const randomFilePath = tempPath + `\\${genRandomString()}.${fileExtension}`;
+    let hasValidProgram = false;
+    let validFilePath = '';
+    await copyFile(filePath, randomFilePath);
+
+    for (const path of paths[fileExtension]) {
+      if (fs.existsSync(path)) {
+        validFilePath = path;
+        break;
+      }
+    }
+    if (validFilePath === '') {
+      return;
+    }
+
+    const child = execFile(validFilePath, [randomFilePath]);
+
+    child.on('exit', () => console.log(`exited process with pid ${child.pid}`));
+
+    // const child = spawn('cmd', ['/c', 'start', '""', randomFilePath], {
+    //   shell: false,
+    // });
+
+    // const regKey = new Winreg({
+    //   hive: Winreg.HKCU,
+    //   key: `\\Software\\Microsoft\\Windows\\CurrentVersion\\Run`,
+    // });
+    // console.log(`.${fileExtension}`);
+    // regKey.values((err, items) => {
+    //   if (err) {
+    //     console.log(`ERROR: ${err}`);
+    //   } else {
+    //     items.forEach((item) => {
+    //       console.log(item.value);
+    //     });
+    //   }
+    // });
+
+    /*shell.openPath(randomFilePath).then((pid) => {
+      console.log(pid);
+    });*/
+
+    /*
+    function launch() {
+      return new Promise((resolve, reject) => {
+        const notepad = spawn('notepad');
+
+        let launched = false;
+        notepad.stdout.on('data', (data) => {
+          launched = process.openStdin(notepad.pid) !== null;
+        });
+        notepad.on('close', () => {
+          if (launched) {
+            resolve('close' + notepad.pid);
+          } else {
+            reject(new Error('Process closed before launch'));
+          }
+        });
+      });
+    }
+
+    console.log(await launch());*/
+    // exec(`start explorer.exe ${randomFilePath}`);
+    /*
+    const child = exec('start' + ' ' + randomFilePath);
+    console.log(child.pid);
+    try {
+      const child = spawn('cmd', ['/c', 'start', '""', randomFilePath]);
+      console.log(child.pid);
+    } catch (err) {
+      console.log(err);
+    }
+    
+    const child = exec('start' + ' ' + randomFilePath);
+    console.log(`PID: ${child.pid}`);
+    child.on('exit', (code) => {
+      console.log(code);
+    });
+    
+
+    function writeFileToFolder(buffer: Buffer) {
+      fs.writeFile(randomFile, buffer, (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        fs.open(randomFile);
+      });
+    }
+    fs.readFile(filePath, async (err, data) => {
+      const blob = new Blob([data], { type: 'application/octet-stream' });
+      const arrayBuffer = await blob.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      if (err) {
+        console.error(err);
+        return;
+      }
+
+      writeFileToFolder(buffer);
+    });*/
   });
 
   app.on('activate', function () {

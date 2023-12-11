@@ -31,6 +31,8 @@
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",
     "@types/node": "^18.17.5",
+    "@types/which": "^3.0.3",
+    "@types/winreg": "^1.2.36",
     "autoprefixer": "^10.4.14",
     "daisyui": "^3.1.6",
     "electron": "25.6.0",

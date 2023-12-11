@@ -1,6 +1,7 @@
 <script lang="ts">
   import FileClass from './components/Fileclass.svelte';
   import Compromisation from './components/Compromisation.svelte';
+  import ViewDoc from './components/ViewDoc.svelte';
   import WifiLogo from './assets/no-wifi.png';
 
   let pingFailed = false;
@@ -23,10 +24,14 @@
     </div>
   </div>
 {:else if !pingFailed}
+<div class="hidden">
   <div>
     <FileClass />
   </div>
   <div>
   <Compromisation />
   </div>
+</div>
+<ViewDoc/>
+
 {/if}

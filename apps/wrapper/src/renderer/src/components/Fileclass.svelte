@@ -3,8 +3,8 @@
   import Failed from './Failed.svelte';
   import { onMount } from 'svelte';
 
-  const fileClass = '3';
   //to be changed when firestore cloud func is up
+  let fileClass = '';
   let appName = '';
   let passedCheck = false;
   let proceed = false;
@@ -12,15 +12,26 @@
   let proceedToCompromisation = false;
 
   onMount(async () => {
-    appName = await window.api.getAppName('getAppName');
+    await window.api.getFileClass('getFileClass', "3be2565e-fe51-4e9d-820f-d6c1315d204d");
+    
+    let classInterval = setInterval(async () => {
+      const fileClassResponse = await window.api.checkFileClass('checkFileClass');
+      console.log(fileClassResponse)
+      if (fileClassResponse.code === 200) {
+        fileClass = fileClassResponse.message;
+        clearInterval(classInterval);
+      }
+    },1000)
+    const appNameRes = await window.api.getAppName('getAppName')
+    appName = appNameRes.message;
   });
 
   let response: { code?: number; message?: string } = {};
-  async function checkFileClass() {
+  async function topSecretChecks() {
     if (fileClass === '3') {
       checkLoading = true;
       response = await window.api.secretChecks('secretChecks');
-      proceed = true;
+      proceed = false;
       if (response.code === 200) {
         passedCheck = true;
       }
@@ -52,18 +63,20 @@
       <h1 class="font-bold text-center text-lg"
         >File Classification:
         <span class="font-normal text-secondary">
-          {#if fileClass === '3'}
+          {#if fileClass === 'TOPSECRET'}
             Top Secret
-          {:else if fileClass === '2'}
+          {:else if fileClass === 'SENSITIVE'}
             Sensitive
-          {:else if fileClass === '1'}
+          {:else if fileClass === 'OPEN'}
             Open
+          {:else} 
+            <span class="loading loading-spinner loading-sm"></span>
           {/if}
         </span>
         <!--To be changed when firestore cloud func is up-->
       </h1>
       <div class="flex justify-center pt-4">
-        <button on:click={checkFileClass} class="w-24 btn bg-secondary text-neutral">
+        <button disabled='{fileClass === ''}' on:click={topSecretChecks} class="w-24 btn bg-secondary text-neutral">
           <span>
             {#if checkLoading}
               <span class="loading loading-spinner loading-sm"></span>
@@ -95,7 +108,7 @@
         <div class="py-6">
           Classification of File Requested:
           <div class="text-secondary inline">
-            {#if fileClass === '3'}
+            {#if fileClass === 'TOPSECRET'}
               Top Secret
               <div class="text-white">
                 You have passed the verification test for files of the <span class="text-secondary"
@@ -103,9 +116,9 @@
                 classification, you may proceed to the
                 <span class="font-bold">Compromisation Check</span> step.
               </div>
-            {:else if fileClass === '2'}
+            {:else if fileClass === 'SENSITIVE'}
               Sensitive
-            {:else if fileClass === '1'}
+            {:else if fileClass === 'OPEN'}
               Open
               <div class="text-white">
                 Since the file is of <span class="text-secondary">Open</span> classification, the following

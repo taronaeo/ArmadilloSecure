@@ -8,10 +8,33 @@ interface IpcResponse {
 }
 
 const api = {
-  getAppName: async (channel: string): Promise<string> => {
-    const appName = await ipcRenderer.invoke('getAppName');
+  getFileClass: async (channel: string, fileId: string): Promise<IpcResponse> => {
+    if (channel === 'getFileClass') {
+      await ipcRenderer.invoke('getFileClass', fileId);
+      return {
+        code: 200,
+        message: 'getFileClass invoked',
+      };
+    }
+    return {
+      code: 500,
+      message: 'Internal Server Error',
+    };
+  },
+  checkFileClass: async (channel: string): Promise<IpcResponse> => {
+    if (channel === 'checkFileClass') {
+      const response = await ipcRenderer.invoke('checkFileClass');
+      return response;
+    }
+    return {
+      code: 500,
+      message: 'Internal Server Error',
+    };
+  },
+  getAppName: async (channel: string): Promise<IpcResponse> => {
+    const response = await ipcRenderer.invoke('getAppName');
     if (channel === 'getAppName') {
-      return appName;
+      return response;
     }
     return 'Wrong Channel Received';
   },
@@ -52,6 +75,19 @@ const api = {
     if (channel === 'checkCompromisation') {
       const response = await ipcRenderer.invoke('checkCompromisation');
       return response;
+    }
+    return {
+      code: 500,
+      message: 'Internal Server Error',
+    };
+  },
+  launchFile: async (channel: string, fileId: string): Promise<IpcResponse> => {
+    if (channel === 'launchFile') {
+      await ipcRenderer.invoke('launchFile', fileId);
+      return {
+        code: 200,
+        message: 'launchFile invoked',
+      };
     }
     return {
       code: 500,
