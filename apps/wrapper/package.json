@@ -20,9 +20,11 @@
   },
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",
-    "@electron-toolkit/utils": "^2.0.0"
+    "@electron-toolkit/utils": "^2.0.0",
+    "firebase": "^10.7.1"
   },
   "devDependencies": {
+    "@armadillo/shared": "*",
     "@electron-toolkit/eslint-config-prettier": "^1.0.1",
     "@electron-toolkit/eslint-config-ts": "^1.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
