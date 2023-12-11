@@ -18,7 +18,7 @@ export const onCall_getFileClassification = onCall<CFCallableFileClassificationR
   async ({ auth, data, rawRequest }) => {
     logger.log(rawRequest);
 
-    const { clientId, file_id: fileId } = data;
+    const { client_id: clientId, file_id: fileId } = data;
 
     // Check if request is authenticated
     if (auth) throw new HttpsError('failed-precondition', 'Authentication Error');

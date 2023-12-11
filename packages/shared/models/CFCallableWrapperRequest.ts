@@ -1,5 +1,5 @@
 interface CFCallableWrapperRequest {
-  clientId: string;
+  client_id: string;
 }
 
 export type { CFCallableWrapperRequest };
