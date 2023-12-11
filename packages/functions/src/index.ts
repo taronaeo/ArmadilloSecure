@@ -11,3 +11,7 @@ setGlobalOptions({
 
 // Export Cloud Functions below
 export * from './auth/onUserCreate';
+export * from './api/onRequest/fileClassification';
+
+export * from './onCall/getFilePassword';
+export * from './onCall/getFileClassification';

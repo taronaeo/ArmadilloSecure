@@ -1,6 +1,6 @@
-import type { FieldValue } from 'firebase/firestore';
+import { FSMetadata } from '@armadillo/shared';
 
-interface UserDocument {
+interface UserDocument extends FSMetadata {
   readonly uid: string;
   email: string | undefined;
   readonly email_verified: boolean | null;
@@ -8,8 +8,6 @@ interface UserDocument {
   headshot_url: string | null;
   readonly is_onboarded: boolean;
   readonly is_suspended: boolean;
-  readonly updated_at: FieldValue;
-  readonly created_at: FieldValue;
 }
 
 export type { UserDocument };

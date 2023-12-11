@@ -1,7 +1,7 @@
 import type { UserDocument } from '@armadillo/shared';
 
 import * as logger from 'firebase-functions/logger';
-import { USERS_COLLECTION } from '@armadillo/shared';
+import { FS_COLLECTION_USERS } from '@armadillo/shared';
 
 import { FieldValue } from 'firebase-admin/firestore';
 import { beforeUserCreated } from 'firebase-functions/v2/identity';
@@ -29,7 +29,7 @@ export const auth_onUserCreate = beforeUserCreated(async (event) => {
 
   try {
     logger.log(user);
-    await firestore.collection(USERS_COLLECTION).doc(uid).set(user, { merge: true });
+    await firestore.collection(FS_COLLECTION_USERS).doc(uid).set(user, { merge: true });
   } catch (error) {
     logger.error(error);
   }
