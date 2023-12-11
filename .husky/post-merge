@@ -1,11 +1,7 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-yarn install
-yarn workspace @armadillo/backend install
-yarn workspace @armadillo/wrapper install
-yarn workspace @armadillo/functions-gcp install
-yarn workspace @armadillo/shared install
+yarn
 
 echo ""
 echo "==================================="
