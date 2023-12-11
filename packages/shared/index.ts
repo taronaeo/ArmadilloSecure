@@ -9,6 +9,7 @@ export * from './models/FSFileDocument';
 export * from './models/FSFileClassification';
 
 export * from './models/CFCallableWrapperRequest';
+export * from './models/CFCallableAuthLoginTokenRequest';
 export * from './models/CFCallableFilePasswordRequest';
 export * from './models/CFCallableFileClassificationRequest';
 export * from './models/CFCallableFileClassificationResponse';
