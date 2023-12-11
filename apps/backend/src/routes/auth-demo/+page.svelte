@@ -3,7 +3,7 @@
 	import { signOut, signInEmailPassword, signUpEmailPassword } from '$lib/firebase/auth';
 
 	let email: string;
-	let password: string;
+	let password: string;	
 </script>
 
 <h1 class="text-4xl font-bold">Authentication Testing</h1>
