@@ -6,7 +6,7 @@
 	import { authStore, authStatusStore } from '$lib/stores';
 
 	// import sign up function
-	import { signUpEmailPassword } from '$lib/firebase/auth';
+	import { signOut, signUpEmailPassword } from '$lib/firebase/auth';
 
   //import yup for form validation
   import * as yup from 'yup';
@@ -118,7 +118,7 @@
 					</div>
 					<input
             id="password"
-						type="text"
+						type="password"
 						name="password"
 						placeholder="••••••••"
 						on:change={handleChange}
@@ -147,7 +147,7 @@
 						<span class="text-red-600 label-text-alt">*</span>
 					</div>
 					<input
-						type="text"
+						type="password"
 						name="confirmpass"
 						placeholder="••••••••"
 						on:change={handleChange}
@@ -209,7 +209,7 @@
 		<!-- Signup Form - Link to Login -->
 		<p class="text-center">
 			Already have an account?
-			<a class="text-secondary hover:text-accent duration-300" href="/login"> Log in </a>
+			<a class="text-secondary hover:text-info duration-300" href="/login"> Log in </a>
 		</p>
 	</div>
 </div>
