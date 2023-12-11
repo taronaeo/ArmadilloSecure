@@ -1,8 +1,12 @@
 <script lang="ts">
+  import { authStore } from './lib/stores';
   import FileClass from './components/Fileclass.svelte';
   import Compromisation from './components/Compromisation.svelte';
   import ViewDoc from './components/ViewDoc.svelte';
   import WifiLogo from './assets/no-wifi.png';
+
+  // Preload auth state
+  $authStore;
 
   let pingFailed = false;
   setInterval(async () => {
@@ -24,14 +28,13 @@
     </div>
   </div>
 {:else if !pingFailed}
-<div class="hidden">
-  <div>
-    <FileClass />
+  <div class="hidden">
+    <div>
+      <FileClass />
+    </div>
+    <div>
+      <Compromisation />
+    </div>
   </div>
-  <div>
-  <Compromisation />
-  </div>
-</div>
-<ViewDoc/>
-
+  <ViewDoc />
 {/if}

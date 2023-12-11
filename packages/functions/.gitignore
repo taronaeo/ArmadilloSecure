@@ -1,0 +1,11 @@
+# Compiled Cloud Functions files
+lib/**/*
+
+# TypeScript v1 declaration files
+typings/
+
+# Node.js dependency directory
+node_modules/
+
+# Firebase Emulator Data
+firebase-export*/

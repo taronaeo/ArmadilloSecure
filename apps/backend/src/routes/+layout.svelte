@@ -1,18 +1,18 @@
 <script>
-	import '../app.css';
-	import { authStore } from '$lib/stores';
+  import '../app.css';
+  import { authStore } from '$lib/stores';
 
-	// Preload auth state
-	$authStore;
+  // Preload auth state
+  $authStore;
 </script>
 
 {#if $authStore === undefined}
-	<!-- Auth preload screen -->
-	<div
-		class="z-50 fixed top-0 w-screen h-screen
+  <!-- Auth preload screen -->
+  <div
+    class="z-50 fixed top-0 w-screen h-screen
           flex flex-col justify-center items-center">
-		<span class="loading loading-infinity loading-lg" />
-	</div>
+    <span class="loading loading-infinity loading-lg" />
+  </div>
 {:else}
-	<slot />
+  <slot />
 {/if}

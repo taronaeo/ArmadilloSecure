@@ -1,2 +1,2 @@
-export const USERS_COLLECTION = 'users';
-export const FILES_COLLECTION = 'files';
+export const FS_COLLECTION_USERS = 'users';
+export const FS_COLLECTION_FILES = 'files';

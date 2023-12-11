@@ -8,16 +8,6 @@
   },
   "functions": [
     {
-      "source": "functions",
-      "codebase": "default",
-      "ignore": [
-        "venv",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log"
-      ]
-    },
-    {
       "source": "packages/functions-gcp",
       "codebase": "functions-gcp",
       "ignore": [
@@ -27,7 +17,8 @@
         "firebase-debug.*.log"
       ],
       "predeploy": [
-        "npm --prefix \"packages/functions-gcp\" run build"
+        "yarn --cwd \"packages/functions-gcp\" run lint",
+        "yarn --cwd \"packages/functions-gcp\" run build"
       ]
     }
   ],

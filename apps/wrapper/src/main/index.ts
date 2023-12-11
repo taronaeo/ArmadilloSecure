@@ -5,12 +5,11 @@ import icon from '../../resources/icon.png?asset';
 import os from 'os';
 import fs, { promises as fsPromises } from 'fs';
 import { BlockList } from 'net';
-import { exec, execFile, execFileSync, execSync } from 'child_process';
+import { exec, execFile, execSync } from 'child_process';
 import systeminformation from 'systeminformation';
 import crypto from 'crypto';
 const { copyFile } = fsPromises;
 import https from 'https';
-import util from 'util';
 import { paths } from './absolutePaths';
 
 interface IpcResponse {
@@ -78,7 +77,7 @@ app.whenReady().then(() => {
     };
   });
 
-  ipcMain.handle('getFileClass', async (evt, fileId): Promise<void> => {
+  ipcMain.handle('getFileClass', async (_, fileId): Promise<void> => {
     const options = {
       hostname: 'asia-southeast1-it2566-armadillo.cloudfunctions.net',
       path: '/http_onRequest_fileClassification',
@@ -190,7 +189,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('ping', async (): Promise<void> => {
     const host = 'www.google.com';
-    exec(`ping ${host}`, (error, stdout, stderr) => {
+    exec(`ping ${host}`, (error, stdout) => {
       if (error) {
         pingFailed = true;
       } else if (
@@ -274,14 +273,13 @@ app.whenReady().then(() => {
     };
   });
 
-  ipcMain.handle('launchFile', async (evt, fileId): Promise<void> => {
+  ipcMain.handle('launchFile', async (): Promise<void> => {
     //code to get file from firebase and decrypt
     const filePath =
       'C:\\Users\\dexte\\Documents\\Year 2 Sem 2\\InfoSecurity Project\\Tutorials\\T01A.pdf';
     const tempPath = 'C:\\Users\\dexte\\Pictures\\testFile';
     //const tempPath = app.getPath('temp');
     //WIP TEST CODE
-    let fileBlob: any;
 
     const filePathArr = filePath.split('.');
     const fileExtension = filePathArr[filePathArr.length - 1];
@@ -301,7 +299,6 @@ app.whenReady().then(() => {
     }
 
     const randomFilePath = tempPath + `\\${genRandomString()}.${fileExtension}`;
-    let hasValidProgram = false;
     let validFilePath = '';
     await copyFile(filePath, randomFilePath);
 
