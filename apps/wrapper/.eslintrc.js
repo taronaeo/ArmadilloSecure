@@ -8,6 +8,10 @@ module.exports = {
   parserOptions: {
     extraFileExtensions: ['.svelte'],
   },
+  rules: {
+    '@typescript-eslint/explicit-function-return-type': 0,
+  },
+
   overrides: [
     // Configure Svelte
     // See: https://github.com/sveltejs/svelte-eslint-parser
