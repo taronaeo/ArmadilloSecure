@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@armadillo/functions-gcp",
+  "name": "@armadillo/functions",
   "version": "0.0.0",
   "main": "./lib/index.js",
   "packageManager": "yarn@1.22.19",
