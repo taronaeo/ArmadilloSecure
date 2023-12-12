@@ -21,7 +21,7 @@ export const authStore = derived<typeof authState, UserDocument | null>(authStat
   // Prevent server-side from running
   if (typeof window === 'undefined') return;
 
-  if (!$user) return set($user);
+  if (!$user) return set(null);
 
   const ref = doc(colUsersRef, $user.uid);
   return docStore<UserDocument>(ref).subscribe(set);
