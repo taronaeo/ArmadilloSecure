@@ -15,7 +15,7 @@ const authState = readable<User | null>(undefined, (set) => {
 });
 
 export const authStore = derived<typeof authState, UserDocument | null>(authState, ($user, set) => {
-  if (!$user) return set($user);
+  if (!$user) return set(null);
 
   const ref = doc(colUsersRef, $user.uid);
   return docStore<UserDocument>(ref).subscribe(set);
