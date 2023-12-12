@@ -10,19 +10,19 @@ import { auth } from '$lib/firebase';
 import { docStore, colUsersRef } from '$lib/firebase/firestore';
 
 const authState = readable<User | null>(undefined, (set) => {
-	// Prevent server-side from running
-	if (typeof window === 'undefined') return;
+  // Prevent server-side from running
+  if (typeof window === 'undefined') return;
 
-	const unsubscribe = onAuthStateChanged(auth, set);
-	return unsubscribe;
+  const unsubscribe = onAuthStateChanged(auth, set);
+  return unsubscribe;
 });
 
 export const authStore = derived<typeof authState, UserDocument | null>(authState, ($user, set) => {
-	// Prevent server-side from running
-	if (typeof window === 'undefined') return;
+  // Prevent server-side from running
+  if (typeof window === 'undefined') return;
 
-	if (!$user) return set($user);
+  if (!$user) return set(null);
 
-	const ref = doc(colUsersRef, $user.uid);
-	return docStore<UserDocument>(ref).subscribe(set);
+  const ref = doc(colUsersRef, $user.uid);
+  return docStore<UserDocument>(ref).subscribe(set);
 });

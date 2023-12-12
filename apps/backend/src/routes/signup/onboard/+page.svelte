@@ -12,7 +12,7 @@
 		<!-- Onboard Form - Header -->
 		<h1 class="text-3xl font-semibold text-center mb-5">Get Onboard</h1>
 
-		<h2 class="text-center">Complete your profile to start using Armadillo!</h2>
+		<span class="text-center">Complete your profile to start using Armadillo!</span>
 
 		<form action="">
 			<!-- Onboard Form - Name Input -->
@@ -56,6 +56,7 @@
 					<input
 						type="file"
 						name="headshot"
+						accept="image/png, image/jpeg"
 						class="file-input file-input-bordered file-input-primary w-full max-w-xl"
 					/>
 				</label>

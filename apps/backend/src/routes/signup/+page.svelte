@@ -7,10 +7,10 @@
 	let confirm: boolean = false;
 
 	// JavaScript code for Checkbox button
-	let trigger = false;
+	let checkboxAcceptTerms = false;
 
 	function toggleCheckbox() {
-		trigger = !trigger;
+		checkboxAcceptTerms = !checkboxAcceptTerms;
 	}
 </script>
 
@@ -38,8 +38,9 @@
 						type="text"
 						name="email"
 						placeholder="Name@example.com"
-						class="input input-bordered w-full max-w-2xl
-                  focus:ring-primary focus:border-primary duration-300 focus:outline-none"
+						class="
+							input input-bordered w-full max-w-2xl
+              focus:ring-primary focus:border-primary duration-300 focus:outline-none"
 					/>
 				</label>
 			</div>
@@ -54,8 +55,9 @@
 						type="text"
 						name="pass"
 						placeholder="••••••••"
-						class="input input-bordered w-full max-w-2xl
-                  focus:ring-primary focus:border-primary duration-300 focus:outline-none"
+						class="
+							input input-bordered w-full max-w-2xl
+              focus:ring-primary focus:border-primary duration-300 focus:outline-none"
 					/>
 				</label>
 			</div>
@@ -70,8 +72,9 @@
 						type="text"
 						name="confirmpass"
 						placeholder="••••••••"
-						class="input input-bordered w-full max-w-2xl
-                  focus:ring-primary focus:border-primary duration-300 focus:outline-none"
+						class="
+							input input-bordered w-full max-w-2xl
+							focus:ring-primary focus:border-primary duration-300 focus:outline-none"
 					/>
 				</label>
 			</div>
@@ -81,11 +84,11 @@
 					<input
 						type="checkbox"
 						class="checkbox checkbox-primary mr-5"
-						bind:checked={trigger}
+						bind:checked={checkboxAcceptTerms}
 						on:click={toggleCheckbox}
 					/>
-					<span class="label-text"
-						>By signing up, you are creating a Armadillo account, and you agree to Armadillo's
+					<span class="label-text">
+						By signing up, you are creating a Armadillo account, and you agree to Armadillo's
 						<a class="text-primary hover:text-accent duration-300" href="/login"> Terms of Use </a>
 						and
 						<a class="text-primary hover:text-accent duration-300" href="/login">
@@ -100,13 +103,8 @@
 				<button
 					type="submit"
 					class="
-						btn
-						btn-primary
-						w-full
-						max-w-2xl
-						mt-8 mb-2
-						focus:ring-2
-						focus:ring-success
+						mt-8 mb-2 w-full max-w-2xl
+						btn btn-primary focus:ring-2 focus:ring-success
 					"
 					on:click={() => {
 						confirm = true;
@@ -115,7 +113,10 @@
 
 				<!-- Signup Form - Submit/Continue Button with animation -->
 			{:else}
-				<button class="btn btn-primary w-full mt-5 mb-2 flex flex-col items-center justify-center">
+				<button class="
+					items-center justify-center
+					w-full mt-5 mb-2 flex flex-col
+					btn btn-primary">
 					<span class="loading loading-spinner"></span>
 				</button>
 			{/if}

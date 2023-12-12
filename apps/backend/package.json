@@ -37,7 +37,7 @@
 		"vite": "^4.4.2"
 	},
 	"dependencies": {
-		"svelte-forms-lib": "^2.0.1"
+		"svelte-forms-lib": "^2.0.1",
 		"firebase": "^10.7.0"
 	}
 }

@@ -6,7 +6,7 @@
 	let confirm: boolean = false;
 </script>
 
-<div class="flex items-center justify-center h-screen">
+<div class="flex flex-row items-center justify-center h-screen">
 	<!-- Login Form - Card -->
 	<div class="w-full max-w-lg p-10 border border-primary rounded-md shadow-lg">
 		<!-- Login Form - Header -->

@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+yarn
+
+echo ""
+echo "==================================="
+echo "If you do not see any errors above, the installation process should have succeeded"
+echo "==================================="
+echo ""
+
+# Omitting Cloud Functions Python3.11 for now

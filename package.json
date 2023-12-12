@@ -6,14 +6,27 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "prepare": "husky install"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
+    "@typescript-eslint/parser": "^6.13.2",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0",
     "eslint": "^8.48.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "husky": "^8.0.0",
+    "lint-staged": "^15.2.0",
     "prettier": "^3.0.3",
-    "turbo": "latest"
+    "prettier-plugin-svelte": "^3.1.2",
+    "svelte": "^4.2.8",
+    "turbo": "latest",
+    "typescript": "^5.3.3",
+    "yarnhook": "^0.6.1"
   },
-<<<<<<< HEAD
   "workspaces": [
     "apps/*",
     "packages/*",
@@ -21,13 +34,7 @@
   ],
   "dependencies": {
     "svelte-forms-lib": "^2.0.1"
-=======
-  "workspaces": {
-    "packages": [
-      "apps/*",
-      "packages/*",
-      "functions/*"
-    ],
+  },
     "nohoist": [
       "**/firebase-admin",
       "**/firebase-admin/**",
@@ -35,7 +42,10 @@
       "**/firebase-functions/**",
       "**/@armadillo/",
       "**/@armadillo/**"
-    ]
->>>>>>> 2fa450f1a31b8bc38a74cc9866a34b9504010f34
+  ],
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
