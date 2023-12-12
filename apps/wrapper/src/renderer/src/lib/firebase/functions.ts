@@ -1,6 +1,7 @@
-import { functions } from '../firebase';
-
+import { DEV as dev } from 'esm-env';
 import { httpsCallable } from 'firebase/functions';
+
+import { functions } from '../firebase';
 
 const HTTPS_ENDPOINTS = {
   http_onRequest_fileClassification: 'DEPRECATING_SOON',
@@ -23,7 +24,6 @@ export const getHttpsEndpoint = (
 ) => {
   if (typeof endpoint === 'undefined' || !endpoint) throw new Error('Missing `endpoint parameter`');
 
-  const dev = import.meta.env.DEV;
   if (dev) return `http://127.0.0.1:5000/it2566-armadillo/${region}/${endpoint}`;
   return `https://${region}-it2566-armadillo.cloudfunctions.net/${endpoint}`;
 };
