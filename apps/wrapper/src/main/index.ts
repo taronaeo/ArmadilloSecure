@@ -8,7 +8,7 @@ import { BlockList } from 'net';
 import { exec, execFile, execSync } from 'child_process';
 import systeminformation from 'systeminformation';
 import crypto from 'crypto';
-const { copyFile } = fsPromises;
+const { writeFile, copyFile, unlink, stat } = fsPromises;
 import https from 'https';
 import { paths } from './absolutePaths';
 
@@ -58,6 +58,7 @@ function createWindow(): void {
 app.whenReady().then(() => {
   let pingFailed: boolean = false;
   let fileClass: string = '';
+  let validFilePath: string = '';
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');
 
@@ -70,7 +71,7 @@ app.whenReady().then(() => {
 
   createWindow();
 
-  ipcMain.handle('getAppName', (): Promise<IpcResponse> => {
+  ipcMain.handle('getAppName', (): IpcResponse => {
     return {
       code: 200,
       message: app.getName(),
@@ -115,11 +116,17 @@ app.whenReady().then(() => {
     //to be changed when firestore cloud func is up
 
     const networkInterfaces = os.networkInterfaces();
+    if (!networkInterfaces) {
+      return {
+        code: 403,
+        message: 'No Network Interfaces Found',
+      };
+    }
     const nonLocalInterfaces = {};
     for (const inet in networkInterfaces) {
       const addresses = networkInterfaces[inet];
-      for (let i = 0; i < addresses.length; i++) {
-        const address = addresses[i];
+      for (let i = 0; i < addresses!.length; i++) {
+        const address = addresses![i];
         if (!address.internal) {
           if (!nonLocalInterfaces[inet]) {
             nonLocalInterfaces[inet] = [];
@@ -135,7 +142,7 @@ app.whenReady().then(() => {
       mainIntType = 'Ethernet';
     }
     let ipv4 = '';
-    mainInt.forEach((adrs) => {
+    mainInt.forEach((adrs: os.NetworkInterfaceInfo) => {
       if (adrs.family === 'IPv4') {
         ipv4 = adrs.address;
       }
@@ -158,7 +165,6 @@ app.whenReady().then(() => {
         message: 'OS must be Windows',
       };
     }
-
     const si = await systeminformation.networkInterfaces();
     const siArr = Object.values(si);
     let dns = '';
@@ -220,7 +226,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('checkCompromisation', async (): Promise<IpcResponse> => {
-    function convertToMillis(str) {
+    function convertToMillis(str: string) {
       const dateStr = str.split(' ')[0];
       const dateParts = dateStr.split('/');
       const newDateStr =
@@ -241,12 +247,15 @@ app.whenReady().then(() => {
     const defenderStatus = execSync('Get-MpComputerStatus', { shell: 'powershell.exe' }).toString();
     const defenderStatusArr = defenderStatus.split('\n');
     let antivirusSignatures: string = '';
+    let antispywareSignatures: string = '';
     let fullScanEndTime: string = '';
     defenderStatusArr.forEach((property) => {
       if (property.includes('AntivirusSignatureLastUpdated')) {
         antivirusSignatures = property.split(': ')[1];
       } else if (property.includes('QuickScanEndTime')) {
         fullScanEndTime = property.split(': ')[1];
+      } else if (property.includes('AntispywareSignatureLastUpdated')) {
+        antispywareSignatures = property.split(': ')[1];
       }
       //must change to full scan during production
     });
@@ -254,11 +263,18 @@ app.whenReady().then(() => {
     const monthInMillis: number = 2629800000;
     const dayInMillis: number = 86400000;
     const antivirusSignaturesMillis: number = convertToMillis(antivirusSignatures);
+    const antispywareSignaturesMillis: number = convertToMillis(antispywareSignatures);
     const fullScanEndTimeMillis: number = convertToMillis(fullScanEndTime);
     if (+new Date().getTime() - antivirusSignaturesMillis >= monthInMillis) {
       return {
         code: 403,
-        message: 'Signatures Outdated',
+        message: 'Antivirus Signatures Outdated',
+      };
+    }
+    if (+new Date().getTime() - antispywareSignaturesMillis >= monthInMillis) {
+      return {
+        code: 403,
+        message: 'Antispyware Signatures Outdated',
       };
     }
     if (+new Date().getTime() - fullScanEndTimeMillis >= dayInMillis) {
@@ -273,35 +289,8 @@ app.whenReady().then(() => {
     };
   });
 
-  ipcMain.handle('launchFile', async (): Promise<void> => {
-    //code to get file from firebase and decrypt
-    const filePath =
-      'C:\\Users\\dexte\\Documents\\Year 2 Sem 2\\InfoSecurity Project\\Tutorials\\T01A.pdf';
-    const tempPath = 'C:\\Users\\dexte\\Pictures\\testFile';
-    //const tempPath = app.getPath('temp');
-    //WIP TEST CODE
-
-    const filePathArr = filePath.split('.');
-    const fileExtension = filePathArr[filePathArr.length - 1];
-
-    function genRandomString() {
-      const length = 16;
-      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let randomString = '';
-      const charactersLength = characters.length;
-      const randomValues1 = new Uint8Array(length);
-      crypto.getRandomValues(randomValues1);
-      for (let i = 0; i < length; i++) {
-        const randomIndex = Math.floor((randomValues1[i] / 256) * charactersLength);
-        randomString += characters.charAt(randomIndex);
-      }
-      return randomString;
-    }
-
-    const randomFilePath = tempPath + `\\${genRandomString()}.${fileExtension}`;
-    let validFilePath = '';
-    await copyFile(filePath, randomFilePath);
-
+  ipcMain.handle('hasDefaultProgram', (): IpcResponse => {
+    const fileExtension = 'docx';
     for (const path of paths[fileExtension]) {
       if (fs.existsSync(path)) {
         validFilePath = path;
@@ -309,95 +298,88 @@ app.whenReady().then(() => {
       }
     }
     if (validFilePath === '') {
-      return;
+      return {
+        code: 412,
+        message: 'User Does Not Have the Default Program for the File',
+      };
+    }
+    return {
+      code: 200,
+      message: 'User Has Default Program',
+    };
+  });
+
+  ipcMain.handle('launchFile', async (): Promise<void> => {
+    //TODO code to get file from firebase and decrypt
+    const filePath =
+      'C:\\Users\\dexte\\Documents\\Year 2 Sem 2\\InfoSecurity Project\\Tutorials\\T01A';
+    const tempPath = 'C:\\Users\\dexte\\Pictures\\testFile';
+    // const tempPath = app.getPath('temp');
+    //const filePathArr = filePath.split('.');
+    //const fileExtension = filePathArr[filePathArr.length - 1];
+
+    const obscurityFiles: string[] = [];
+
+    function genRandomFileAndExtension(): { randomFileName: string; randomExt: string } {
+      const randomFileLength = 16;
+      const randomExtLength = 4;
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let randomFileName = '';
+      let randomExt = '';
+      const charactersLength = characters.length;
+      const randomValues1 = new Uint8Array(randomFileLength);
+      crypto.getRandomValues(randomValues1);
+      for (let i = 0; i < randomFileLength; i++) {
+        const randomIndex = Math.floor((randomValues1[i] / 256) * charactersLength);
+        randomFileName += characters.charAt(randomIndex);
+      }
+      for (let i = 0; i < randomExtLength; i++) {
+        const randomIndex = Math.floor((randomValues1[i] / 256) * charactersLength);
+        randomExt += characters.charAt(randomIndex);
+      }
+      return {
+        randomFileName: randomFileName,
+        randomExt: randomExt,
+      };
+    }
+
+    const randomFileInfo = genRandomFileAndExtension();
+    const randomFilePath =
+      tempPath + `\\${randomFileInfo.randomFileName}.${randomFileInfo.randomExt}`;
+    const fileStats = await stat(filePath);
+    const fileSize = fileStats.size;
+
+    await copyFile(filePath, randomFilePath);
+
+    for (let i = 0; i < 10; i++) {
+      const obscurityFileName = genRandomFileAndExtension().randomFileName;
+      const obscurityFileExt = genRandomFileAndExtension().randomExt;
+      const obscurityFile = `${obscurityFileName}.${obscurityFileExt}`;
+      obscurityFiles[i] = obscurityFile;
+      const randomBytes = crypto.randomBytes(fileSize);
+      await writeFile(`${tempPath}\\${obscurityFile}`, randomBytes);
+    }
+
+    async function delFiles() {
+      await unlink(randomFilePath);
+      obscurityFiles.forEach(async (file) => {
+        await unlink(`${tempPath}\\${file}`);
+      });
     }
 
     const child = execFile(validFilePath, [randomFilePath]);
 
-    child.on('exit', () => console.log(`exited process with pid ${child.pid}`));
-
-    // const child = spawn('cmd', ['/c', 'start', '""', randomFilePath], {
-    //   shell: false,
-    // });
-
-    // const regKey = new Winreg({
-    //   hive: Winreg.HKCU,
-    //   key: `\\Software\\Microsoft\\Windows\\CurrentVersion\\Run`,
-    // });
-    // console.log(`.${fileExtension}`);
-    // regKey.values((err, items) => {
-    //   if (err) {
-    //     console.log(`ERROR: ${err}`);
-    //   } else {
-    //     items.forEach((item) => {
-    //       console.log(item.value);
-    //     });
-    //   }
-    // });
-
-    /*shell.openPath(randomFilePath).then((pid) => {
-      console.log(pid);
-    });*/
-
-    /*
-    function launch() {
-      return new Promise((resolve, reject) => {
-        const notepad = spawn('notepad');
-
-        let launched = false;
-        notepad.stdout.on('data', (data) => {
-          launched = process.openStdin(notepad.pid) !== null;
-        });
-        notepad.on('close', () => {
-          if (launched) {
-            resolve('close' + notepad.pid);
-          } else {
-            reject(new Error('Process closed before launch'));
-          }
-        });
-      });
-    }
-
-    console.log(await launch());*/
-    // exec(`start explorer.exe ${randomFilePath}`);
-    /*
-    const child = exec('start' + ' ' + randomFilePath);
-    console.log(child.pid);
-    try {
-      const child = spawn('cmd', ['/c', 'start', '""', randomFilePath]);
-      console.log(child.pid);
-    } catch (err) {
-      console.log(err);
-    }
-    
-    const child = exec('start' + ' ' + randomFilePath);
-    console.log(`PID: ${child.pid}`);
-    child.on('exit', (code) => {
-      console.log(code);
-    });
-    
-
-    function writeFileToFolder(buffer: Buffer) {
-      fs.writeFile(randomFile, buffer, (err) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        fs.open(randomFile);
-      });
-    }
-    fs.readFile(filePath, async (err, data) => {
-      const blob = new Blob([data], { type: 'application/octet-stream' });
-      const arrayBuffer = await blob.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-
-      if (err) {
-        console.error(err);
-        return;
+    setInterval(async () => {
+      if (pingFailed) {
+        process.kill(child.pid!);
+        await delFiles();
       }
+    }, 2000);
 
-      writeFileToFolder(buffer);
-    });*/
+    child.on('exit', async () => {
+      console.log(`Process: ${child.pid} exited successfully`);
+      await delFiles();
+    });
   });
 
   app.on('activate', function () {

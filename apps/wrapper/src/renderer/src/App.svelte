@@ -9,6 +9,7 @@
   $authStore;
 
   let pingFailed = false;
+
   setInterval(async () => {
     await window.api.ping('ping');
     const response = await window.api.checkPing('checkPing');
@@ -17,7 +18,7 @@
     } else {
       pingFailed = false;
     }
-  }, 5000);
+  }, 3000);
 </script>
 
 {#if pingFailed}
@@ -28,13 +29,12 @@
     </div>
   </div>
 {:else if !pingFailed}
-  <div class="hidden">
-    <div>
-      <FileClass />
-    </div>
-    <div>
-      <Compromisation />
-    </div>
+  <div>
+    <FileClass />
   </div>
+  <div>
+    <Compromisation />
+  </div>
+
   <ViewDoc />
 {/if}

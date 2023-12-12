@@ -36,7 +36,10 @@ const api = {
     if (channel === 'getAppName') {
       return response;
     }
-    return 'Wrong Channel Received';
+    return {
+      code: 500,
+      message: 'Internal Server Error',
+    };
   },
   secretChecks: async (channel: string): Promise<IpcResponse> => {
     if (channel === 'secretChecks') {
@@ -74,6 +77,16 @@ const api = {
   checkCompromisation: async (channel: string): Promise<IpcResponse> => {
     if (channel === 'checkCompromisation') {
       const response = await ipcRenderer.invoke('checkCompromisation');
+      return response;
+    }
+    return {
+      code: 500,
+      message: 'Internal Server Error',
+    };
+  },
+  hasDefaultProgram: async (channel: string): Promise<IpcResponse> => {
+    if (channel === 'hasDefaultProgram') {
+      const response = await ipcRenderer.invoke('hasDefaultProgram');
       return response;
     }
     return {
