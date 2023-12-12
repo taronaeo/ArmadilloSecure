@@ -1,6 +1,8 @@
 export * from './constants/apiMessages';
 export * from './constants/collections';
 
+export * from './models/AppAuthStatusStore';
+
 export * from './models/UserDocument';
 export * from './models/CFApiWrapperResponse';
 

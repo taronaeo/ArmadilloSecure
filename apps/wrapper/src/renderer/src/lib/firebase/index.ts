@@ -5,8 +5,6 @@ import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
 import { getApp, getApps, initializeApp } from 'firebase/app';
 
-const dev = import.meta.env.DEV;
-
 const firebaseConfig = {
   apiKey: 'AIzaSyAWjGtaLVj-_DxscJuAEPOer6zUM9-OmsE',
   authDomain: 'it2566-armadillo.firebaseapp.com',
@@ -23,6 +21,7 @@ export const storage = getStorage(app);
 export const firestore = getFirestore(app);
 export const functions = getFunctions(app, 'asia-southeast1');
 
+const dev = import.meta.env.DEV;
 if (dev) {
   console.warn(`
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
