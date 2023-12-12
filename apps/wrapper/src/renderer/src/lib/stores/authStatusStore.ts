@@ -1,5 +1,5 @@
-import type { AuthStatus } from '$lib/models';
+import type { AppAuthStatusStore } from '@armadillo/shared';
 
 import { writable } from 'svelte/store';
 
-export const authStatusStore = writable<AuthStatus | null>(null);
+export const authStatusStore = writable<AppAuthStatusStore | null>(null);
