@@ -1,3 +1,4 @@
+import { dev } from '$app/environment';
 import { FirebaseError } from 'firebase/app';
 import {
   signOut as _signOut,
@@ -6,42 +7,83 @@ import {
 } from 'firebase/auth';
 
 import { auth } from '$lib/firebase';
-import { authStatusStore } from '$lib/stores';
 
-export function signOut() {
-  return _signOut(auth);
-}
+type ErrorCallback = FirebaseError | null;
 
-export async function signUpEmailPassword(email: string, password: string) {
+/**
+ * Signs out the current user.
+ *
+ * @param errorCb A callback function to be called with any errors encountered during sign-out.
+ *
+ * @callback ErrorCallback
+ * @property code   The error code provided by Firebase.
+ *
+ * @returns Resolves if sign-out is successful, rejects with an error if any occurs.
+ */
+export function signOut(errorCb: (error: ErrorCallback) => void) {
   try {
-    authStatusStore.set(null);
-    await createUserWithEmailAndPassword(auth, email, password);
-    return authStatusStore.set(null);
+    errorCb(null);
+    return _signOut(auth);
   } catch (error) {
-    if (!(error instanceof FirebaseError)) {
-      throw new Error('Caught non-Firebase error!');
-    }
+    if (dev) console.error(error);
+    if (!(error instanceof FirebaseError)) throw new Error('Caught unknown error!');
 
-    return authStatusStore.set({
-      code: error.code,
-      message: error.message,
-    });
+    return errorCb(error);
   }
 }
 
-export async function signInEmailPassword(email: string, password: string) {
+/**
+ * Handles user sign-up with email and password.
+ *
+ * @param email     The user's email address.
+ * @param password  The user's password.
+ * @param errorCb   A callback function to be called with any errors encountered during sign-up.
+ *
+ * @callback ErrorCallback
+ * @property code   The error code provided by Firebase.
+ *
+ * @returns Resolves if sign-up is successful, rejects with an error if any occurs.
+ */
+export async function signUpEmailPassword(
+  email: string,
+  password: string,
+  errorCb: (error: ErrorCallback) => void
+) {
   try {
-    authStatusStore.set(null);
-    await signInWithEmailAndPassword(auth, email, password);
-    return authStatusStore.set(null);
+    errorCb(null);
+    await createUserWithEmailAndPassword(auth, email, password);
   } catch (error) {
-    if (!(error instanceof FirebaseError)) {
-      throw new Error('Caught non-Firebase error!');
-    }
+    if (dev) console.error(error);
+    if (!(error instanceof FirebaseError)) throw new Error('Caught unknown error!');
 
-    return authStatusStore.set({
-      code: error.code,
-      message: error.message,
-    });
+    return errorCb(error);
+  }
+}
+
+/**
+ * Handles user sign-in with email and password.
+ *
+ * @param email     The user's email address.
+ * @param password  The user's password.
+ * @param errorCb   A callback function to be called with any errors encountered during sign-in.
+ *
+ * @callback ErrorCallback
+ * @property code   The error code provided by Firebase.
+ *
+ * @returns Resolves if sign-in is successful, rejects with an error if any occurs.
+ */
+export async function signInEmailPassword(
+  email: string,
+  password: string,
+  errorCb: (error: ErrorCallback) => void
+) {
+  try {
+    errorCb(null);
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (error) {
+    if (dev) console.error(error);
+    if (!(error instanceof FirebaseError)) throw new Error('Caught non-Firebase error!');
+
+    return errorCb(error);
   }
 }
