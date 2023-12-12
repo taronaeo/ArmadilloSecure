@@ -1,3 +1,4 @@
+import { DEV as dev } from 'esm-env';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
@@ -21,7 +22,6 @@ export const storage = getStorage(app);
 export const firestore = getFirestore(app);
 export const functions = getFunctions(app, 'asia-southeast1');
 
-const dev = import.meta.env.DEV;
 if (dev) {
   console.warn(`
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
