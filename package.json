@@ -3,8 +3,10 @@
   "name": "it2566-armadillo",
   "packageManager": "yarn@1.22.19",
   "scripts": {
-    "build": "turbo run build",
     "dev": "turbo run dev",
+    "build": "turbo run build",
+    "deploy:web": "NODE_ENV=production firebase deploy --only hosting",
+    "deploy:functions": "NODE_ENV=production firebase deploy --only functions",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prepare": "husky install"
@@ -25,6 +27,7 @@
     "svelte": "^4.2.8",
     "turbo": "latest",
     "typescript": "^5.3.3",
+    "vite": "^5.0.8",
     "yarnhook": "^0.6.1"
   },
   "workspaces": {
