@@ -104,7 +104,8 @@ export async function signUpEmailPassword(
 ) {
   try {
     errorCb(null);
-    await createUserWithEmailAndPassword(auth, email, password);
+    const { user } = await createUserWithEmailAndPassword(auth, email, password);
+    if (!user.emailVerified) sendEmailVerification(user);
   } catch (error) {
     if (dev) console.error(error);
     if (!(error instanceof FirebaseError)) throw new Error('Caught unknown error!');
