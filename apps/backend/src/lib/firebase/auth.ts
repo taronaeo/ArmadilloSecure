@@ -104,8 +104,7 @@ export async function signUpEmailPassword(
 ) {
   try {
     errorCb(null);
-    const { user } = await createUserWithEmailAndPassword(auth, email, password);
-    if (!user.emailVerified) await sendEmailVerification(user);
+    await createUserWithEmailAndPassword(auth, email, password);
   } catch (error) {
     if (dev) console.error(error);
     if (!(error instanceof FirebaseError)) throw new Error('Caught unknown error!');
@@ -133,8 +132,7 @@ export async function signInEmailPassword(
 ) {
   try {
     errorCb(null);
-    const { user } = await signInWithEmailAndPassword(auth, email, password);
-    if (!user.emailVerified) await sendEmailVerification(user);
+    await signInWithEmailAndPassword(auth, email, password);
   } catch (error) {
     if (dev) console.error(error);
     if (!(error instanceof FirebaseError)) throw new Error('Caught non-Firebase error!');
