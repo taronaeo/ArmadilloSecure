@@ -38,6 +38,9 @@ export async function verifyEmail(user: User, errorCb: (error: ErrorCallback) =>
 }
 
 /**
+ * @deprecated This function is deprecated and will be removed in the future. All email
+ *             verifications will automatically be handled by Firebase Hosting.
+ *
  * Verifies a user's email address using an out-of-band (OOB) code received through email.
  *
  * @param oobCode The OOB code received in the email verification link.
