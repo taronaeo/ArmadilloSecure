@@ -10,6 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: |
+          yarn install
           yarn --cwd "packages/functions" run lint
           yarn --cwd "packages/functions" run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
