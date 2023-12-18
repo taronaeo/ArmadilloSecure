@@ -1,19 +1,12 @@
-cd apps
-cd backend
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
 yarn
 
-cd ..
-cd wrapper
-yarn
-
-cd ../..
-cd functions
-source venv/bin/activate
-pip3 install -r requirements.txt
-
-cd ..
 echo ""
 echo "==================================="
 echo "If you do not see any errors above, the installation process should have succeeded"
 echo "==================================="
 echo ""
+
+# Omitting Cloud Functions Python3.11 for now
