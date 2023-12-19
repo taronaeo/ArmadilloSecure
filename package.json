@@ -6,6 +6,7 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "deploy:web": "NODE_ENV=production firebase deploy --only hosting",
+    "deploy:storage": "firebase deploy --only storage",
     "deploy:functions": "NODE_ENV=production firebase deploy --only functions",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
