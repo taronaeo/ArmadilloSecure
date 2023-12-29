@@ -72,9 +72,13 @@ app.whenReady().then(() => {
   createWindow();
 
   ipcMain.handle('getAppName', (): IpcResponse => {
+    const fullExecPath = process.execPath;
+    const fullExecPathArr = fullExecPath.split('\\');
+    const execNameWithExt = fullExecPathArr[fullExecPathArr.length - 1];
+    const execName = execNameWithExt.slice(0, -4);
     return {
       code: 200,
-      message: app.getName(),
+      message: execName,
     };
   });
 
@@ -139,6 +143,12 @@ app.whenReady().then(() => {
     let mainInt = nonLocalInterfaces['Wi-Fi'];
     if (!mainInt) {
       mainInt = nonLocalInterfaces['Ethernet'];
+      if (!mainInt) {
+        return {
+          code: 403,
+          message: 'No Valid Network Interfaces Found',
+        };
+      }
       mainIntType = 'Ethernet';
     }
     let ipv4 = '';
@@ -172,7 +182,6 @@ app.whenReady().then(() => {
       if (mainIntType === 'Ethernet') {
         if (iface.iface === 'Ethernet') {
           dns = iface.dnsSuffix;
-          console.log(`ethernet dns: ${dns}`);
         }
       } else if (mainIntType === 'Wi-Fi') {
         if (iface.iface === 'Wi-Fi') {
@@ -252,13 +261,18 @@ app.whenReady().then(() => {
     defenderStatusArr.forEach((property) => {
       if (property.includes('AntivirusSignatureLastUpdated')) {
         antivirusSignatures = property.split(': ')[1];
-      } else if (property.includes('QuickScanEndTime')) {
+      } else if (property.includes('FullScanEndTime')) {
         fullScanEndTime = property.split(': ')[1];
       } else if (property.includes('AntispywareSignatureLastUpdated')) {
         antispywareSignatures = property.split(': ')[1];
       }
       //must change to full scan during production
     });
+    // console.log({
+    //   antispywareSignatures: antispywareSignatures,
+    //   antivirusSignatures: antivirusSignatures,
+    //   fullScanEndTime: fullScanEndTime,
+    // });
 
     const monthInMillis: number = 2629800000;
     const dayInMillis: number = 86400000;
@@ -313,8 +327,8 @@ app.whenReady().then(() => {
     //TODO code to get file from firebase and decrypt
     const filePath =
       'C:\\Users\\dexte\\Documents\\Year 2 Sem 2\\InfoSecurity Project\\Tutorials\\T01A';
-    const tempPath = 'C:\\Users\\dexte\\Pictures\\testFile';
-    // const tempPath = app.getPath('temp');
+    // const tempPath = 'C:\\Users\\dexte\\Pictures\\testFile';
+    const tempPath = app.getPath('temp');
     //const filePathArr = filePath.split('.');
     //const fileExtension = filePathArr[filePathArr.length - 1];
 
@@ -361,17 +375,21 @@ app.whenReady().then(() => {
     }
 
     async function delFiles() {
-      await unlink(randomFilePath);
-      obscurityFiles.forEach(async (file) => {
-        await unlink(`${tempPath}\\${file}`);
-      });
+      try {
+        await unlink(randomFilePath);
+        obscurityFiles.forEach(async (file) => {
+          await unlink(`${tempPath}\\${file}`);
+        });
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     const child = execFile(validFilePath, [randomFilePath]);
 
     setInterval(async () => {
       if (pingFailed) {
-        process.kill(child.pid!);
+        child.kill(child.pid!);
         await delFiles();
       }
     }, 2000);
@@ -380,6 +398,21 @@ app.whenReady().then(() => {
       console.log(`Process: ${child.pid} exited successfully`);
       await delFiles();
     });
+
+    // app.on('before-quit', async () => {
+    //   try {
+    //     process.kill(child.pid!);
+    //     process.on('SIGTERM', () => {
+    //       delFiles()
+    //         .then(() => console.log('Deleted Files'))
+    //         .catch((err) => {
+    //           console.log(err);
+    //         });
+    //     });
+    //   } catch (err) {
+    //     console.log(err);
+    //   }
+    // });
   });
 
   app.on('activate', function () {
