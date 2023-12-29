@@ -14,6 +14,9 @@
 
   let apiError: FirebaseError | null;
 
+  // JavaScript code for Loading Button animation
+  let checkLoading = false;
+
   // Yup validation code
   const { form, errors, handleChange, handleSubmit } = createForm({
     initialValues: {
@@ -100,10 +103,17 @@
       <!-- Form Content - Submit/Continue Button -->
       <button
         type="submit"
+        on:click={() => (checkLoading = true)}
         class="
           w-full max-w-2xl mt-8 mb-2 btn btn-secondary
 					hover:ring-2 hover:ring-info">
-        Continue
+        <span>
+          {#if checkLoading}
+            <span class="loading loading-spinner"></span>
+          {:else}
+            Continue
+          {/if}
+        </span>
       </button>
     </form>
 

@@ -2,7 +2,7 @@
 <script lang="ts">
   // import for forms
   import { createForm } from 'svelte-forms-lib';
-
+  import { goto } from '$app/navigation';
   import { authStore } from '$lib/stores';
   import type { FirebaseError } from 'firebase/app';
 
@@ -15,8 +15,8 @@
   // JavaScript code for Continue button
   let apiError: FirebaseError | null;
 
-  // JavaScript code for Checkbox button
-  let trigger = false;
+  // JavaScript code for Loading Button animation
+  let checkLoading = false;
 
   // Create a reference for the password
   const passwordRef = yup.ref('password');
@@ -54,6 +54,13 @@
       if (data.password === data.confirmPassword) {
         // This will only be executed if passwords match
         await signUpEmailPassword(data.email, data.password, (error) => (apiError = error));
+
+        // Check if there was no error (successful signup)
+        if (!apiError) {
+          // Navigate to the '/email' page
+          goto('/email');
+        }
+
         console.log('Account created successfully');
       } else {
         console.error('Passwords do not match');
@@ -182,11 +189,18 @@
       <!-- Signup Form - Submit/Continue Button -->
       <button
         type="submit"
+        on:click={() => (checkLoading = true)}
         class="
           w-full max-w-2xl mt-8 mb-2 btn btn-secondary
 					hover:ring-2 hover:ring-info"
         disabled={!$form.tosCheckbox}>
-        Create Account
+        <span>
+          {#if checkLoading}
+            <span class="loading loading-spinner"></span>
+          {:else}
+            Create Account
+          {/if}
+        </span>
       </button>
     </form>
 
