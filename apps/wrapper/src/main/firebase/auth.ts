@@ -1,10 +1,11 @@
-import { DEV as dev } from 'esm-env';
 import { FirebaseError } from 'firebase/app';
 import { signOut as _signOut, signInWithCustomToken } from 'firebase/auth';
 
 import { auth } from '../firebase';
 
 type ErrorCallback = FirebaseError | null;
+
+const dev = import.meta.env.DEV;
 
 /**
  * Signs out the current user.

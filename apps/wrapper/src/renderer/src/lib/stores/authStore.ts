@@ -6,8 +6,8 @@ import { derived, readable } from 'svelte/store';
 import { doc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
-import { auth } from '../firebase';
-import { docStore, colUsersRef } from '../firebase/firestore';
+import { auth } from '../../../../main/firebase';
+import { docStore, colUsersRef } from '../../../../main/firebase/firestore';
 
 const authState = readable<User | null>(undefined, (set) => {
   const unsubscribe = onAuthStateChanged(auth, set);
