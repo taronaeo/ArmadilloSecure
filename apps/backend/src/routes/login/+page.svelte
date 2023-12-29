@@ -25,34 +25,28 @@
       password: yup.string().required('Please enter your Password.'),
     }),
 
-    onSubmit: async (data) => {
-      console.log(data);
-      try {
-        await signInEmailPassword(data.email, data.password, (error) => (apiError = error));
-      } catch (error) {
-        console.error(error);
-      }
-    },
+    onSubmit: (data) =>
+      signInEmailPassword(data.email, data.password, (error) => (apiError = error)),
   });
 </script>
 
 <!-- Armadillo Logo-->
-<div class="flex items-center justify-center p-10">
+<div class="flex flex-row items-center justify-center p-10">
   <img src="armadillo.png" alt="" />
 </div>
 
-<div class="flex items-center justify-center">
+<div class="flex flex-row items-center justify-center">
   <!-- Login Form - Card -->
   <div class="w-full max-w-lg p-10 border border-secondary rounded-md shadow-lg">
     <!-- Login Form - Header -->
-    <p class="text-3xl font-semibold text-center mb-5">Welcome Back</p>
+    <h2 class="text-3xl font-semibold text-center mb-5">Welcome Back</h2>
 
     <!-- Login Form - Form Content -->
     <form on:submit|preventDefault={handleSubmit}>
       <!-- General Error Message -->
       {#if apiError && (apiError.code === 'auth/user-not-found' || apiError.code === 'auth/wrong-password')}
         <div class="p-4 flex flex-row bg-red-50 text-red-800 rounded-lg" role="alert">
-          <img src="errorlogo.svg" alt="" />
+          <img src="errorlogo.svg" alt="Error, Please Try Again Later." />
           <div class="ml-2 text-sm font-medium">Invalid email or password, please try again</div>
         </div>
       {/if}
@@ -71,14 +65,8 @@
             on:change={handleChange}
             bind:value={$form.email}
             class="
-							input
-							input-bordered
-							w-full
-							max-w-md
-              focus:ring-secondary
-							focus:border-secondary
-							duration-300
-							focus:outline-none
+              w-full max-w-md input input-bordered duration-300
+              focus:ring-secondary focus:border-secondary focus:outline-none
 						" />
         </label>
         <div>
@@ -100,14 +88,8 @@
             on:change={handleChange}
             bind:value={$form.password}
             class="
-							input
-							input-bordered
-							w-full
-							max-w-md
-              focus:ring-secondary
-							focus:border-secondary
-							duration-300
-							focus:outline-none
+              w-full max-w-md input input-bordered duration-300
+              focus:ring-secondary focus:border-secondary focus:outline-none
 						" />
         </label>
         <div>
@@ -118,44 +100,17 @@
       <!-- Form Content - Submit/Continue Button -->
       <button
         type="submit"
-        class="btn
-					btn-secondary
-					w-full
-					max-w-2xl
-					mt-8
-					mb-2
-					hover:ring-2
-					hover:ring-info"
-        >Continue
+        class="
+          w-full max-w-2xl mt-8 mb-2 btn btn-secondary
+					hover:ring-2 hover:ring-info">
+        Continue
       </button>
     </form>
 
     <!-- Login Form - Link to Sign up -->
     <p class="text-center">
       Don't have an account?
-      <a class="text-secondary hover:text-info duration-300" href="/signup"> Sign up </a>
+      <a class="text-secondary hover:text-info duration-300" href="/signup">Sign Up</a>
     </p>
-  </div>
-</div>
-
-<h1 class="text-4xl font-bold">Authentication Testing</h1>
-
-<div class="mt-4 grid grid-cols-2 gap-4">
-  <div class="flex flex-col gap-4">
-    <button class="btn btn-error w-full" on:click={() => signOut((error) => (apiError = error))}>
-      Sign Out
-    </button>
-    <h2 class="text-2xl">Form Data</h2>
-    <pre>Email Field   : {$form.email}</pre>
-    <pre>Password Field: {$form.password}</pre>
-
-    <h2 class="text-2xl">Auth Status</h2>
-    <p class="text-red-600">
-      If data below is <kbd class="kbd kbd-sm">null</kbd>, means there are no auth errors.
-    </p>
-    <pre>{JSON.stringify(apiError, null, 2)}</pre>
-
-    <h2 class="text-2xl">Auth User Data</h2>
-    <pre>{JSON.stringify($authStore, null, 2)}</pre>
   </div>
 </div>

@@ -3,8 +3,10 @@
   let confirm: boolean = false;
 </script>
 
-<!-- Onboard Form - Logo -->
-<div class="skeleton w-32 h-32"></div>
+<!-- Armadillo Logo-->
+<div class="flex flex-row items-center justify-center p-10">
+  <img src="armadillo.png" alt="error" />
+</div>
 
 <div class="flex flex-row items-center justify-center h-screen">
   <!-- Onboard Form - Card -->
@@ -17,65 +19,44 @@
     <form action="">
       <!-- Onboard Form - Name Input -->
       <div>
-        <label class="form-control w-full max-w-xl">
-          <div class="label">
-            <span class="label-text">Full Name</span>
-          </div>
-          <input
-            type="text"
-            name="fullname"
-            placeholder="John Doe"
-            class="input input-bordered w-full max-w-xl
-					focus:ring-secondary focus:border-secondary duration-300 focus:outline-none" />
+        <label for="fullname" class="form-control w-full max-w-xl">
+          <span class="label-text">Full Name</span>
         </label>
+        <input
+          type="text"
+          name="fullname"
+          id="fullname"
+          placeholder="John Doe"
+          class="
+              input input-bordered w-full max-w-xl
+              focus:ring-secondary focus:border-secondary duration-300 focus:outline-none
+            " />
       </div>
 
       <!-- Onboard Form - Corporate Domain Address Input -->
       <div>
-        <label class="form-control w-full max-w-xl">
-          <div class="label">
-            <span class="label-text">Domain Address</span>
-          </div>
-          <input
-            type="text"
-            name="domainaddress"
-            placeholder="nyp.edu.sg"
-            class="input input-bordered w-full max-w-xl
-					focus:ring-secondary focus:border-secondary duration-300 focus:outline-none" />
+        <label for="domainaddress" class="form-control w-full max-w-xl">
+          <span class="label-text">Domain Address</span>
         </label>
-      </div>
-
-      <!-- Onboard Form - Headshot Photo Input -->
-      <div>
-        <label class="form-control w-full max-w-xl">
-          <div class="label">
-            <span class="label-text">Headshot Photo (.png/.jpg)</span>
-          </div>
-          <input
-            type="file"
-            name="headshot"
-            class="file-input file-input-bordered file-input-secondary w-full max-w-xl" />
-        </label>
+        <input
+          type="text"
+          name="domainaddress"
+          id="domainaddress"
+          placeholder="nyp.edu.sg"
+          class="
+            input input-bordered w-full max-w-xl
+					  focus:ring-secondary focus:border-secondary duration-300 focus:outline-none
+          " />
       </div>
 
       <!-- Onboard Form - Submit/Continue Button -->
-      {#if !confirm}
-        <button
-          type="submit"
-          class="btn btn-secondary w-full max-w-xl mt-8 mb-2 hover:ring-2 hover:ring-info"
-          on:click={() => {
-            confirm = true;
-          }}>Create Account</button>
-
-        <!-- <button type="submit" id="continueButton" class="btn btn-secondary w-80 mt-8 mb-2 focus:ring-2 focus:ring-success" on:click={startLoading}>Continue</button> -->
-
-        <!-- Onboard Form - Submit/Continue Button with animation -->
-      {:else}
-        <button
-          class="btn btn-secondary w-full mt-5 mb-2 flex flex-col items-center justify-center">
-          <span class="loading loading-spinner"></span>
-        </button>
-      {/if}
+      <button
+        type="submit"
+        class="
+          w-full max-w-xl mt-8 mb-2 btn btn-secondary
+          hover:ring-2 hover:ring-info">
+        Create Account
+      </button>
     </form>
 
     <!-- Onboard Form - Link to Login -->

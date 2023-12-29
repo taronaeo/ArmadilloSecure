@@ -21,16 +21,13 @@
   // Create a reference for the password
   const passwordRef = yup.ref('password');
 
-  function toggleCheckbox() {
-    trigger = !trigger;
-  }
-
   // Yup validation code
   const { form, errors, handleChange, handleSubmit } = createForm({
     initialValues: {
       email: '',
       password: '',
       confirmPassword: '',
+      tosCheckbox: false,
     },
     validationSchema: yup.object().shape({
       email: yup.string().email().required('Corporate Email is required.'),
@@ -49,6 +46,9 @@
           /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
           'Password must be at least 8 characters long and include at least one letter, one number, and one special character.'
         ),
+      tosCheckbox: yup
+        .boolean()
+        .required('Please agree to the terms of service and privacy policy.'),
     }),
     onSubmit: async (data) => {
       if (data.password === data.confirmPassword) {
@@ -78,12 +78,11 @@
     <h1 class="text-3xl font-semibold text-center mb-5">Create your account</h1>
 
     <form on:submit|preventDefault={handleSubmit}>
-      <!-- General Error Message -->
+      <!-- General Error Message for already registered emails -->
       {#if apiError && apiError.code === 'auth/email-already-in-use'}
         <div class="p-4 flex flex-row bg-red-50 text-red-800 rounded-lg" role="alert">
-          <img src="errorlogo.svg" alt="" />
-          <div class="ml-2 text-sm font-medium"
-            >You're too fast, slow down and try again in a while</div>
+          <img src="errorlogo.svg" alt="error" />
+          <div class="ml-2 text-sm font-medium"> Invalid Email or Password, Please try again. </div>
         </div>
       {/if}
 
@@ -102,17 +101,15 @@
             on:change={handleChange}
             bind:value={$form.email}
             class="
-              input
-              input-bordered
-              w-full max-w-2xl
-              focus:ring-secondary
-              focus:border-secondary
-              duration-300
-              focus:outline-none
+              w-full max-w-2xl input input-bordered
+              focus:ring-secondary focus:border-secondary duration-300 focus:outline-none
             " />
         </label>
         <div>
           <span class="text-red-600">{$errors.email}</span>
+        </div>
+        <div>
+          <span class="text-red-600">{$errors.tosCheckbox}</span>
         </div>
       </div>
 
@@ -131,14 +128,8 @@
             on:change={handleChange}
             bind:value={$form.password}
             class="
-              input
-              input-bordered
-              w-full
-              max-w-2xl
-              focus:ring-secondary
-              focus:border-secondary
-              duration-300
-              focus:outline-none
+              w-full max-w-2xl input input-bordered
+              focus:ring-secondary focus:border-secondary duration-300 focus:outline-none
             " />
         </label>
         <div>
@@ -155,19 +146,13 @@
           </div>
           <input
             type="password"
-            name="confirmpass"
+            name="confirmPassword"
             placeholder="••••••••"
             on:change={handleChange}
             bind:value={$form.confirmPassword}
             class="
-              input
-              input-bordered
-              w-full
-              max-w-2xl
-              focus:ring-secondary
-              focus:border-secondary
-              duration-300
-              focus:outline-none
+              input input-bordered w-full max-w-2xl
+              focus:ring-secondary focus:border-secondary duration-300 focus:outline-none
             " />
         </label>
         <div>
@@ -180,10 +165,9 @@
           <input
             type="checkbox"
             class="checkbox checkbox-secondary mr-5"
-            bind:checked={trigger}
-            on:click={toggleCheckbox} />
-          <span class="label-text"
-            >By signing up, you are creating a Armadillo account, and you agree to Armadillo's
+            bind:checked={$form.tosCheckbox} />
+          <span class="label-text">
+            By signing up, you are creating a Armadillo account, and you agree to Armadillo's
             <a class="text-secondary hover:text-accent duration-300" href="/login">
               Terms of Use
             </a>
@@ -199,16 +183,10 @@
       <button
         type="submit"
         class="
-					btn
-					btn-secondary
-					w-full
-					max-w-2xl
-					mt-8 mb-2
-					hover:ring-2
-					hover:ring-info
-				"
-        disabled={!trigger}
-        >Create Account
+          w-full max-w-2xl mt-8 mb-2 btn btn-secondary
+					hover:ring-2 hover:ring-info"
+        disabled={!$form.tosCheckbox}>
+        Create Account
       </button>
     </form>
 
