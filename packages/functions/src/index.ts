@@ -13,6 +13,8 @@ setGlobalOptions({
 export * from './auth/onUserCreate';
 export * from './auth/onUserSignIn';
 export * from './api/onRequest/fileClassification';
+// export * from './api/onRequest/createFaceLivenessSession';
 
 export * from './onCall/getFilePassword';
 export * from './onCall/getFileClassification';
+export * from './onCall/getFaceLivenessSessionId';
