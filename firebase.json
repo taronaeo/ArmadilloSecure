@@ -7,12 +7,7 @@
     {
       "source": "packages/functions",
       "codebase": "functions-gcp",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log"
-      ],
+      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log"],
       "predeploy": [
         "yarn --cwd \"packages/functions\" run lint",
         "yarn --cwd \"packages/functions\" run build"
@@ -21,19 +16,26 @@
   ],
   "hosting": {
     "source": "apps/backend",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "frameworksBackend": {
       "region": "asia-east1",
       "maxInstances": 1
     }
   },
-  "storage": {
-    "rules": "storage.rules"
-  },
+  "storage": [
+    {
+      "target": "main",
+      "rules": "storage.main.rules"
+    },
+    {
+      "target": "files",
+      "rules": "storage.files.rules"
+    },
+    {
+      "target": "headshots",
+      "rules": "storage.headshots.rules"
+    }
+  ],
   "emulators": {
     "auth": {
       "port": 9099
