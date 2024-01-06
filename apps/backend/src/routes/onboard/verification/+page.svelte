@@ -1,7 +1,24 @@
 <!-- JavaScript code -->
 <script lang="ts">
+  import { firestore } from '$lib/firebase';
+  import { authStore } from '$lib/stores';
+  import { doc, getDoc } from 'firebase/firestore';
+
   // JavaScript code for Loading Button animation
   let checkLoading = false;
+
+  // Get user UID
+  const uid = $authStore?.uid || 'defaultUid';
+
+  // Function to Get user Details
+  async function getUserDetails() {
+    const docRef = doc(firestore, 'users', uid);
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists) {
+      throw Error('Sign In');
+    }
+    return docSnap.data();
+  }
 </script>
 
 <svelte:head>
@@ -22,7 +39,22 @@
     <!-- Email Verification - Content -->
     <div class="text-center">
       <p>You're almost there! We have sent an email to</p>
-      <p class="text-info">j*****@gmail.com</p>
+
+      <!-- User Details -->
+      {#await getUserDetails() then userDetails}
+        {#if userDetails}
+          <div class="text-info">
+            {#if userDetails.email}
+              {userDetails.email.slice(0, 1) +
+                '*****' +
+                userDetails.email.slice(userDetails.email.indexOf('@'))}
+            {/if}
+          </div>
+        {/if}
+      {:catch}
+        <span class="text-error">Error, Something Went Wrong! Please Try Again</span>
+      {/await}
+
       <br />
       <p>Click on the link in the Email to verify your email</p>
       <p>If you don't see it, <span class="bold">check your spam</span> folder</p>

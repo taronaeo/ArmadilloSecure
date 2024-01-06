@@ -1,6 +1,6 @@
 <!-- JavaScript code for Continue button -->
 <script lang="ts">
-  let confirm: boolean = false;
+  //No TS for now
 </script>
 
 <!-- Armadillo Logo-->

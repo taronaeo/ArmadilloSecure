@@ -2,12 +2,11 @@
 <script lang="ts">
   // import for forms
   import { createForm } from 'svelte-forms-lib';
-
-  import { authStore } from '$lib/stores';
+  import { goto } from '$app/navigation';
   import type { FirebaseError } from 'firebase/app';
 
   // import sign up function
-  import { signOut, signInEmailPassword } from '$lib/firebase/auth';
+  import { signInEmailPassword } from '$lib/firebase/auth';
 
   //import yup for form validation
   import * as yup from 'yup';
@@ -28,14 +27,29 @@
       password: yup.string().required('Please enter your Password.'),
     }),
 
-    onSubmit: (data) =>
-      signInEmailPassword(data.email, data.password, (error) => (apiError = error)),
+    onSubmit: (data) => {
+      // Set checkLoading to true before form submission
+      checkLoading = true;
+
+      // Perform form submission
+      signInEmailPassword(data.email, data.password, (error) => {
+        // Handle submission result
+        if (error) {
+          apiError = error;
+        } else {
+          // Redirect to the homepage on successful login
+          goto('/home');
+        }
+        // Reset checkLoading after handling errors and redirection
+        checkLoading = false;
+      });
+    },
   });
 </script>
 
 <!-- Armadillo Logo-->
 <div class="flex flex-row items-center justify-center p-10">
-  <img src="armadillo.png" alt="" />
+  <img src="armadillo.png" alt="Error" />
 </div>
 
 <div class="flex flex-row items-center justify-center">
@@ -103,7 +117,6 @@
       <!-- Form Content - Submit/Continue Button -->
       <button
         type="submit"
-        on:click={() => (checkLoading = true)}
         class="
           w-full max-w-2xl mt-8 mb-2 btn btn-secondary
 					hover:ring-2 hover:ring-info">

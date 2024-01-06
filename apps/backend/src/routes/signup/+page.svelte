@@ -52,16 +52,25 @@
     }),
     onSubmit: async (data) => {
       if (data.password === data.confirmPassword) {
-        // This will only be executed if passwords match
-        await signUpEmailPassword(data.email, data.password, (error) => (apiError = error));
+        checkLoading = true; // Set checkLoading to true before form submission
 
-        // Check if there was no error (successful signup)
-        if (!apiError) {
-          // Navigate to the '/email' page
-          goto('/email');
+        try {
+          await signUpEmailPassword(data.email, data.password, (error) => (apiError = error));
+
+          // Check if there was no error (successful signup)
+          if (!apiError) {
+            // Navigate to the verification page
+            goto('/onboard/verification');
+          }
+
+          console.log('Account created successfully');
+        } catch (error) {
+          // Handle any unexpected errors
+          console.error('Error during signup:', error);
+        } finally {
+          // Reset checkLoading after completion
+          checkLoading = false;
         }
-
-        console.log('Account created successfully');
       } else {
         console.error('Passwords do not match');
       }
@@ -189,7 +198,6 @@
       <!-- Signup Form - Submit/Continue Button -->
       <button
         type="submit"
-        on:click={() => (checkLoading = true)}
         class="
           w-full max-w-2xl mt-8 mb-2 btn btn-secondary
 					hover:ring-2 hover:ring-info"

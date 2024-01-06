@@ -1,9 +1,46 @@
 <!-- JavaScript code -->
 <script lang="ts">
-  import { onMount } from 'svelte';
+  // import for fade feature
   import { fade } from 'svelte/transition';
 
+  // import for FireStore Database Stuff
+  import { firestore } from '$lib/firebase';
+  import { doc, getDoc } from 'firebase/firestore';
+  import { authStore } from '$lib/stores';
+
   let showInfoCard = false;
+
+  // Get user UID
+  const uid = $authStore?.uid || 'defaultUid';
+
+  let src = '';
+
+  // Self Destruct Modal Function
+  let selfDestructModal: HTMLDialogElement;
+
+  function showSelfDestructModal() {
+    selfDestructModal.showModal();
+  }
+
+  // Self fileAccess Modal Function
+  let fileAccessModal: HTMLDialogElement;
+
+  function showfileAccessModal() {
+    fileAccessModal.showModal();
+  }
+
+  // Function to Get user Details
+  async function getUserDetails() {
+    const docRef = doc(firestore, 'users', uid);
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists) {
+      throw Error('Sign In');
+    }
+    const data = docSnap.data();
+    const full_name = (data as { full_name: string }).full_name;
+    src = `https://ui-avatars.com/api/?name=${full_name}&format=svg&rounded=true`;
+    return docSnap.data();
+  }
 
   // Function to show the info card
   const showDetails = (event: MouseEvent) => {
@@ -25,16 +62,6 @@
 
   //Script to obtian Previous year
   const previousYear = (currentDate.getFullYear() - 1).toString();
-
-  // Use Svelte's onMount to attach event listeners after the component is mounted
-  onMount(() => {
-    // Add an event listener to the document to hide the info card when clicking outside of it
-    document.addEventListener('click', () => {
-      if (showInfoCard) {
-        hideDetails();
-      }
-    });
-  });
 </script>
 
 <!-- Landing Page - Card -->
@@ -45,6 +72,18 @@
       w-full max-w-7xl h-screen p-10 rounded-md
       transition-transform duration-1000 ease-in-out">
     <!-- Landing Page - Header -->
+    {#await getUserDetails() then userDetails}
+      <!-- User Details -->
+      {#if userDetails}
+        <div class="flex justify-end items-center">
+          <img class="rounded w-9 mr-3" alt="Error" {src} />
+          <div class="">{userDetails.email}</div>
+        </div>
+      {/if}
+    {:catch}
+      <button class="flex justify-end">Please Sign In</button>
+    {/await}
+
     <div class="dropdown dropdown-bottom">
       <div
         tabindex="0"
@@ -240,32 +279,109 @@
       <div class="pt-5">
         <h2 class="pb-2 font-semibold">File Details</h2>
 
-        <!-- File Type Section -->
+        <!-- File Access Section -->
         <div class="py-2">
+          <button
+            class="
+            btn btn-outline btn-info rounded-full font-semibold normal-case px-6"
+            on:click={showfileAccessModal}>
+            Manage Access
+          </button>
+          <dialog bind:this={fileAccessModal} class="modal modal-bottom sm:modal-middle">
+            <div class="modal-box">
+              <h3 class="font-bold text-lg pb-2">Share Examplefile.ppt</h3>
+              <input
+                type="text"
+                placeholder="Add People or Groups"
+                class="
+                  input input-bordered input-info w-full text-sm
+                  focus:ring-info focus:border-info focus:outline-none" />
+              <p class="py-4 font-semibold">People with Access</p>
+
+              <!-- Users with Access -->
+              {#await getUserDetails() then userDetails}
+                {#if userDetails}
+                  <div class="flex items-center py-2">
+                    <img class="rounded w-9 mr-3" alt="Error" {src} />
+                    <div class="flex flex-col">
+                      <div class="font-bold">{userDetails.full_name} (You)</div>
+                      <div class="text-sm">{userDetails.email}</div>
+                    </div>
+                  </div>
+                {/if}
+              {/await}
+
+              <div class="modal-action flex justify-between">
+                <!-- Copy Link Button -->
+                <div class="flex justify-start">
+                  <button
+                    class="
+                      btn btn-outline btn-info rounded-full
+                      font-semibold normal-case px-6 flex items-center">
+                    <img src="linkIcon.svg" alt="Error" />
+                    Copy Link
+                  </button>
+                </div>
+
+                <form method="dialog">
+                  <!-- if there is a button in form, it will close the modal -->
+                  <button class="btn">Done</button>
+                </form>
+              </div>
+            </div>
+          </dialog>
+        </div>
+
+        <!-- File Type Section -->
+        <div class="py-2 text-sm">
           <p>Type</p>
           <p class="text-info">PowerPoint</p>
         </div>
 
         <!-- File Size Section -->
-        <div class="py-2">
+        <div class="py-2 text-sm">
           <p>Size</p>
           <p class="text-info">57.3MB</p>
         </div>
 
-        <!-- File Description Section -->
-        <div class="py-2">
-          <p class="pb-1">Description</p>
-          <input
-            type="text"
-            placeholder="Add Description"
-            class="
-              input input-bordered input-info w-full max-w-xs
-              focus:ring-info focus:border-info focus:outline-none" />
-        </div>
+        <!-- Manual Self Destruct Button -->
+        <div class="pt-4">
+          <div class="py-2">
+            <button class="py-4 w-full btn" on:click={showSelfDestructModal}>
+              SELF-DESTRUCT
+            </button>
+            <dialog bind:this={selfDestructModal} class="modal modal-bottom sm:modal-middle">
+              <div class="modal-box">
+                <h3 class="font-bold text-lg">Warning</h3>
+                <p class="py-4">
+                  This will
+                  <span class="text-error"> destroy all active instances of this file </span>
+                  , are you sure?
+                </p>
+                <button
+                  class="
+                    btn btn-outline btn-error px-8">
+                  Self-Destruct
+                </button>
+                <div class="modal-action">
+                  <form method="dialog">
+                    <!-- if there is a button in form, it will close the modal -->
+                    <button class="btn">Close</button>
+                  </form>
+                </div>
+              </div>
+            </dialog>
+          </div>
 
-        <!-- Delete Button -->
-        <div class="py-4">
-          <button class="btn btn-outline btn-error px-8">Delete</button>
+          <!-- Delete Button -->
+          <div class="py-2">
+            <button
+              class="
+              w-full px-8
+              btn btn-outline btn-error">
+              Delete
+            </button>
+          </div>
         </div>
       </div>
     </div>
