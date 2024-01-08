@@ -38,6 +38,9 @@ export async function verifyEmail(user: User, errorCb: (error: ErrorCallback) =>
 }
 
 /**
+ * @deprecated This function is deprecated and will be removed in the future. All email
+ *             verifications will automatically be handled by Firebase Hosting.
+ *
  * Verifies a user's email address using an out-of-band (OOB) code received through email.
  *
  * @param oobCode The OOB code received in the email verification link.
@@ -102,7 +105,7 @@ export async function signUpEmailPassword(
   try {
     errorCb(null);
     const { user } = await createUserWithEmailAndPassword(auth, email, password);
-    if (!user.emailVerified) await sendEmailVerification(user);
+    if (!user.emailVerified) sendEmailVerification(user);
   } catch (error) {
     if (dev) console.error(error);
     if (!(error instanceof FirebaseError)) throw new Error('Caught unknown error!');
@@ -130,8 +133,7 @@ export async function signInEmailPassword(
 ) {
   try {
     errorCb(null);
-    const { user } = await signInWithEmailAndPassword(auth, email, password);
-    if (!user.emailVerified) await sendEmailVerification(user);
+    await signInWithEmailAndPassword(auth, email, password);
   } catch (error) {
     if (dev) console.error(error);
     if (!(error instanceof FirebaseError)) throw new Error('Caught non-Firebase error!');
