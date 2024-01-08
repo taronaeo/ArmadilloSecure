@@ -16,3 +16,4 @@ export * from './api/onRequest/fileClassification';
 
 export * from './onCall/getFilePassword';
 export * from './onCall/getFileClassification';
+export * from './onCall/getFaceLivenessSessionId';

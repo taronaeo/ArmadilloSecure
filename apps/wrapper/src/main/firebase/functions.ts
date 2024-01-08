@@ -12,10 +12,11 @@ const HTTPS_CALLABLES = {
   getAuthLoginToken: 'NOT_DEPLOYED',
   onCall_getFilePassword: 'DEPLOYED',
   onCall_getFileClassification: 'DEPLOYED',
+  onCall_getFaceLivenessSessionId: 'DEPLOYED',
 };
 
-export const getHttpsCallable = (endpoint: keyof typeof HTTPS_CALLABLES) =>
-  httpsCallable(functions, endpoint, {
+export const getHttpsCallable = <RQ, RS>(endpoint: keyof typeof HTTPS_CALLABLES) =>
+  httpsCallable<RQ, RS>(functions, endpoint, {
     timeout: 60000,
   });
 

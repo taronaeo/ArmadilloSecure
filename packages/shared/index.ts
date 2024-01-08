@@ -15,3 +15,5 @@ export * from './models/CFCallableAuthLoginTokenRequest';
 export * from './models/CFCallableFilePasswordRequest';
 export * from './models/CFCallableFileClassificationRequest';
 export * from './models/CFCallableFileClassificationResponse';
+export * from './models/CFCallableFaceLivenessSessionRequest';
+export * from './models/CFCallableFaceLivenessSessionResponse';
