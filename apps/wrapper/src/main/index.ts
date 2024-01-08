@@ -1,16 +1,13 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron';
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
-import os from 'os';
-import fs, { promises as fsPromises } from 'fs';
-import { BlockList } from 'net';
-import { exec, execFile, execSync } from 'child_process';
-import systeminformation from 'systeminformation';
-import crypto from 'crypto';
-const { writeFile, copyFile, unlink, stat } = fsPromises;
-import https from 'https';
-import { paths } from './absolutePaths';
+import { ChildProcess } from 'child_process';
+import { getAppName } from './getAppName';
+import { checkFileClass, getFileClass, secretChecks } from './fileClass';
+import { ping, checkPing } from './ping';
+import { checkCompromisation } from './checkCompromisation';
+import { defaultProgram, viewFileInSeparateProcess, delFiles } from './viewDoc';
 
 interface IpcResponse {
   code: number;
@@ -49,15 +46,32 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
+
+  mainWindow.on('close', function (e) {
+    process.kill(pid, 'SIGTERM');
+    const choice = dialog.showMessageBoxSync(mainWindow, {
+      type: 'question',
+      buttons: ['Yes', 'No'],
+      message: 'Are you sure you want to close the wrapper?',
+    });
+    if (choice === 1) {
+      e.preventDefault();
+    } else if (choice === 0) {
+      delFiles().then(() => console.log('Files Deleted Succesfully'));
+    }
+  });
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 
+let child: ChildProcess | null = null;
+let pid: number = 0;
+let fileOpened: boolean = false;
+
 app.whenReady().then(() => {
   let pingFailed: boolean = false;
-  let fileClass: string = '';
   let validFilePath: string = '';
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');
@@ -72,245 +86,39 @@ app.whenReady().then(() => {
   createWindow();
 
   ipcMain.handle('getAppName', (): IpcResponse => {
-    const fullExecPath = process.execPath;
-    const fullExecPathArr = fullExecPath.split('\\');
-    const execNameWithExt = fullExecPathArr[fullExecPathArr.length - 1];
-    const execName = execNameWithExt.slice(0, -4);
-    return {
-      code: 200,
-      message: execName,
-    };
+    const appNameRes = getAppName(process);
+    return appNameRes;
   });
 
-  ipcMain.handle('getFileClass', async (_, fileId): Promise<void> => {
-    const options = {
-      hostname: 'asia-southeast1-it2566-armadillo.cloudfunctions.net',
-      path: '/http_onRequest_fileClassification',
-      method: 'POST',
-      headers: {
-        'X-ARMADILLO-CLIENTID': 'helloworld',
-        'X-ARMADILLO-FILEUUID': fileId,
-        'Content-Length': 0,
-      },
-    };
-    const req = https.request(options, (res) => {
-      res.on('data', (chunk) => {
-        fileClass = JSON.parse(chunk).data;
-      });
-    });
-    req.end();
+  ipcMain.handle('getFileClass', (_, fileId): void => {
+    getFileClass(fileId);
   });
 
-  ipcMain.handle('checkFileClass', async (): Promise<IpcResponse> => {
-    if (fileClass != '') {
-      return {
-        code: 200,
-        message: fileClass,
-      };
-    }
-    return {
-      code: 503,
-      message: 'File Class Unavailable',
-    };
+  ipcMain.handle('checkFileClass', (): IpcResponse => {
+    const fileClassRes = checkFileClass();
+    return fileClassRes;
   });
 
   ipcMain.handle('secretChecks', async (): Promise<IpcResponse> => {
-    const orgDNS = '';
-    const domainIpRange = ['192.168.1.0', '192.168.1.255'];
-    //to be changed when firestore cloud func is up
-
-    const networkInterfaces = os.networkInterfaces();
-    if (!networkInterfaces) {
-      return {
-        code: 403,
-        message: 'No Network Interfaces Found',
-      };
-    }
-    const nonLocalInterfaces = {};
-    for (const inet in networkInterfaces) {
-      const addresses = networkInterfaces[inet];
-      for (let i = 0; i < addresses!.length; i++) {
-        const address = addresses![i];
-        if (!address.internal) {
-          if (!nonLocalInterfaces[inet]) {
-            nonLocalInterfaces[inet] = [];
-          }
-          nonLocalInterfaces[inet].push(address);
-        }
-      }
-    }
-    let mainIntType = 'Wi-Fi';
-    let mainInt = nonLocalInterfaces['Wi-Fi'];
-    if (!mainInt) {
-      mainInt = nonLocalInterfaces['Ethernet'];
-      if (!mainInt) {
-        return {
-          code: 403,
-          message: 'No Valid Network Interfaces Found',
-        };
-      }
-      mainIntType = 'Ethernet';
-    }
-    let ipv4 = '';
-    mainInt.forEach((adrs: os.NetworkInterfaceInfo) => {
-      if (adrs.family === 'IPv4') {
-        ipv4 = adrs.address;
-      }
-    });
-
-    const blockList = new BlockList();
-    blockList.addRange(domainIpRange[0], domainIpRange[1]);
-    if (!blockList.check(ipv4)) {
-      return {
-        code: 403,
-        message: 'IP Address not part of Organization IP Address Range',
-      };
-    }
-
-    const userOS = os.platform();
-
-    if (userOS != 'win32') {
-      return {
-        code: 403,
-        message: 'OS must be Windows',
-      };
-    }
-    const si = await systeminformation.networkInterfaces();
-    const siArr = Object.values(si);
-    let dns = '';
-    siArr.forEach((iface) => {
-      if (mainIntType === 'Ethernet') {
-        if (iface.iface === 'Ethernet') {
-          dns = iface.dnsSuffix;
-        }
-      } else if (mainIntType === 'Wi-Fi') {
-        if (iface.iface === 'Wi-Fi') {
-          dns = iface.dnsSuffix;
-        }
-      }
-    });
-    if (dns != orgDNS) {
-      return {
-        code: 403,
-        message: 'Invalid Domain Name',
-      };
-    }
-
-    return {
-      code: 200,
-      message: 'Top Secret Checks Successful',
-    };
+    const secretChecksRes = secretChecks();
+    return secretChecksRes;
   });
 
-  ipcMain.handle('ping', async (): Promise<void> => {
-    const host = 'www.google.com';
-    exec(`ping ${host}`, (error, stdout) => {
-      if (error) {
-        pingFailed = true;
-      } else if (
-        !(
-          stdout.includes('Packets: Sent = 4, Received = 4') ||
-          stdout.includes('Packets: Sent = 4, Received = 3')
-        )
-      ) {
-        //received = 3 just incase 1 packet is not received
-        pingFailed = true;
-      } else {
-        pingFailed = false;
-      }
-    });
+  ipcMain.handle('ping', (): void => {
+    pingFailed = ping();
   });
 
-  ipcMain.handle('checkPing', async (): Promise<IpcResponse> => {
-    if (pingFailed) {
-      return {
-        code: 400,
-        message: 'Loss of Internet Connection',
-      };
-    }
-    return {
-      code: 200,
-      message: 'Client Has Internet Connection',
-    };
+  ipcMain.handle('checkPing', (): IpcResponse => {
+    return checkPing();
   });
 
-  ipcMain.handle('checkCompromisation', async (): Promise<IpcResponse> => {
-    function convertToMillis(str: string) {
-      const dateStr = str.split(' ')[0];
-      const dateParts = dateStr.split('/');
-      const newDateStr =
-        dateParts[1] +
-        '/' +
-        dateParts[0] +
-        '/' +
-        dateParts[2] +
-        ' ' +
-        str.split(' ')[1] +
-        ' ' +
-        str.split(' ')[2];
-      const date = new Date(newDateStr);
-
-      return date.getTime();
-    }
-
-    const defenderStatus = execSync('Get-MpComputerStatus', { shell: 'powershell.exe' }).toString();
-    const defenderStatusArr = defenderStatus.split('\n');
-    let antivirusSignatures: string = '';
-    let antispywareSignatures: string = '';
-    let fullScanEndTime: string = '';
-    defenderStatusArr.forEach((property) => {
-      if (property.includes('AntivirusSignatureLastUpdated')) {
-        antivirusSignatures = property.split(': ')[1];
-      } else if (property.includes('FullScanEndTime')) {
-        fullScanEndTime = property.split(': ')[1];
-      } else if (property.includes('AntispywareSignatureLastUpdated')) {
-        antispywareSignatures = property.split(': ')[1];
-      }
-      //must change to full scan during production
-    });
-    // console.log({
-    //   antispywareSignatures: antispywareSignatures,
-    //   antivirusSignatures: antivirusSignatures,
-    //   fullScanEndTime: fullScanEndTime,
-    // });
-
-    const monthInMillis: number = 2629800000;
-    const dayInMillis: number = 86400000;
-    const antivirusSignaturesMillis: number = convertToMillis(antivirusSignatures);
-    const antispywareSignaturesMillis: number = convertToMillis(antispywareSignatures);
-    const fullScanEndTimeMillis: number = convertToMillis(fullScanEndTime);
-    if (+new Date().getTime() - antivirusSignaturesMillis >= monthInMillis) {
-      return {
-        code: 403,
-        message: 'Antivirus Signatures Outdated',
-      };
-    }
-    if (+new Date().getTime() - antispywareSignaturesMillis >= monthInMillis) {
-      return {
-        code: 403,
-        message: 'Antispyware Signatures Outdated',
-      };
-    }
-    if (+new Date().getTime() - fullScanEndTimeMillis >= dayInMillis) {
-      return {
-        code: 403,
-        message: 'Full System Scan Outdated',
-      };
-    }
-    return {
-      code: 200,
-      message: 'Compromisation Check Passed',
-    };
+  ipcMain.handle('checkCompromisation', (): IpcResponse => {
+    const checkCompromisationRes = checkCompromisation();
+    return checkCompromisationRes;
   });
 
   ipcMain.handle('hasDefaultProgram', (): IpcResponse => {
-    const fileExtension = 'docx';
-    for (const path of paths[fileExtension]) {
-      if (fs.existsSync(path)) {
-        validFilePath = path;
-        break;
-      }
-    }
+    validFilePath = defaultProgram();
     if (validFilePath === '') {
       return {
         code: 412,
@@ -323,96 +131,30 @@ app.whenReady().then(() => {
     };
   });
 
-  ipcMain.handle('launchFile', async (): Promise<void> => {
+  ipcMain.handle('launchFile', async (): Promise<boolean> => {
     //TODO code to get file from firebase and decrypt
-    const filePath =
-      'C:\\Users\\dexte\\Documents\\Year 2 Sem 2\\InfoSecurity Project\\Tutorials\\T01A';
-    // const tempPath = 'C:\\Users\\dexte\\Pictures\\testFile';
-    const tempPath = app.getPath('temp');
+    // const tempPath = app.getPath('temp');
     //const filePathArr = filePath.split('.');
     //const fileExtension = filePathArr[filePathArr.length - 1];
 
-    const obscurityFiles: string[] = [];
-
-    function genRandomFileAndExtension(): { randomFileName: string; randomExt: string } {
-      const randomFileLength = 16;
-      const randomExtLength = 4;
-      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let randomFileName = '';
-      let randomExt = '';
-      const charactersLength = characters.length;
-      const randomValues1 = new Uint8Array(randomFileLength);
-      crypto.getRandomValues(randomValues1);
-      for (let i = 0; i < randomFileLength; i++) {
-        const randomIndex = Math.floor((randomValues1[i] / 256) * charactersLength);
-        randomFileName += characters.charAt(randomIndex);
-      }
-      for (let i = 0; i < randomExtLength; i++) {
-        const randomIndex = Math.floor((randomValues1[i] / 256) * charactersLength);
-        randomExt += characters.charAt(randomIndex);
-      }
-      return {
-        randomFileName: randomFileName,
-        randomExt: randomExt,
-      };
+    if (!fileOpened) {
+      child = await viewFileInSeparateProcess();
+      fileOpened = true;
+    } else if (fileOpened) {
+      console.log('File Already Opened!');
     }
-
-    const randomFileInfo = genRandomFileAndExtension();
-    const randomFilePath =
-      tempPath + `\\${randomFileInfo.randomFileName}.${randomFileInfo.randomExt}`;
-    const fileStats = await stat(filePath);
-    const fileSize = fileStats.size;
-
-    await copyFile(filePath, randomFilePath);
-
-    for (let i = 0; i < 10; i++) {
-      const obscurityFileName = genRandomFileAndExtension().randomFileName;
-      const obscurityFileExt = genRandomFileAndExtension().randomExt;
-      const obscurityFile = `${obscurityFileName}.${obscurityFileExt}`;
-      obscurityFiles[i] = obscurityFile;
-      const randomBytes = crypto.randomBytes(fileSize);
-      await writeFile(`${tempPath}\\${obscurityFile}`, randomBytes);
+    if (child && !child.pid) {
+      return false;
     }
-
-    async function delFiles() {
-      try {
-        await unlink(randomFilePath);
-        obscurityFiles.forEach(async (file) => {
-          await unlink(`${tempPath}\\${file}`);
-        });
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    const child = execFile(validFilePath, [randomFilePath]);
-
+    pid = child!.pid!;
     setInterval(async () => {
       if (pingFailed) {
-        child.kill(child.pid!);
+        child!.kill();
         await delFiles();
       }
     }, 2000);
 
-    child.on('exit', async () => {
-      console.log(`Process: ${child.pid} exited successfully`);
-      await delFiles();
-    });
-
-    // app.on('before-quit', async () => {
-    //   try {
-    //     process.kill(child.pid!);
-    //     process.on('SIGTERM', () => {
-    //       delFiles()
-    //         .then(() => console.log('Deleted Files'))
-    //         .catch((err) => {
-    //           console.log(err);
-    //         });
-    //     });
-    //   } catch (err) {
-    //     console.log(err);
-    //   }
-    // });
+    return true;
   });
 
   app.on('activate', function () {
@@ -425,7 +167,8 @@ app.whenReady().then(() => {
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
+
+app.on('window-all-closed', async () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }

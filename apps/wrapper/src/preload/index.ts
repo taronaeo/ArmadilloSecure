@@ -8,104 +8,119 @@ interface IpcResponse {
 }
 
 const api = {
-  getFileClass: async (channel: string, fileId: string): Promise<IpcResponse> => {
-    if (channel === 'getFileClass') {
+  getFileClass: async (fileId: string): Promise<IpcResponse> => {
+    try {
       await ipcRenderer.invoke('getFileClass', fileId);
       return {
         code: 200,
-        message: 'getFileClass invoked',
+        message: 'Get File Class Invoked',
+      };
+    } catch {
+      return {
+        code: 500,
+        message: 'Internal Server Error',
       };
     }
-    return {
-      code: 500,
-      message: 'Internal Server Error',
-    };
   },
-  checkFileClass: async (channel: string): Promise<IpcResponse> => {
-    if (channel === 'checkFileClass') {
+  checkFileClass: async (): Promise<IpcResponse> => {
+    try {
       const response = await ipcRenderer.invoke('checkFileClass');
       return response;
+    } catch {
+      return {
+        code: 500,
+        message: 'Internal Server Error',
+      };
     }
-    return {
-      code: 500,
-      message: 'Internal Server Error',
-    };
   },
-  getAppName: async (channel: string): Promise<IpcResponse> => {
-    const response = await ipcRenderer.invoke('getAppName');
-    if (channel === 'getAppName') {
+  getAppName: async (): Promise<IpcResponse> => {
+    try {
+      const response = await ipcRenderer.invoke('getAppName');
       return response;
+    } catch {
+      return {
+        code: 500,
+        message: 'Internal Server Error',
+      };
     }
-    return {
-      code: 500,
-      message: 'Internal Server Error',
-    };
   },
-  secretChecks: async (channel: string): Promise<IpcResponse> => {
-    if (channel === 'secretChecks') {
-      const dns = await ipcRenderer.invoke('secretChecks');
-      return dns;
+  secretChecks: async (): Promise<IpcResponse> => {
+    try {
+      const responseWithDns = await ipcRenderer.invoke('secretChecks');
+      return responseWithDns;
+    } catch {
+      return {
+        code: 500,
+        message: 'Internal Server Error',
+      };
     }
-    return {
-      code: 500,
-      message: 'Internal Server Error',
-    };
   },
-  ping: async (channel: string): Promise<IpcResponse> => {
-    if (channel === 'ping') {
+  ping: async (): Promise<IpcResponse> => {
+    try {
       await ipcRenderer.invoke('ping');
       return {
         code: 200,
         message: 'Ping Successful',
       };
-    }
-    return {
-      code: 500,
-      message: 'Internal Server Error',
-    };
-  },
-  checkPing: async (channel: string): Promise<IpcResponse> => {
-    if (channel === 'checkPing') {
-      const response = await ipcRenderer.invoke('checkPing');
-      return response;
-    }
-    return {
-      code: 500,
-      message: 'Internal Server Error',
-    };
-  },
-  checkCompromisation: async (channel: string): Promise<IpcResponse> => {
-    if (channel === 'checkCompromisation') {
-      const response = await ipcRenderer.invoke('checkCompromisation');
-      return response;
-    }
-    return {
-      code: 500,
-      message: 'Internal Server Error',
-    };
-  },
-  hasDefaultProgram: async (channel: string): Promise<IpcResponse> => {
-    if (channel === 'hasDefaultProgram') {
-      const response = await ipcRenderer.invoke('hasDefaultProgram');
-      return response;
-    }
-    return {
-      code: 500,
-      message: 'Internal Server Error',
-    };
-  },
-  launchFile: async (channel: string, fileId: string): Promise<IpcResponse> => {
-    if (channel === 'launchFile') {
-      await ipcRenderer.invoke('launchFile', fileId);
+    } catch {
       return {
-        code: 200,
-        message: 'launchFile invoked',
+        code: 500,
+        message: 'Internal Server Error',
       };
     }
-    return {
-      code: 500,
-      message: 'Internal Server Error',
-    };
+  },
+  checkPing: async (): Promise<IpcResponse> => {
+    try {
+      const response = await ipcRenderer.invoke('checkPing');
+      return response;
+    } catch {
+      return {
+        code: 500,
+        message: 'Internal Server Error',
+      };
+    }
+  },
+  checkCompromisation: async (): Promise<IpcResponse> => {
+    try {
+      const response = await ipcRenderer.invoke('checkCompromisation');
+      return response;
+    } catch {
+      return {
+        code: 500,
+        message: 'Internal Server Error',
+      };
+    }
+  },
+  hasDefaultProgram: async (): Promise<IpcResponse> => {
+    try {
+      const response = await ipcRenderer.invoke('hasDefaultProgram');
+      return response;
+    } catch {
+      return {
+        code: 500,
+        message: 'Internal Server Error',
+      };
+    }
+  },
+  launchFile: async (fileId: string): Promise<IpcResponse> => {
+    try {
+      const fileIsLaunched = await ipcRenderer.invoke('launchFile', fileId);
+      if (fileIsLaunched) {
+        return {
+          code: 200,
+          message: 'File Launched Successfully',
+        };
+      }
+      return {
+        code: 400,
+        message: 'File Could Not Be Launched',
+      };
+    } catch {
+      return {
+        code: 500,
+        message: 'Internal Server Error',
+      };
+    }
   },
 };
 

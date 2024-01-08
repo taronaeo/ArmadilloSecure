@@ -27,9 +27,9 @@
   });
 
   onMount(async () => {
-    await window.api.ping('ping');
+    await window.api.ping();
     setTimeout(async () => {
-      const response = await window.api.checkPing('checkPing');
+      const response = await window.api.checkPing();
       if (response.code !== 200) {
         pingFailed = true;
       } else {
@@ -44,8 +44,8 @@
   });
 
   setInterval(async () => {
-    await window.api.ping('ping');
-    const response = await window.api.checkPing('checkPing');
+    await window.api.ping();
+    const response = await window.api.checkPing();
     if (response.code !== 200) {
       pingFailed = true;
     } else {
@@ -62,7 +62,7 @@
       <div class="grid h-screen">
         <div class="place-self-center">
           <img src={WifiLogo} alt="no internet" class="m-auto h-40" />
-          Internet connection lost. Please check your internet connection.
+          Internet connection lost. Please check your Internet connection.
         </div>
       </div>
     {:else if !pingFailed}

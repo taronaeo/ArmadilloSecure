@@ -7,15 +7,15 @@ declare global {
   }
 
   interface IpcRequest {
-    getAppName: () => IpcResponse;
-    getFileClass: (_, fileId: string) => Promise<void>;
+    getAppName: () => Promise<IpcResponse>;
+    getFileClass: (fileId: string) => Promise<IpcResponse>;
     checkFileClass: () => Promise<IpcResponse>;
     secretChecks: () => Promise<IpcResponse>;
-    ping: () => Promise<void>;
+    ping: () => Promise<IpcResponse>;
     checkPing: () => Promise<IpcResponse>;
     checkCompromisation: () => Promise<IpcResponse>;
-    hasDefaultProgram: () => IpcResponse;
-    launchFile: () => Promise<void>;
+    hasDefaultProgram: () => Promise<IpcResponse>;
+    launchFile: (fileId: string) => Promise<IpcResponse>;
   }
 
   interface IpcResponse {

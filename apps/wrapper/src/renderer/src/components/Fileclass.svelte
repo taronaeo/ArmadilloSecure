@@ -9,23 +9,22 @@
   let checkLoading = false;
 
   onMount(async () => {
-    await window.api.getFileClass('getFileClass', '3be2565e-fe51-4e9d-820f-d6c1315d204d');
+    await window.api.getFileClass('3be2565e-fe51-4e9d-820f-d6c1315d204d');
     let classInterval = setInterval(async () => {
-      const fileClassResponse = await window.api.checkFileClass('checkFileClass');
+      const fileClassResponse = await window.api.checkFileClass();
       if (fileClassResponse.code === 200) {
         fileClass = fileClassResponse.message;
         clearInterval(classInterval);
       }
     }, 1000);
-    const appNameRes = await window.api.getAppName('getAppName');
+    const appNameRes = await window.api.getAppName();
     appName = appNameRes.message;
   });
 
   async function topSecretChecks() {
     if (fileClass === 'TOPSECRET') {
       checkLoading = true;
-      const response: { code: number; message: string } =
-        await window.api.secretChecks('secretChecks');
+      const response: { code: number; message: string } = await window.api.secretChecks();
       proceed = true;
       console.log(response.code);
       if (response.code === 200) {

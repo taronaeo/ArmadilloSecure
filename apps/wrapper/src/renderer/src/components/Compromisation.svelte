@@ -5,7 +5,7 @@
   let proceedPressed: boolean = false;
 
   async function checkCompromisation(): Promise<void> {
-    const response = await window.api.checkCompromisation('checkCompromisation');
+    const response = await window.api.checkCompromisation();
     if (response.code != 200) {
       appState.set({
         passedCheck: false,

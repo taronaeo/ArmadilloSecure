@@ -1,16 +1,22 @@
 <script lang="ts">
   import logo from '../assets/logo(normal).png';
+  import exclamation from '../assets/exclamation.svg';
 
   let hasDefaultProgram = true;
+  let launchFileFailed = false;
   let fileExtension = 'docx'; //temp code
 
   async function launchFile(): Promise<void> {
-    const response = await window.api.hasDefaultProgram('hasDefaultProgram');
+    const response = await window.api.hasDefaultProgram();
     if (response.code !== 200) {
       hasDefaultProgram = false;
       return;
     }
-    await window.api.launchFile('launchFile', 'abc123');
+    const launchFileRes = await window.api.launchFile('abc123');
+    if (launchFileRes.code !== 200) {
+      launchFileFailed = true;
+      return;
+    }
   }
 </script>
 
@@ -42,6 +48,13 @@
       </div>
     </div>
     <div class="m-6 col-span-3">
+      {#if launchFileFailed}
+        <div
+          class="text-left -mt-6 my-4 p-4 flex flex-row gap-1 text-sm text-neutral bg-secondary rounded-lg">
+          <img class="inline h-5 mt-1" src={exclamation} alt="exclamation svg" />
+          File could not launch properly.
+        </div>
+      {/if}
       <h1 class="text-2xl font-bold">View Document</h1>
       <div class="py-6">
         <div class="font-normal">

@@ -1,4 +1,4 @@
-import { DEV as dev } from 'esm-env';
+// import { DEV as dev } from 'esm-env';
 import { httpsCallable } from 'firebase/functions';
 
 import { functions } from '../firebase';
