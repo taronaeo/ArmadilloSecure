@@ -1,10 +1,11 @@
-import { DEV as dev } from 'esm-env';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
 import { getApp, getApps, initializeApp } from 'firebase/app';
+
+const dev = import.meta.env.DEV;
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAWjGtaLVj-_DxscJuAEPOer6zUM9-OmsE',

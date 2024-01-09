@@ -1,5 +1,21 @@
 {
   "projects": {
     "default": "it2566-armadillo"
-  }
+  },
+  "targets": {
+    "it2566-armadillo": {
+      "storage": {
+        "files": [
+          "armadillo-files"
+        ],
+        "headshots": [
+          "armadillo-headshots"
+        ],
+        "main": [
+          "it2566-armadillo.appspot.com"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

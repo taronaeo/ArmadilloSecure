@@ -1,7 +1,8 @@
-// import { DEV as dev } from 'esm-env';
 import { httpsCallable } from 'firebase/functions';
 
 import { functions } from '../firebase';
+
+const dev = import.meta.env.DEV;
 
 const HTTPS_ENDPOINTS = {
   http_onRequest_fileClassification: 'DEPRECATING_SOON',
