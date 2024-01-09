@@ -1,36 +1,37 @@
-import https from 'https';
+// import https from 'https';
 import os from 'os';
 import { BlockList } from 'net';
 import systeminformation from 'systeminformation';
-// import { getHttpsCallable } from '../renderer/src/lib/firebase/functions';
-// import { FSFileDocument } from '@armadillo/shared';
+import { execSync } from 'child_process';
+import { getHttpsCallable } from '../renderer/src/lib/firebase/functions';
+import { FSFileDocument } from '@armadillo/shared';
 
 let fileClass = '';
 
-// const getFileClassificationApi = getHttpsCallable('onCall_getFileClassification');
+const getFileClassificationApi = getHttpsCallable('onCall_getFileClassification');
 export async function getFileClass(fileId: string) {
-  // const response = await getFileClassificationApi({
-  //   client_id: 'helloworld',
-  //   file_id: fileId,
-  // });
-  // const { file_classification } = response.data as FSFileDocument;
-  // fileClass = file_classification;
-  const options = {
-    hostname: 'asia-southeast1-it2566-armadillo.cloudfunctions.net',
-    path: '/http_onRequest_fileClassification',
-    method: 'POST',
-    headers: {
-      'X-ARMADILLO-CLIENTID': 'helloworld',
-      'X-ARMADILLO-FILEUUID': fileId,
-      'Content-Length': 0,
-    },
-  };
-  const req = https.request(options, (res) => {
-    res.on('data', (chunk) => {
-      fileClass = JSON.parse(chunk).data;
-    });
+  const response = await getFileClassificationApi({
+    client_id: 'helloworld',
+    file_id: fileId,
   });
-  req.end();
+  const { file_classification } = response.data as FSFileDocument;
+  fileClass = file_classification;
+  // const options = {
+  //   hostname: 'asia-southeast1-it2566-armadillo.cloudfunctions.net',
+  //   path: '/http_onRequest_fileClassification',
+  //   method: 'POST',
+  //   headers: {
+  //     'X-ARMADILLO-CLIENTID': 'helloworld',
+  //     'X-ARMADILLO-FILEUUID': fileId,
+  //     'Content-Length': 0,
+  //   },
+  // };
+  // const req = https.request(options, (res) => {
+  //   res.on('data', (chunk) => {
+  //     fileClass = JSON.parse(chunk).data;
+  //   });
+  // });
+  // req.end();
 }
 
 export function checkFileClass(): IpcResponse {
@@ -109,19 +110,33 @@ export async function secretChecks(): Promise<IpcResponse> {
   }
   const si = await systeminformation.networkInterfaces();
   const siArr = Object.values(si);
-  let dns = '';
+  let primaryDnsSuffix = '';
+
+  const ipConfigAll = execSync('ipconfig /all').toString();
+  const ipConfigLines = ipConfigAll.split('\n');
+  let primaryDnsSuffixLine = '';
+  ipConfigLines.forEach((line) => {
+    if (line.includes('Primary Dns Suffix')) {
+      primaryDnsSuffixLine = line;
+    }
+  });
+  const exampleString = '   Primary Dns Suffix  . . . . . . . : example.com\r';
+  console.log('   IPv4 Address. . . . . . . . . . . : 192.168.50.1(Preferred) \r'.split(': '));
+
+  console.log(primaryDnsSuffixLine);
+  primaryDnsSuffix = exampleString.split(': ')[1].trim();
   siArr.forEach((iface) => {
     if (mainIntType === 'Ethernet') {
       if (iface.iface === 'Ethernet') {
-        dns = iface.dnsSuffix;
+        primaryDnsSuffix = iface.dnsSuffix;
       }
     } else if (mainIntType === 'Wi-Fi') {
       if (iface.iface === 'Wi-Fi') {
-        dns = iface.dnsSuffix;
+        primaryDnsSuffix = iface.dnsSuffix;
       }
     }
   });
-  if (dns != orgDNS) {
+  if (primaryDnsSuffix != orgDNS) {
     return {
       code: 403,
       message: 'Invalid Domain Name',

@@ -48,7 +48,9 @@ function createWindow(): void {
   }
 
   mainWindow.on('close', function (e) {
-    process.kill(pid, 'SIGTERM');
+    if (fileOpened) {
+      process.kill(pid, 'SIGTERM');
+    }
     const choice = dialog.showMessageBoxSync(mainWindow, {
       type: 'question',
       buttons: ['Yes', 'No'],
@@ -133,10 +135,6 @@ app.whenReady().then(() => {
 
   ipcMain.handle('launchFile', async (): Promise<boolean> => {
     //TODO code to get file from firebase and decrypt
-    // const tempPath = app.getPath('temp');
-    //const filePathArr = filePath.split('.');
-    //const fileExtension = filePathArr[filePathArr.length - 1];
-
     if (!fileOpened) {
       child = await viewFileInSeparateProcess();
       fileOpened = true;
