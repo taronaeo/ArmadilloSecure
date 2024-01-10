@@ -1,8 +1,10 @@
 <script lang="ts">
   import type { Theme } from '@aws-amplify/ui-react';
   import type {
-    CFCallableFaceLivenessSessionRequest,
-    CFCallableFaceLivenessSessionResponse,
+    CFCallableGetSessionIdRequest,
+    CFCallableGetSessionIdResponse,
+    CFCallableGetAuthTokenRequest,
+    CFCallableGetAuthTokenResponse,
   } from '@armadillo/shared';
 
   import '@aws-amplify/ui-react/styles.css';
@@ -32,9 +34,14 @@
   };
 
   const getFaceLivenessSessionId = getHttpsCallable<
-    CFCallableFaceLivenessSessionRequest,
-    CFCallableFaceLivenessSessionResponse
-  >('onCall_getFaceLivenessSessionId');
+    CFCallableGetSessionIdRequest,
+    CFCallableGetSessionIdResponse
+  >('https_onCall_rekognition_getSessionId');
+
+  const getAuthToken = getHttpsCallable<
+    CFCallableGetAuthTokenRequest,
+    CFCallableGetAuthTokenResponse
+  >('https_onCall_rekognition_getAuthToken');
 
   onMount(async () => {
     if (!clientId) throw new Error('Client ID not specified');
@@ -42,13 +49,20 @@
     Amplify.configure(amplifyConfig);
 
     try {
-      sessionId = (await getFaceLivenessSessionId({ client_id: clientId })).data.sessionId;
+      sessionId = (await getFaceLivenessSessionId({ origin: 'wrapper', clientId })).data.sessionId;
     } catch (error) {
       console.error(error);
     }
   });
 
-  const onAnalysisComplete = () => {
+  const onAnalysisComplete = async () => {
+    try {
+      const response = await getAuthToken({ origin: 'wrapper', clientId, sessionId });
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
+
     console.log('Analysis Complete');
     console.log(`Session ID: ${sessionId}`);
   };

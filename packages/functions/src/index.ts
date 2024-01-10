@@ -10,10 +10,10 @@ setGlobalOptions({
 });
 
 // Export Cloud Functions below
-export * from './auth/onUserCreate';
-export * from './auth/onUserSignIn';
-export * from './api/onRequest/fileClassification';
+export * from './auth/beforeUserCreated';
+export * from './auth/beforeUserSignIn';
 
-export * from './onCall/getFilePassword';
-export * from './onCall/getFileClassification';
-export * from './onCall/getFaceLivenessSessionId';
+export * from './https/onCall/file/getClassification';
+export * from './https/onCall/rekognition/getSessionId';
+export * from './https/onCall/rekognition/getAuthToken';
+export * from './https/onCall/file/getPassword';

@@ -1,16 +1,28 @@
-import type { CFCallableFaceLivenessSessionRequest } from '@armadillo/shared';
+import type {
+  CFCallableGetSessionIdRequest,
+  CFCallableGetSessionIdResponse,
+} from '@armadillo/shared';
 
 import { logger } from 'firebase-functions/v2';
-import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
 
 import { RekognitionClient, CreateFaceLivenessSessionCommand } from '@aws-sdk/client-rekognition';
 
-export const onCall_getFaceLivenessSessionId = onCall<CFCallableFaceLivenessSessionRequest>(
+/**
+ * Retrieves a session ID from AWS Rekognition for the wrapper.
+ *
+ * @param   auth        The authentication data.
+ * @param   data        The request data containing the client ID.
+ * @param   rawRequest  The raw HTTP request object.
+ * @returns The session ID object.
+ * @throws  Throws an error if there is an internal error, authentication error, or invalid client ID.
+ */
+export const https_onCall_rekognition_getSessionId = onCall<CFCallableGetSessionIdRequest>(
   { cors: true, secrets: ['REKOGNITION_ACCESS_KEY_ID', 'REKOGNITION_ACCESS_KEY_SECRET'] },
-  async ({ auth, data, rawRequest }) => {
+  async ({ auth, data, rawRequest }): Promise<CFCallableGetSessionIdResponse> => {
     logger.log(rawRequest);
 
-    const { client_id: clientId } = data;
+    const { origin, clientId } = data;
     const REKOGNITION_ACCESS_KEY_ID = process.env.REKOGNITION_ACCESS_KEY_ID;
     const REKOGNITION_ACCESS_KEY_SECRET = process.env.REKOGNITION_ACCESS_KEY_SECRET;
 
@@ -27,8 +39,12 @@ export const onCall_getFaceLivenessSessionId = onCall<CFCallableFaceLivenessSess
       throw new HttpsError('internal', 'Internal Error');
     }
 
-    // Check if request is already authenticated
+    // Check if user is already authenticated
     if (auth) throw new HttpsError('failed-precondition', 'Authentication Error');
+
+    // Check if origin is valid
+    if (!origin || (origin !== 'web' && origin !== 'wrapper'))
+      throw new HttpsError('failed-precondition', 'Origin Invalid');
 
     // Check if request includes a client id
     if (!clientId) throw new HttpsError('failed-precondition', 'Client ID Invalid');
@@ -49,7 +65,9 @@ export const onCall_getFaceLivenessSessionId = onCall<CFCallableFaceLivenessSess
       },
     });
 
-    const { SessionId } = await rekognitionClient.send(rekognitionCommand);
-    return { sessionId: SessionId };
+    const { SessionId: sessionId } = await rekognitionClient.send(rekognitionCommand);
+    if (!sessionId) throw new HttpsError('internal', 'Unable to retrieve Session ID');
+
+    return { sessionId };
   }
 );

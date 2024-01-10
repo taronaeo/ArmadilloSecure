@@ -1,7 +1,8 @@
 import { FSMetadata } from '@armadillo/shared';
 
-interface UserDocument extends FSMetadata {
+interface FSUser extends FSMetadata {
   readonly uid: string;
+  readonly rekognitionId: string | null;
   email: string | undefined;
   readonly email_verified: boolean | null;
   full_name: string | null;
@@ -10,4 +11,4 @@ interface UserDocument extends FSMetadata {
   readonly is_suspended: boolean;
 }
 
-export type { UserDocument };
+export type { FSUser };
