@@ -4,6 +4,12 @@ import type {
   CFCallableGetAuthTokenResponse,
 } from '@armadillo/shared';
 
+import {
+  AWS_REKOGNITION_REGION,
+  AWS_REKOGNITION_COLLECTION_ID,
+  AWS_REKOGNITION_COLLECTION_DEV_ID,
+} from '@armadillo/shared';
+
 import { logger } from 'firebase-functions/v2';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
@@ -30,8 +36,13 @@ export const https_onCall_rekognition_getAuthToken = onCall<CFCallableGetAuthTok
 
     const { origin, clientId, sessionId } = data;
     const fsUserCol = firestore.collection('users');
+
+    const DEV = process.env.FUNCTIONS_EMULATOR === 'true';
     const REKOGNITION_ACCESS_KEY_ID = process.env.REKOGNITION_ACCESS_KEY_ID;
     const REKOGNITION_ACCESS_KEY_SECRET = process.env.REKOGNITION_ACCESS_KEY_SECRET;
+    const REKOGNITION_COLLECTION_ID = !DEV
+      ? AWS_REKOGNITION_COLLECTION_ID
+      : AWS_REKOGNITION_COLLECTION_DEV_ID;
 
     // Check if environment variables are fetched from Secret Manager
     if (!REKOGNITION_ACCESS_KEY_ID || !REKOGNITION_ACCESS_KEY_SECRET) {
@@ -62,7 +73,7 @@ export const https_onCall_rekognition_getAuthToken = onCall<CFCallableGetAuthTok
     // TODO: Check with Firestore if auth flow has been done prior.
 
     const rekognitionClient = new RekognitionClient({
-      region: 'ap-northeast-1',
+      region: AWS_REKOGNITION_REGION,
       credentials: {
         accessKeyId: REKOGNITION_ACCESS_KEY_ID,
         secretAccessKey: REKOGNITION_ACCESS_KEY_SECRET,
@@ -85,7 +96,7 @@ export const https_onCall_rekognition_getAuthToken = onCall<CFCallableGetAuthTok
     if (auditImages.length < 1) throw new HttpsError('internal', 'Unable to retrieve audit images');
 
     const rekognitionSearchCmd = new SearchFacesByImageCommand({
-      CollectionId: 'users',
+      CollectionId: REKOGNITION_COLLECTION_ID,
       Image: {
         Bytes: auditImages[0].Bytes,
       },

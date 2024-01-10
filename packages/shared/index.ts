@@ -1,5 +1,6 @@
 // Constants
 export * from './constants/collections';
+export * from './constants/rekognition';
 
 // Firestore Models
 export * from './models/FSUser';

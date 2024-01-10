@@ -9,6 +9,8 @@
 
   import '@aws-amplify/ui-react/styles.css';
 
+  import { AWS_REKOGNITION_REGION } from '@armadillo/shared';
+
   import { onMount } from 'svelte';
   import { used } from 'svelte-preprocess-react';
 
@@ -23,7 +25,7 @@
   used(ThemeProvider);
   used(FaceLivenessDetector);
 
-  export let region = 'ap-northeast-1';
+  export let region = AWS_REKOGNITION_REGION;
   export let clientId: string | null = null;
 
   let sessionId = '';
@@ -58,6 +60,7 @@
   const onAnalysisComplete = async () => {
     try {
       const response = await getAuthToken({ origin: 'wrapper', clientId, sessionId });
+      // TODO: Proper response handling and logging in
       console.log(response);
     } catch (error) {
       console.error(error);
