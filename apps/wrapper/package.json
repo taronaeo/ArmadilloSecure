@@ -21,6 +21,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^2.0.0",
+    "dayjs": "^1.11.10",
     "esm-env": "^1.0.0",
     "firebase": "^10.7.1"
   },
@@ -33,6 +34,8 @@
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",
     "@types/node": "^18.17.5",
+    "@types/which": "^3.0.3",
+    "@types/winreg": "^1.2.36",
     "autoprefixer": "^10.4.14",
     "daisyui": "^3.1.6",
     "electron": "25.6.0",
