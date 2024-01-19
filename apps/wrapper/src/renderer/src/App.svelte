@@ -1,11 +1,13 @@
 <script lang="ts">
-  import { authStore } from './lib/stores';
+  import logo from './assets/logo.png';
+  import WifiLogo from './assets/no-wifi.png';
+  import Failed from './components/Failed.svelte';
+
   import FileClass from './components/Fileclass.svelte';
   import Compromisation from './components/Compromisation.svelte';
   import ViewDoc from './components/ViewDoc.svelte';
-  import WifiLogo from './assets/no-wifi.png';
-  import Failed from './components/Failed.svelte';
-  import logo from './assets/logo(normal).png';
+
+  import { authStore } from './lib/stores';
   import { appState } from './stores';
   import { onMount } from 'svelte';
 
@@ -17,9 +19,11 @@
   let appStateObj: {
     passedCheck: boolean | undefined;
     currentState: string | undefined;
+    pingFailed: boolean | undefined;
   } = {
     passedCheck: undefined,
     currentState: undefined,
+    pingFailed: false,
   };
 
   appState.subscribe((state) => {
@@ -28,24 +32,31 @@
 
   onMount(async () => {
     await window.api.ping();
+
     setTimeout(async () => {
       const response = await window.api.checkPing();
+
       if (response.code !== 200) {
         pingFailed = true;
       } else {
         pingFailed = false;
       }
+
       initialPingDone = true;
+
       appState.set({
         passedCheck: true,
         currentState: 'fileClass',
+        pingFailed: false,
       });
     }, 900);
   });
 
   setInterval(async () => {
     await window.api.ping();
+
     const response = await window.api.checkPing();
+
     if (response.code !== 200) {
       pingFailed = true;
     } else {
@@ -65,7 +76,7 @@
           Internet connection lost. Please check your Internet connection.
         </div>
       </div>
-    {:else if !pingFailed}
+    {:else if !appStateObj.pingFailed}
       {#if appStateObj.currentState === 'fileClass'}
         <div>
           <FileClass />

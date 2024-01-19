@@ -1,8 +1,8 @@
 <script lang="ts">
-  import logo from '../assets/logo(normal).png';
+  import logo from '../assets/logo.png';
   import { appState } from '../stores';
 
-  let proceedPressed: boolean = false;
+  let loading: boolean = false;
 
   async function checkCompromisation(): Promise<void> {
     const response = await window.api.checkCompromisation();
@@ -10,12 +10,14 @@
       appState.set({
         passedCheck: false,
         currentState: 'compromisationCheck',
+        pingFailed: false,
       });
       return;
     } else {
       appState.set({
         passedCheck: true,
         currentState: 'viewDoc', //CHANGE TO AUTH AFT AUTH IMPLEMENTED
+        pingFailed: false,
       });
     }
   }
@@ -47,21 +49,21 @@
               >Performed a <span class="font-bold">FULL</span> scan in the past
               <span class="text-secondary">24 hours</span></li>
             <li
-              >Antivirus signatures must be updated in the past <span class="text-secondary"
-                >1 month</span>
+              >Antivirus signatures must be updated in the past
+              <span class="text-secondary">1 month</span>
             </li>
           </ul>
         </div>
         <div class="my-8 text-center">
           <button
-            on:click={checkCompromisation}
             on:click={() => {
-              proceedPressed = true;
+              loading = true;
+              checkCompromisation();
             }}
             class="btn bg-secondary text-neutral w-24">
-            {#if !proceedPressed}
+            {#if !loading}
               Check Defender
-            {:else if proceedPressed}
+            {:else if loading}
               <span class="loading loading-spinner loading-sm"></span>
             {/if}
           </button>

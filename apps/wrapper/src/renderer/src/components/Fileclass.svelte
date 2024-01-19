@@ -1,5 +1,5 @@
 <script lang="ts">
-  import logo from '../assets/logo(normal).png';
+  import logo from '../assets/logo.png';
   import { onMount } from 'svelte';
   import { appState } from '../stores';
 
@@ -31,12 +31,14 @@
         appState.set({
           passedCheck: true,
           currentState: 'fileClass',
+          pingFailed: false,
         });
       } else {
         proceed = false;
         appState.set({
           passedCheck: false,
           currentState: 'fileClass',
+          pingFailed: false,
         });
       }
     } else if (fileClass === 'SENSITIVE') {
@@ -44,12 +46,14 @@
       appState.set({
         passedCheck: true,
         currentState: 'fileClass',
+        pingFailed: false,
       });
     } else if (fileClass === 'OPEN') {
       proceed = true;
       appState.set({
         passedCheck: true,
         currentState: 'viewDoc',
+        pingFailed: false,
       });
     }
   }
@@ -62,8 +66,8 @@
     <div class="place-self-center">
       <img src={logo} class="h-52 mb-4 m-auto" alt="logo" />
 
-      <h1 class="text-center text-lg"
-        >You are trying to access file:
+      <h1 class="text-center text-lg">
+        You are trying to access file:
         <span class="text-secondary">
           {#if appName === ''}
             <span class="text-white loading loading-spinner loading-md mx-2 -mb-2"></span>
@@ -72,8 +76,8 @@
           {/if}
         </span>
       </h1>
-      <h1 class="font-bold text-center text-lg"
-        >File Classification:
+      <h1 class="font-bold text-center text-lg">
+        File Classification:
         <span class="font-normal text-secondary">
           {#if fileClass === 'TOPSECRET'}
             Top Secret
@@ -125,8 +129,8 @@
           {#if fileClass === 'TOPSECRET'}
             Top Secret
             <div class="text-white">
-              You have passed the verification test for files of the <span class="text-secondary"
-                >Top Secret</span>
+              You have passed the verification test for files of the
+              <span class="text-secondary">Top Secret</span>
               classification, you may proceed to the
               <span class="font-bold">Compromisation Check</span> step.
             </div>
@@ -136,7 +140,8 @@
             Open
             <div class="text-white">
               Since the file is of <span class="text-secondary">Open</span> classification, the following
-              verification steps will be skipped.</div>
+              verification steps will be skipped.
+            </div>
           {/if}
         </div>
         <div class="my-8 text-center">
@@ -145,6 +150,7 @@
               appState.set({
                 passedCheck: true,
                 currentState: 'compromisationCheck',
+                pingFailed: false,
               });
             }}
             class="btn bg-secondary text-neutral">Proceed</button>

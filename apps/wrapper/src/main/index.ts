@@ -1,18 +1,22 @@
-import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
-import { join } from 'path';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
+
+import { join } from 'path';
 import { ChildProcess } from 'child_process';
+import { electronApp, optimizer, is } from '@electron-toolkit/utils';
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
+
 import { getAppName } from './getAppName';
-import { checkFileClass, getFileClass, secretChecks } from './fileClass';
 import { ping, checkPing } from './ping';
 import { checkCompromisation } from './checkCompromisation';
+import { checkFileClass, getFileClass, secretChecks } from './fileClass';
 import { defaultProgram, viewFileInSeparateProcess, delFiles } from './viewDoc';
 
 interface IpcResponse {
   code: number;
   message: string;
 }
+
+let childKilled = false;
 
 function createWindow(): void {
   // Create the browser window.
@@ -47,9 +51,13 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
 
-  mainWindow.on('close', function (e) {
+  mainWindow.on('close', async function (e) {
     if (fileOpened) {
+      childKilled = true;
       process.kill(pid, 'SIGTERM');
+      setTimeout(async () => {
+        await delFiles();
+      }, 1000);
     }
     const choice = dialog.showMessageBoxSync(mainWindow, {
       type: 'question',
@@ -58,8 +66,6 @@ function createWindow(): void {
     });
     if (choice === 1) {
       e.preventDefault();
-    } else if (choice === 0) {
-      delFiles().then(() => console.log('Files Deleted Succesfully'));
     }
   });
 }
@@ -76,7 +82,7 @@ app.whenReady().then(() => {
   let pingFailed: boolean = false;
   let validFilePath: string = '';
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron');
+  electronApp.setAppUserModelId('app.web.it2566-armadillo');
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -88,8 +94,7 @@ app.whenReady().then(() => {
   createWindow();
 
   ipcMain.handle('getAppName', (): IpcResponse => {
-    const appNameRes = getAppName(process);
-    return appNameRes;
+    return getAppName(process);
   });
 
   ipcMain.handle('getFileClass', (_, fileId): void => {
@@ -97,13 +102,11 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('checkFileClass', (): IpcResponse => {
-    const fileClassRes = checkFileClass();
-    return fileClassRes;
+    return checkFileClass();
   });
 
   ipcMain.handle('secretChecks', async (): Promise<IpcResponse> => {
-    const secretChecksRes = secretChecks();
-    return secretChecksRes;
+    return secretChecks();
   });
 
   ipcMain.handle('ping', (): void => {
@@ -115,18 +118,19 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('checkCompromisation', (): IpcResponse => {
-    const checkCompromisationRes = checkCompromisation();
-    return checkCompromisationRes;
+    return checkCompromisation();
   });
 
   ipcMain.handle('hasDefaultProgram', (): IpcResponse => {
     validFilePath = defaultProgram();
+
     if (validFilePath === '') {
       return {
         code: 412,
         message: 'User Does Not Have the Default Program for the File',
       };
     }
+
     return {
       code: 200,
       message: 'User Has Default Program',
@@ -141,10 +145,13 @@ app.whenReady().then(() => {
     } else if (fileOpened) {
       console.log('File Already Opened!');
     }
-    if (child && !child.pid) {
+
+    if (!child || !child.pid) {
       return false;
     }
-    pid = child!.pid!;
+
+    pid = child.pid;
+
     setInterval(async () => {
       if (pingFailed) {
         child!.kill();
@@ -152,6 +159,11 @@ app.whenReady().then(() => {
       }
     }, 2000);
 
+    child.on('exit', async () => {
+      if (!childKilled) {
+        await delFiles();
+      }
+    });
     return true;
   });
 

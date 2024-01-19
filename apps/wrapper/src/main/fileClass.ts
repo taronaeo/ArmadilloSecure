@@ -1,37 +1,37 @@
-// import https from 'https';
-import os from 'os';
+import https from 'https';
+import { networkInterfaces, platform } from 'os';
+import type { NetworkInterfaceInfo } from 'os';
 import { BlockList } from 'net';
-import systeminformation from 'systeminformation';
 import { execSync } from 'child_process';
-import { getHttpsCallable } from '../renderer/src/lib/firebase/functions';
-import { FSFileDocument } from '@armadillo/shared';
+// import { getHttpsCallable } from '../renderer/src/lib/firebase/functions';
+// import type { FSFileDocument } from '@armadillo/shared';
 
 let fileClass = '';
 
-const getFileClassificationApi = getHttpsCallable('onCall_getFileClassification');
+// const getFileClassificationApi = getHttpsCallable('onCall_getFileClassification');
 export async function getFileClass(fileId: string) {
-  const response = await getFileClassificationApi({
-    client_id: 'helloworld',
-    file_id: fileId,
-  });
-  const { file_classification } = response.data as FSFileDocument;
-  fileClass = file_classification;
-  // const options = {
-  //   hostname: 'asia-southeast1-it2566-armadillo.cloudfunctions.net',
-  //   path: '/http_onRequest_fileClassification',
-  //   method: 'POST',
-  //   headers: {
-  //     'X-ARMADILLO-CLIENTID': 'helloworld',
-  //     'X-ARMADILLO-FILEUUID': fileId,
-  //     'Content-Length': 0,
-  //   },
-  // };
-  // const req = https.request(options, (res) => {
-  //   res.on('data', (chunk) => {
-  //     fileClass = JSON.parse(chunk).data;
-  //   });
+  // const response = await getFileClassificationApi({
+  //   client_id: 'helloworld',
+  //   file_id: fileId,
   // });
-  // req.end();
+  // const { file_classification } = response.data as FSFileDocument;
+  // fileClass = file_classification;
+  const options = {
+    hostname: 'asia-southeast1-it2566-armadillo.cloudfunctions.net',
+    path: '/http_onRequest_fileClassification',
+    method: 'POST',
+    headers: {
+      'X-ARMADILLO-CLIENTID': 'helloworld',
+      'X-ARMADILLO-FILEUUID': fileId,
+      'Content-Length': 0,
+    },
+  };
+  const req = https.request(options, (res) => {
+    res.on('data', (chunk) => {
+      fileClass = JSON.parse(chunk).data;
+    });
+  });
+  req.end();
 }
 
 export function checkFileClass(): IpcResponse {
@@ -49,19 +49,23 @@ export function checkFileClass(): IpcResponse {
 
 export async function secretChecks(): Promise<IpcResponse> {
   const orgDNS = '';
-  const domainIpRange = ['172.26.182.0', '172.26.182.255'];
+  //TODO change to actual org DNS when firebase cloud func is up
+  const domainIpRange = ['192.168.1.0', '192.168.1.255'];
   //TODO be changed when firestore cloud func is up
 
-  const networkInterfaces = os.networkInterfaces();
-  if (!networkInterfaces) {
+  const osNetworkInterfaces = networkInterfaces();
+
+  if (!osNetworkInterfaces) {
     return {
       code: 403,
       message: 'No Network Interfaces Found',
     };
   }
+
   const nonLocalInterfaces = {};
-  for (const inet in networkInterfaces) {
-    const addresses = networkInterfaces[inet];
+
+  for (const inet in osNetworkInterfaces) {
+    const addresses = osNetworkInterfaces[inet];
     for (let i = 0; i < addresses!.length; i++) {
       const address = addresses![i];
       if (!address.internal) {
@@ -72,8 +76,9 @@ export async function secretChecks(): Promise<IpcResponse> {
       }
     }
   }
-  let mainIntType = 'Wi-Fi';
+
   let mainInt = nonLocalInterfaces['Wi-Fi'];
+
   if (!mainInt) {
     mainInt = nonLocalInterfaces['Ethernet'];
     if (!mainInt) {
@@ -82,17 +87,20 @@ export async function secretChecks(): Promise<IpcResponse> {
         message: 'No Valid Network Interfaces Found',
       };
     }
-    mainIntType = 'Ethernet';
   }
+
   let ipv4 = '';
-  mainInt.forEach((adrs: os.NetworkInterfaceInfo) => {
+
+  mainInt.forEach((adrs: NetworkInterfaceInfo) => {
     if (adrs.family === 'IPv4') {
       ipv4 = adrs.address;
     }
   });
 
   const blockList = new BlockList();
+
   blockList.addRange(domainIpRange[0], domainIpRange[1]);
+
   if (!blockList.check(ipv4)) {
     return {
       code: 403,
@@ -100,7 +108,7 @@ export async function secretChecks(): Promise<IpcResponse> {
     };
   }
 
-  const userOS = os.platform();
+  const userOS = platform();
 
   if (userOS != 'win32') {
     return {
@@ -108,34 +116,21 @@ export async function secretChecks(): Promise<IpcResponse> {
       message: 'OS must be Windows',
     };
   }
-  const si = await systeminformation.networkInterfaces();
-  const siArr = Object.values(si);
+
   let primaryDnsSuffix = '';
 
   const ipConfigAll = execSync('ipconfig /all').toString();
   const ipConfigLines = ipConfigAll.split('\n');
   let primaryDnsSuffixLine = '';
+
   ipConfigLines.forEach((line) => {
     if (line.includes('Primary Dns Suffix')) {
       primaryDnsSuffixLine = line;
     }
   });
-  const exampleString = '   Primary Dns Suffix  . . . . . . . : example.com\r';
-  console.log('   IPv4 Address. . . . . . . . . . . : 192.168.50.1(Preferred) \r'.split(': '));
 
-  console.log(primaryDnsSuffixLine);
-  primaryDnsSuffix = exampleString.split(': ')[1].trim();
-  siArr.forEach((iface) => {
-    if (mainIntType === 'Ethernet') {
-      if (iface.iface === 'Ethernet') {
-        primaryDnsSuffix = iface.dnsSuffix;
-      }
-    } else if (mainIntType === 'Wi-Fi') {
-      if (iface.iface === 'Wi-Fi') {
-        primaryDnsSuffix = iface.dnsSuffix;
-      }
-    }
-  });
+  primaryDnsSuffix = primaryDnsSuffixLine.split(': ')[1].trim();
+
   if (primaryDnsSuffix != orgDNS) {
     return {
       code: 403,

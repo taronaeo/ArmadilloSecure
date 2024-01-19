@@ -27,7 +27,7 @@ export const paths = {
   xlam: ['C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE'],
   xltx: ['C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE'],
   xlt: ['C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE'],
-  xla: ['C:\\Program Files\\Microsoft Office\\rootOffice16\\EXCEL.EXE'],
+  xla: ['C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE'],
   xlm: ['C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE'],
   xlw: ['C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE'],
 };

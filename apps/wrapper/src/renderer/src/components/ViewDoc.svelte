@@ -1,5 +1,5 @@
 <script lang="ts">
-  import logo from '../assets/logo(normal).png';
+  import logo from '../assets/logo.png';
   import exclamation from '../assets/exclamation.svg';
 
   let hasDefaultProgram = true;
@@ -23,8 +23,8 @@
 {#if !hasDefaultProgram}
   <div class="fixed flex justify-center items-center inset-0 w-full bg-black/50 z-10">
     <div class="text-center py-6 px-12 w-1/3 bg-neutral rounded">
-      You do not have the default program to launch <span class="text-secondary"
-        >{fileExtension}</span>
+      You do not have the default program to launch
+      <span class="text-secondary">{fileExtension}</span>
       files<br />
       <button
         on:click={() => {
@@ -58,8 +58,8 @@
       <h1 class="text-2xl font-bold">View Document</h1>
       <div class="py-6">
         <div class="font-normal">
-          Click to launch program to view document. This document will <span class="text-secondary"
-            >NOT</span> be saved on this computer.
+          Click to launch program to view document. This document will
+          <span class="text-secondary">NOT</span> be saved on this computer.
         </div>
         <div class="my-8 text-center">
           <button on:click={launchFile} class="btn bg-secondary text-neutral w-24">

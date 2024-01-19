@@ -21,9 +21,10 @@
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^2.0.0",
+    "dayjs": "^1.11.10",
     "esm-env": "^1.0.0",
-    "systeminformation": "^5.21.20",
-    "firebase": "^10.7.1"
+    "firebase": "^10.7.1",
+    "systeminformation": "^5.21.20"
   },
   "devDependencies": {
     "@armadillo/shared": "*",
