@@ -2,12 +2,10 @@
 <script lang="ts">
   // import for forms
   import { createForm } from 'svelte-forms-lib';
-  import { goto } from '$app/navigation';
-  import { authStore } from '$lib/stores';
   import type { FirebaseError } from 'firebase/app';
 
   // import sign up function
-  import { signOut, signUpEmailPassword } from '$lib/firebase/auth';
+  import { signUpEmailPassword } from '$lib/firebase/auth';
 
   //import yup for form validation
   import * as yup from 'yup';
@@ -51,29 +49,20 @@
         .required('Please agree to the terms of service and privacy policy.'),
     }),
     onSubmit: async (data) => {
-      if (data.password === data.confirmPassword) {
-        checkLoading = true; // Set checkLoading to true before form submission
-
-        try {
-          await signUpEmailPassword(data.email, data.password, (error) => (apiError = error));
-
-          // Check if there was no error (successful signup)
-          if (!apiError) {
-            // Navigate to the verification page
-            goto('/onboard/verification');
-          }
-
-          console.log('Account created successfully');
-        } catch (error) {
-          // Handle any unexpected errors
-          console.error('Error during signup:', error);
-        } finally {
-          // Reset checkLoading after completion
-          checkLoading = false;
-        }
-      } else {
+      // Ensure passwords match before proceeding
+      if (data.password !== data.confirmPassword) {
         console.error('Passwords do not match');
+        return; // Early exit if passwords don't match
       }
+
+      // Set loading state indicator
+      checkLoading = true;
+
+      // Attempt signup with Firebase
+      await signUpEmailPassword(data.email, data.password, (error) => (apiError = error));
+
+      // Reset loading state after completion or error
+      checkLoading = false;
     },
   });
 </script>
@@ -83,11 +72,11 @@
 </svelte:head>
 
 <!-- Armadillo Logo-->
-<div class="flex items-center justify-center p-10">
-  <img src="armadillo.png" alt="" />
+<div class="flex flex-row items-center justify-center p-10">
+  <img src="../armadillo.png" alt="Armadillo Logo" />
 </div>
 
-<div class="flex flex-row items-center justify-center">
+<div class="flex flex-row items-center justify-center pb-20">
   <!-- Signup Form - Card -->
   <div class="w-full max-w-2xl p-10 border border-secondary rounded-md shadow-lg">
     <!-- Signup Form - Header -->
@@ -97,8 +86,10 @@
       <!-- General Error Message for already registered emails -->
       {#if apiError && apiError.code === 'auth/email-already-in-use'}
         <div class="p-4 flex flex-row bg-red-50 text-red-800 rounded-lg" role="alert">
-          <img src="errorlogo.svg" alt="error" />
-          <div class="ml-2 text-sm font-medium"> Invalid Email or Password, Please try again. </div>
+          <img src="/errorlogo.svg" alt="Error Icon" />
+          <div class="ml-2 text-sm font-medium">
+            Email is already registered, Please use a different Email.
+          </div>
         </div>
       {/if}
 
@@ -181,7 +172,8 @@
           <input
             type="checkbox"
             class="checkbox checkbox-secondary mr-5"
-            bind:checked={$form.tosCheckbox} />
+            bind:checked={$form.tosCheckbox}
+            on:change={handleChange} />
           <span class="label-text">
             By signing up, you are creating a Armadillo account, and you agree to Armadillo's
             <a class="text-secondary hover:text-accent duration-300" href="/login">
@@ -215,29 +207,9 @@
     <!-- Signup Form - Link to Login -->
     <p class="text-center">
       Already have an account?
-      <a class="text-secondary hover:text-info duration-300" href="/login"> Log in </a>
+      <a class="text-secondary hover:text-info duration-300" href="/authentication/login">
+        Log in
+      </a>
     </p>
-  </div>
-</div>
-
-<h1 class="text-4xl font-bold">Authentication Testing</h1>
-
-<div class="mt-4 grid grid-cols-2 gap-4">
-  <div class="flex flex-col gap-4">
-    <button class="btn btn-error w-full" on:click={() => signOut((error) => (apiError = error))}>
-      Sign Out
-    </button>
-    <h2 class="text-2xl">Form Data</h2>
-    <pre>Email Field   : {$form.email}</pre>
-    <pre>Password Field: {$form.password}</pre>
-
-    <h2 class="text-2xl">Auth Status</h2>
-    <p class="text-red-600">
-      If data below is <kbd class="kbd kbd-sm">null</kbd>, means there are no auth errors.
-    </p>
-    <pre>{JSON.stringify(apiError, null, 2)}</pre>
-
-    <h2 class="text-2xl">Auth User Data</h2>
-    <pre>{JSON.stringify($authStore, null, 2)}</pre>
   </div>
 </div>

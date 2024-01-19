@@ -36,9 +36,6 @@
         // Handle submission result
         if (error) {
           apiError = error;
-        } else {
-          // Redirect to the homepage on successful login
-          goto('/home');
         }
         // Reset checkLoading after handling errors and redirection
         checkLoading = false;
@@ -49,7 +46,7 @@
 
 <!-- Armadillo Logo-->
 <div class="flex flex-row items-center justify-center p-10">
-  <img src="armadillo.png" alt="Error" />
+  <img src="/armadillo.png" alt="Armadillo Logo" />
 </div>
 
 <div class="flex flex-row items-center justify-center">
@@ -63,7 +60,7 @@
       <!-- General Error Message -->
       {#if apiError && (apiError.code === 'auth/user-not-found' || apiError.code === 'auth/wrong-password')}
         <div class="p-4 flex flex-row bg-red-50 text-red-800 rounded-lg" role="alert">
-          <img src="errorlogo.svg" alt="Error, Please Try Again Later." />
+          <img src="/errorlogo.svg" alt="Error Icon" />
           <div class="ml-2 text-sm font-medium">Invalid email or password, please try again</div>
         </div>
       {/if}
@@ -133,7 +130,9 @@
     <!-- Login Form - Link to Sign up -->
     <p class="text-center">
       Don't have an account?
-      <a class="text-secondary hover:text-info duration-300" href="/signup">Sign Up</a>
+      <a class="text-secondary hover:text-info duration-300" href="/authentication/signup">
+        Sign Up
+      </a>
     </p>
   </div>
 </div>

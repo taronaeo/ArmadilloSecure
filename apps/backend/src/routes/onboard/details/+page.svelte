@@ -5,7 +5,7 @@
 
 <!-- Armadillo Logo-->
 <div class="flex flex-row items-center justify-center p-10">
-  <img src="armadillo.png" alt="error" />
+  <img src="/armadillo.png" alt="Armadillo Logo" />
 </div>
 
 <div class="flex flex-row items-center justify-center h-screen">

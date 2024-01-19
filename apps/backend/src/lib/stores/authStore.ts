@@ -9,7 +9,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '$lib/firebase';
 import { docStore, colUsersRef } from '$lib/firebase/firestore';
 
-const authState = readable<User | null>(undefined, (set) => {
+export const authState = readable<User | null>(undefined, (set) => {
   // Prevent server-side from running
   if (typeof window === 'undefined') return;
 

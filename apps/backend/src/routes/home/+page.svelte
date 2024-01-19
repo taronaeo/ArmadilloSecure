@@ -10,10 +10,12 @@
 
   let showInfoCard = false;
 
-  // Get user UID
-  const uid = $authStore?.uid || 'defaultUid';
+  let fullName = '';
+  if ($authStore && $authStore.full_name) {
+    fullName = $authStore.full_name;
+  }
 
-  let src = '';
+  let profilePicUrl = `https://ui-avatars.com/api/?name=${fullName}&format=svg&rounded=true`;
 
   // Self Destruct Modal Function
   let selfDestructModal: HTMLDialogElement;
@@ -27,19 +29,6 @@
 
   function showfileAccessModal() {
     fileAccessModal.showModal();
-  }
-
-  // Function to Get user Details
-  async function getUserDetails() {
-    const docRef = doc(firestore, 'users', uid);
-    const docSnap = await getDoc(docRef);
-    if (!docSnap.exists) {
-      throw Error('Sign In');
-    }
-    const data = docSnap.data();
-    const full_name = (data as { full_name: string }).full_name;
-    src = `https://ui-avatars.com/api/?name=${full_name}&format=svg&rounded=true`;
-    return docSnap.data();
   }
 
   // Function to show the info card
@@ -72,43 +61,40 @@
       w-full max-w-7xl h-screen p-10 rounded-md
       transition-transform duration-1000 ease-in-out">
     <!-- Landing Page - Header -->
-    {#await getUserDetails() then userDetails}
-      <!-- User Details -->
-      {#if userDetails}
-        <div class="flex justify-end items-center">
-          <img class="rounded w-9 mr-3" alt="Error" {src} />
-          <div class="">{userDetails.email}</div>
-        </div>
-      {/if}
-    {:catch}
-      <button class="flex justify-end">Please Sign In</button>
-    {/await}
+    <!-- User Details -->
+
+    {#if fullName !== ''}
+      <div class="flex justify-end items-center">
+        <img class="rounded w-9 mr-3" alt="Full Name" src={profilePicUrl} />
+        <div class="">{fullName}</div>
+      </div>
+    {/if}
 
     <div class="dropdown dropdown-bottom">
       <div
         tabindex="0"
         role="button"
-        class="btn m-1 text-2xl font-semibold normal-case px-6 rounded-full border-none bg-transparent"
-        >My Files
-        <img src="dropdownarrow.svg" alt="error" />
+        class="btn m-1 text-2xl font-semibold normal-case px-6 rounded-full border-none bg-transparent">
+        My Files
+        <img src="dropdownarrow.svg" alt="Dropdown Arrow" />
       </div>
       <ul class="dropdown-content z-[1] menu p-2 shadow-2xl bg-base-100 rounded-box w-52 border">
         <li>
           <a href="/">
-            <img src="fileicon.svg" alt="error" />
+            <img src="fileicon.svg" alt="File Icon" />
             New Folder
           </a>
         </li>
         <hr />
         <li>
           <a href="/">
-            <img src="fileicon.svg" alt="error" />
+            <img src="fileicon.svg" alt="File Icon" />
             File Upload
           </a>
         </li>
         <li>
           <a href="/">
-            <img src="fileupload.svg" alt="error" />
+            <img src="fileupload.svg" alt="File Icon" />
             Folder Upload
           </a>
         </li>
@@ -122,8 +108,8 @@
         <div
           tabindex="0"
           role="button"
-          class="btn m-1 font-semibold normal-case px-6 border-white hover:border-white"
-          >Classification
+          class="btn m-1 font-semibold normal-case px-6 border-white hover:border-white">
+          Classification
           <span>
             <img src="dropdownarrow.svg" alt="error" />
           </span>
@@ -148,10 +134,10 @@
         <div
           tabindex="0"
           role="button"
-          class="btn m-1 font-semibold normal-case px-6 border-white hover:border-white"
-          >Modified
+          class="btn m-1 font-semibold normal-case px-6 border-white hover:border-white">
+          Modified
           <span>
-            <img src="dropdownarrow.svg" alt="error" />
+            <img src="dropdownarrow.svg" alt="Dropdown Arrow" />
           </span>
         </div>
         <ul class="dropdown-content z-[1] menu p-2 shadow-2xl bg-base-100 rounded-box w-52 border">
@@ -199,7 +185,7 @@
         <!-- Table Body -->
         <tbody>
           <!-- row 1 -->
-          <tr class="hover:bg-zinc-900 duration-80 border-b text-left py-2">
+          <tr class="py-2 border-b text-left duration-80 hover:bg-zinc-900">
             <td class="py-3"> Nanyang Poly </td>
             <td class="py-3"> Dezidawk </td>
             <td class="py-3"> Dec 24, 2023 me </td>
@@ -211,7 +197,7 @@
             </th>
           </tr>
           <!-- row 2 -->
-          <tr class="hover:bg-zinc-900 duration-80 border-b text-left py-2">
+          <tr class="py-2 border-b text-left hover:bg-zinc-900 duration-80">
             <td class="py-3"> Dexter's School </td>
             <td class="py-3"> Dezidawk </td>
             <td class="py-3"> Aug 26, 2023 me </td>
@@ -223,7 +209,7 @@
             </th>
           </tr>
           <!-- row 3 -->
-          <tr class="hover:bg-zinc-900 duration-80 border-b text-left py-2">
+          <tr class="py-2 border-b text-left hover:bg-zinc-900 duration-80">
             <td class="py-3"> Dr Receipts Pitch </td>
             <td class="py-3"> Dezidawk </td>
             <td class="py-3">Jan 20, 2022 me </td>
@@ -235,7 +221,7 @@
             </th>
           </tr>
           <!-- row 4 -->
-          <tr class="hover:bg-zinc-900 duration-80 border-b text-left py-2">
+          <tr class="py-2 border-b text-left hover:bg-zinc-900 duration-80">
             <td class="py-3"> Infoseceurity Project </td>
             <td class="py-3"> Dezidawk </td>
             <td class="py-3"> April 5, 2023 me </td>
@@ -282,8 +268,7 @@
         <!-- File Access Section -->
         <div class="py-2">
           <button
-            class="
-            btn btn-outline btn-info rounded-full font-semibold normal-case px-6"
+            class="btn btn-outline btn-info rounded-full font-semibold normal-case px-6"
             on:click={showfileAccessModal}>
             Manage Access
           </button>
@@ -292,33 +277,33 @@
               <h3 class="font-bold text-lg pb-2">Share Examplefile.ppt</h3>
               <input
                 type="text"
-                placeholder="Add People or Groups"
+                placeholder="Add People"
                 class="
                   input input-bordered input-info w-full text-sm
                   focus:ring-info focus:border-info focus:outline-none" />
               <p class="py-4 font-semibold">People with Access</p>
 
               <!-- Users with Access -->
-              {#await getUserDetails() then userDetails}
-                {#if userDetails}
-                  <div class="flex items-center py-2">
-                    <img class="rounded w-9 mr-3" alt="Error" {src} />
-                    <div class="flex flex-col">
-                      <div class="font-bold">{userDetails.full_name} (You)</div>
-                      <div class="text-sm">{userDetails.email}</div>
-                    </div>
+              {#if $authStore?.full_name}
+                <div class="flex items-center py-2">
+                  <img class="rounded w-9 mr-3" alt="User Profile Circle" src={profilePicUrl} />
+                  <div class="flex flex-col">
+                    <div class="font-bold">{$authStore?.full_name} (You)</div>
+                    <div class="text-sm">{$authStore.email}</div>
                   </div>
-                {/if}
-              {/await}
+                </div>
+              {:else}
+                <span class="text-error">Loading user data...</span>
+              {/if}
 
               <div class="modal-action flex justify-between">
                 <!-- Copy Link Button -->
-                <div class="flex justify-start">
+                <div class="flex flex-row justify-start">
                   <button
                     class="
                       btn btn-outline btn-info rounded-full
                       font-semibold normal-case px-6 flex items-center">
-                    <img src="linkIcon.svg" alt="Error" />
+                    <img src="linkIcon.svg" alt="Link Icon" />
                     Copy Link
                   </button>
                 </div>
@@ -358,11 +343,7 @@
                   <span class="text-error"> destroy all active instances of this file </span>
                   , are you sure?
                 </p>
-                <button
-                  class="
-                    btn btn-outline btn-error px-8">
-                  Self-Destruct
-                </button>
+                <button class="btn btn-outline btn-error px-8"> Self-Destruct </button>
                 <div class="modal-action">
                   <form method="dialog">
                     <!-- if there is a button in form, it will close the modal -->
