@@ -1,20 +1,14 @@
-import icon from '../../resources/icon.png?asset';
-
 import { join } from 'path';
 import { ChildProcess } from 'child_process';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
 
+import icon from '../../resources/icon.png?asset';
 import { getAppName } from './getAppName';
 import { ping, checkPing } from './ping';
 import { checkCompromisation } from './checkCompromisation';
 import { checkFileClass, getFileClass, secretChecks } from './fileClass';
 import { defaultProgram, viewFileInSeparateProcess, delFiles } from './viewDoc';
-
-interface IpcResponse {
-  code: number;
-  message: string;
-}
 
 let childKilled = false;
 
@@ -57,11 +51,11 @@ function createWindow(): void {
       process.kill(pid, 'SIGTERM');
       setTimeout(async () => {
         await delFiles();
-      }, 1000);
+      }, 2000);
     }
     const choice = dialog.showMessageBoxSync(mainWindow, {
       type: 'question',
-      buttons: ['Yes', 'No'],
+      buttons: ['Confirm', 'Cancel'],
       message: 'Are you sure you want to close the wrapper?',
     });
     if (choice === 1) {
@@ -153,15 +147,16 @@ app.whenReady().then(() => {
     pid = child.pid;
 
     setInterval(async () => {
-      if (pingFailed) {
+      if (fileOpened && pingFailed) {
         child!.kill();
-        await delFiles();
+        setTimeout(async () => await delFiles(), 2000);
       }
     }, 2000);
 
     child.on('exit', async () => {
       if (!childKilled) {
         await delFiles();
+        fileOpened = false;
       }
     });
     return true;

@@ -1,10 +1,10 @@
 import { execSync } from 'child_process';
-import dayjs from 'dayjs';
 
-function convertToMillis(str: string) {
-  const dateObj = dayjs(str).format('D/M/YYYY h:mm:ss a');
-  const dateInMillis = new Date(dateObj).getTime();
-  return dateInMillis;
+function convertToMillis(dateStr: string) {
+  const dateInMillis = execSync(`Get-Date -date "${dateStr}" -UFormat %s`, {
+    shell: 'powershell.exe',
+  }).toString();
+  return Number(dateInMillis) * 1000;
 }
 
 export function checkCompromisation() {
@@ -26,12 +26,23 @@ export function checkCompromisation() {
     //must change to full scan during production
   });
 
-  const monthInMillis: number = 2629800000;
+  const monthInMillis: number = 2629746000;
   const dayInMillis: number = 86400000;
   const antivirusSignaturesMillis: number = convertToMillis(antivirusSignatures);
   const antispywareSignaturesMillis: number = convertToMillis(antispywareSignatures);
   const fullScanEndTimeMillis: number = convertToMillis(fullScanEndTime);
   const currentTime = new Date().getTime();
+
+  if (
+    isNaN(antispywareSignaturesMillis) ||
+    isNaN(antivirusSignaturesMillis) ||
+    isNaN(fullScanEndTimeMillis)
+  ) {
+    return {
+      code: 412,
+      message: 'Failed Precondition',
+    };
+  }
 
   if (currentTime - antivirusSignaturesMillis >= monthInMillis) {
     return {

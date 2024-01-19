@@ -7,18 +7,16 @@
   async function checkCompromisation(): Promise<void> {
     const response = await window.api.checkCompromisation();
     if (response.code != 200) {
-      appState.set({
+      appState.update((state) => ({
+        ...state,
         passedCheck: false,
-        currentState: 'compromisationCheck',
-        pingFailed: false,
-      });
+      }));
       return;
     } else {
-      appState.set({
-        passedCheck: true,
-        currentState: 'viewDoc', //CHANGE TO AUTH AFT AUTH IMPLEMENTED
-        pingFailed: false,
-      });
+      appState.update((state) => ({
+        ...state,
+        currentState: 'viewDoc',
+      }));
     }
   }
 </script>

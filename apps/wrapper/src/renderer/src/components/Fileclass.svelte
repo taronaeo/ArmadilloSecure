@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { IpcResponse } from '@armadillo/shared';
+
   import logo from '../assets/logo.png';
   import { onMount } from 'svelte';
   import { appState } from '../stores';
@@ -24,37 +26,33 @@
   async function topSecretChecks() {
     if (fileClass === 'TOPSECRET') {
       checkLoading = true;
-      const response: { code: number; message: string } = await window.api.secretChecks();
+      const response: IpcResponse = await window.api.secretChecks();
       proceed = true;
       console.log(response.code);
       if (response.code === 200) {
-        appState.set({
-          passedCheck: true,
+        appState.update((state) => ({
+          ...state,
           currentState: 'fileClass',
-          pingFailed: false,
-        });
+        }));
       } else {
         proceed = false;
-        appState.set({
+        appState.update((state) => ({
+          ...state,
           passedCheck: false,
-          currentState: 'fileClass',
-          pingFailed: false,
-        });
+        }));
       }
     } else if (fileClass === 'SENSITIVE') {
       proceed = true;
-      appState.set({
-        passedCheck: true,
+      appState.update((state) => ({
+        ...state,
         currentState: 'fileClass',
-        pingFailed: false,
-      });
+      }));
     } else if (fileClass === 'OPEN') {
       proceed = true;
-      appState.set({
-        passedCheck: true,
+      appState.update((state) => ({
+        ...state,
         currentState: 'viewDoc',
-        pingFailed: false,
-      });
+      }));
     }
   }
 </script>
@@ -147,11 +145,10 @@
         <div class="my-8 text-center">
           <button
             on:click={() => {
-              appState.set({
-                passedCheck: true,
+              appState.update((state) => ({
+                ...state,
                 currentState: 'compromisationCheck',
-                pingFailed: false,
-              });
+              }));
             }}
             class="btn bg-secondary text-neutral">Proceed</button>
         </div>

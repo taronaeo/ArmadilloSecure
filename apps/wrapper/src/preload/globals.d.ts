@@ -1,4 +1,5 @@
 import { ElectronAPI } from '@electron-toolkit/preload';
+import { IpcRequest } from '@armadillo/shared';
 
 declare global {
   interface Window {
@@ -6,20 +7,9 @@ declare global {
     api: IpcRequest;
   }
 
-  interface IpcRequest {
-    getAppName: () => Promise<IpcResponse>;
-    getFileClass: (fileId: string) => Promise<IpcResponse>;
-    checkFileClass: () => Promise<IpcResponse>;
-    secretChecks: () => Promise<IpcResponse>;
-    ping: () => Promise<IpcResponse>;
-    checkPing: () => Promise<IpcResponse>;
-    checkCompromisation: () => Promise<IpcResponse>;
-    hasDefaultProgram: () => Promise<IpcResponse>;
-    launchFile: (fileId: string) => Promise<IpcResponse>;
-  }
-
-  interface IpcResponse {
-    code: number;
-    message: string;
+  interface AppState {
+    passedCheck: boolean | undefined;
+    currentState: string | undefined;
+    pingFailed: boolean | undefined;
   }
 }

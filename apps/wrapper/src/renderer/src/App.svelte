@@ -1,26 +1,24 @@
 <script lang="ts">
-  import logo from './assets/logo.png';
-  import WifiLogo from './assets/no-wifi.png';
-  import Failed from './components/Failed.svelte';
-
-  import FileClass from './components/Fileclass.svelte';
-  import Compromisation from './components/Compromisation.svelte';
-  import ViewDoc from './components/ViewDoc.svelte';
+  import type { AppState } from '@armadillo/shared';
 
   import { authStore } from './lib/stores';
   import { appState } from './stores';
   import { onMount } from 'svelte';
+
+  import logo from './assets/logo.png';
+  import WifiLogo from './assets/no-wifi.png';
+
+  import Failed from './components/Failed.svelte';
+  import FileClass from './components/Fileclass.svelte';
+  import Compromisation from './components/Compromisation.svelte';
+  import ViewDoc from './components/ViewDoc.svelte';
 
   // Preload auth state
   $authStore;
 
   let pingFailed = false;
   let initialPingDone = false;
-  let appStateObj: {
-    passedCheck: boolean | undefined;
-    currentState: string | undefined;
-    pingFailed: boolean | undefined;
-  } = {
+  let appStateObj: AppState = {
     passedCheck: undefined,
     currentState: undefined,
     pingFailed: false,

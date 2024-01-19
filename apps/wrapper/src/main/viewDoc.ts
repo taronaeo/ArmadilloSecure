@@ -1,5 +1,3 @@
-import { paths } from './absolutePaths';
-
 import { tmpdir } from 'os';
 import { dirname, basename, resolve } from 'path';
 import { getRandomValues, randomBytes } from 'crypto';
@@ -7,6 +5,13 @@ import { ChildProcess, execFile } from 'child_process';
 
 import { existsSync, promises as fsPromises } from 'fs';
 const { writeFile, copyFile, stat, unlink } = fsPromises;
+
+import { paths } from './absolutePaths';
+
+interface RandomFileProperties {
+  randomFileName: string;
+  randomExt: string;
+}
 
 let validFilePath = '';
 
@@ -22,7 +27,7 @@ const randomFilePath = resolve(
   `${randomFileInfo.randomFileName}.${randomFileInfo.randomExt}`
 );
 
-export function genRandomFileAndExtension(): { randomFileName: string; randomExt: string } {
+export function genRandomFileAndExtension(): RandomFileProperties {
   const randomFileLength = 16;
   const randomExtLength = 4;
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -81,7 +86,7 @@ export async function viewFileInSeparateProcess(): Promise<ChildProcess> {
 export async function delFiles(): Promise<void> {
   try {
     obscurityFiles.forEach(async (file) => {
-      await unlink(`${tempPath}\\${file}`);
+      await unlink(resolve(tempPath, file));
     });
     await unlink(randomFilePath);
   } catch (err) {
