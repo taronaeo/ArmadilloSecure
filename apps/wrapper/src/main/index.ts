@@ -1,3 +1,5 @@
+import type { IpcResponse } from '@armadillo/shared';
+
 import { join } from 'path';
 import { ChildProcess } from 'child_process';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
