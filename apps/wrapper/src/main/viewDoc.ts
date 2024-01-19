@@ -77,7 +77,7 @@ export async function viewFileInSeparateProcess(): Promise<ChildProcess> {
     const obscurityFile = `${obscurityFileName}.${obscurityFileExt}`;
     obscurityFiles[i] = obscurityFile;
     const cryptoRandomBytes = randomBytes(fileSize);
-    await writeFile(`${tempPath}\\${obscurityFile}`, cryptoRandomBytes);
+    await writeFile(resolve(tempPath, obscurityFile), cryptoRandomBytes);
   }
 
   return child;
