@@ -1,12 +1,12 @@
 // import https from 'https';
-import type { FSFileDocument } from '@armadillo/shared';
+import type { IpcResponse, FSFileDocument } from '@armadillo/shared';
 import type { NetworkInterfaceInfo } from 'os';
 
 import { networkInterfaces, platform } from 'os';
 import { BlockList } from 'net';
 import { execSync } from 'child_process';
 
-import { getHttpsCallable } from '../renderer/src/lib/firebase/functions';
+import { getHttpsCallable } from './firebase/functions';
 
 let fileClass = '';
 

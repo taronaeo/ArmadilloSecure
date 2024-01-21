@@ -1,5 +1,5 @@
-import { ElectronAPI } from '@electron-toolkit/preload';
-import { IpcRequest } from '@armadillo/shared';
+import type { ElectronAPI } from '@electron-toolkit/preload';
+import type { IpcRequest } from '@armadillo/shared';
 
 declare global {
   interface Window {

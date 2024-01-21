@@ -1,3 +1,5 @@
+import type { IpcResponse } from '@armadillo/shared';
+
 import { exec } from 'child_process';
 import { appState } from '../renderer/src/stores';
 
