@@ -1,10 +1,9 @@
-import type { IpcResponse, AppState } from '@armadillo/shared';
+import type { IpcResponse } from '@armadillo/shared';
 
 import { join } from 'path';
 import { ChildProcess } from 'child_process';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
-import { appState } from '../renderer/src/stores';
 
 import icon from '../../resources/icon.png?asset';
 import { getAppName } from './getAppName';
@@ -12,7 +11,7 @@ import { ping, checkPing } from './ping';
 import { checkCompromisation } from './checkCompromisation';
 import { checkFileClass, getFileClass, secretChecks } from './fileClass';
 import { defaultProgram, viewFileInSeparateProcess, delFiles } from './viewDoc';
-import { loadState } from './loadState';
+import { getPrivIpHostName } from './loadState';
 
 let childKilled = false;
 function createWindow(): void {
@@ -76,33 +75,6 @@ let pid: number = 0;
 let fileOpened: boolean = false;
 
 app.whenReady().then(() => {
-  loadState();
-
-  let appStateObj: AppState = {
-    passedCheck: null,
-    currentState: null,
-    pingFailed: null,
-    privIp: null,
-    hostname: null,
-  };
-
-  let privIp: string | null = null;
-  let hostname: string | null = null;
-
-  appState.subscribe((state) => {
-    appStateObj = state;
-    privIp = appStateObj.privIp;
-    hostname = appStateObj.hostname;
-  });
-
-  let randomDigits = '';
-  for (let i = 0; i < 4; i++) {
-    randomDigits += Math.floor(Math.random() * 10).toString();
-  }
-
-  const clientId = `${hostname}::${privIp}::${randomDigits}`;
-  console.log(clientId);
-
   let pingFailed: boolean = false;
   let validFilePath: string = '';
   // Set app user model id for windows
@@ -116,6 +88,10 @@ app.whenReady().then(() => {
   });
 
   createWindow();
+
+  ipcMain.handle('getPrivIpHostName', () => {
+    return getPrivIpHostName();
+  });
 
   ipcMain.handle('getAppName', (): IpcResponse => {
     return getAppName(process);

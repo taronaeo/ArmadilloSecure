@@ -1,9 +1,12 @@
 import { writable } from 'svelte/store';
 
-export const appState = writable<AppState>({
+const appStore = writable<AppState>({
   passedCheck: true,
   currentState: 'checkInternet',
   pingFailed: false,
   privIp: null,
   hostname: null,
+  clientId: null,
 });
+
+export { appStore };

@@ -8,6 +8,7 @@ interface IpcRequest {
   checkCompromisation: () => Promise<IpcResponse>;
   hasDefaultProgram: () => Promise<IpcResponse>;
   launchFile: (fileId: string) => Promise<IpcResponse>;
+  getPrivIpHostName: () => Promise<IpcResponse>;
 }
 
 interface IpcResponse {

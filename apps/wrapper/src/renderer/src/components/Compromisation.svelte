@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { appStore } from '../lib/stores';
+
   import logo from '../assets/logo.png';
-  import { appState } from '../stores';
 
   onMount(() => {
     checkCompromisation();
@@ -10,15 +11,15 @@
   async function checkCompromisation(): Promise<void> {
     const response = await window.api.checkCompromisation();
     if (response.code != 200) {
-      appState.update((state) => ({
+      appStore.update((state) => ({
         ...state,
         passedCheck: false,
       }));
       return;
     } else {
-      appState.update((state) => ({
+      appStore.update((state) => ({
         ...state,
-        currentState: 'viewDoc',
+        currentState: 'faceLiveness',
       }));
     }
   }

@@ -1,5 +1,4 @@
 import type {
-  AppState,
   IpcResponse,
   CFCallableGetClassificationRequest,
   CFCallableGetClassificationResponse,
@@ -8,15 +7,18 @@ import type {
 import { platform } from 'os';
 import { BlockList } from 'net';
 import { execSync } from 'child_process';
+import { get } from 'svelte/store';
 
 import { getHttpsCallable } from './firebase/functions';
-import { appState } from '../renderer/src/stores';
+import { appStore } from '../renderer/src/lib/stores';
 
 let fileClass = '';
+
 const getFileClassificationApi = getHttpsCallable<
   CFCallableGetClassificationRequest,
   CFCallableGetClassificationResponse
 >('https_onCall_file_getClassification');
+
 export async function getFileClass(fileId: string) {
   const response = await getFileClassificationApi({
     origin: 'wrapper',
@@ -48,19 +50,7 @@ export async function secretChecks(): Promise<IpcResponse> {
   const domainIpRange = ['192.168.1.0', '192.168.1.255'];
   //TODO be changed when firestore cloud func is up
 
-  let appStateObj: AppState = {
-    passedCheck: null,
-    currentState: null,
-    pingFailed: false,
-    privIp: null,
-    hostname: null,
-  };
-
-  appState.subscribe((state) => {
-    appStateObj = state;
-  });
-
-  const ipv4 = appStateObj.privIp;
+  const ipv4 = get(appStore).privIp;
   const blockList = new BlockList();
   const userOS = platform();
 

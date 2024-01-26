@@ -13,5 +13,6 @@ declare global {
     pingFailed: boolean | null;
     privIp: string | null;
     hostname: string | null;
+    clientId: string | null;
   }
 }

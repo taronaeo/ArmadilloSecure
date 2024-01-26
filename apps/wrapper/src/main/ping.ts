@@ -1,7 +1,7 @@
 import type { IpcResponse } from '@armadillo/shared';
 
 import { exec } from 'child_process';
-import { appState } from '../renderer/src/stores';
+import { appStore } from '../renderer/src/lib/stores';
 
 let pingFailed = false;
 export function ping(): boolean {
@@ -17,7 +17,7 @@ export function ping(): boolean {
     }
   });
 
-  appState.update((state) => ({
+  appStore.update((state) => ({
     ...state,
     pingFailed: pingFailed,
   }));

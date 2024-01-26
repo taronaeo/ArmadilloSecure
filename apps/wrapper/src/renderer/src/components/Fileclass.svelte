@@ -3,7 +3,7 @@
 
   import logo from '../assets/logo.png';
   import { onMount } from 'svelte';
-  import { appState } from '../stores';
+  import { appStore } from '../lib/stores';
 
   let fileClass = '';
   $: if (fileClass !== '') {
@@ -32,26 +32,26 @@
       proceed = true;
       console.log(response.code);
       if (response.code === 200) {
-        appState.update((state) => ({
+        appStore.update((state) => ({
           ...state,
           currentState: 'compromisationCheck',
         }));
       } else {
         proceed = false;
-        appState.update((state) => ({
+        appStore.update((state) => ({
           ...state,
           passedCheck: false,
         }));
       }
     } else if (fileClass === 'SENSITIVE') {
       proceed = true;
-      appState.update((state) => ({
+      appStore.update((state) => ({
         ...state,
         currentState: 'compromisationCheck',
       }));
     } else if (fileClass === 'OPEN') {
       proceed = true;
-      appState.update((state) => ({
+      appStore.update((state) => ({
         ...state,
         currentState: 'viewDoc',
       }));
