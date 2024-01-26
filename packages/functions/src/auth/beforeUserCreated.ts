@@ -23,7 +23,7 @@ export const auth_beforeUserCreated = beforeUserCreated(async (event) => {
 
   const user: FSUser = {
     uid,
-    rekognitionId: null,
+    faceId: null,
     email,
     email_verified: false,
     full_name: null,

@@ -16,3 +16,7 @@ export const auth = getAuth(app);
 export const storage = getStorage(app);
 export const firestore = getFirestore(app);
 export const functions = getFunctions(app);
+
+export const bucketTemp = storage.bucket('it2566-armadillo.appspot.com');
+export const bucketFiles = storage.bucket('armadillo-files');
+export const bucketHeadshots = storage.bucket('armadillo-headshots');
