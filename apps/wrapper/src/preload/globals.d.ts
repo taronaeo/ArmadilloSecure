@@ -8,8 +8,10 @@ declare global {
   }
 
   interface AppState {
-    passedCheck: boolean | undefined;
-    currentState: string | undefined;
-    pingFailed: boolean | undefined;
+    passedCheck: boolean | null;
+    currentState: string | null;
+    pingFailed: boolean | null;
+    privIp: string | null;
+    hostname: string | null;
   }
 }

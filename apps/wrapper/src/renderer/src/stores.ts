@@ -4,4 +4,6 @@ export const appState = writable<AppState>({
   passedCheck: true,
   currentState: 'checkInternet',
   pingFailed: false,
+  privIp: null,
+  hostname: null,
 });

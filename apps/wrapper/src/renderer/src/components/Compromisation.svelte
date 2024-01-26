@@ -1,8 +1,11 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import logo from '../assets/logo.png';
   import { appState } from '../stores';
 
-  let loading: boolean = false;
+  onMount(() => {
+    checkCompromisation();
+  });
 
   async function checkCompromisation(): Promise<void> {
     const response = await window.api.checkCompromisation();
@@ -53,19 +56,7 @@
           </ul>
         </div>
         <div class="my-8 text-center">
-          <button
-            on:click={() => {
-              loading = true;
-              checkCompromisation();
-            }}
-            class="btn bg-secondary text-neutral w-24">
-            {#if !loading}
-              Check Defender
-            {:else if loading}
-              <span class="loading loading-spinner loading-sm"></span>
-            {/if}
-          </button>
-        </div>
+          <span class="loading loading-spinner loading-lg text-secondary"> </span></div>
       </div>
     </div>
   </div>
