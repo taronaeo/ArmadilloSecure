@@ -3,6 +3,10 @@ export * from './constants/buckets';
 export * from './constants/collections';
 export * from './constants/rekognition';
 
+// Wrapper Models
+export * from './models/WrapperAppState';
+export * from './models/WrapperIpc';
+
 // Firestore Models
 export * from './models/FSUser';
 export * from './models/FSFile';

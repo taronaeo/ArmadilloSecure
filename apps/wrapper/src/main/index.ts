@@ -15,7 +15,6 @@ import { defaultProgram, viewFileInSeparateProcess, delFiles } from './viewDoc';
 import { loadState } from './loadState';
 
 let childKilled = false;
-console.log();
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({

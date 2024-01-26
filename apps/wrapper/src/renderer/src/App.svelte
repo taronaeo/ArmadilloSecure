@@ -13,7 +13,6 @@
   import FileClass from './components/Fileclass.svelte';
   import Compromisation from './components/Compromisation.svelte';
   import ViewDoc from './components/ViewDoc.svelte';
-  import FaceLiveness from './components/FaceLiveness.svelte';
 
   // Preload auth state
   $authStore;
