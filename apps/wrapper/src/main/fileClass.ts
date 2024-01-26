@@ -1,5 +1,9 @@
-// import https from 'https';
-import type { IpcResponse, FSFileDocument, AppState } from '@armadillo/shared';
+import type {
+  AppState,
+  IpcResponse,
+  CFCallableGetClassificationRequest,
+  CFCallableGetClassificationResponse,
+} from '@armadillo/shared';
 
 import { platform } from 'os';
 import { BlockList } from 'net';
@@ -9,14 +13,19 @@ import { getHttpsCallable } from './firebase/functions';
 import { appState } from '../renderer/src/stores';
 
 let fileClass = '';
-const getFileClassificationApi = getHttpsCallable('onCall_getFileClassification');
+const getFileClassificationApi = getHttpsCallable<
+  CFCallableGetClassificationRequest,
+  CFCallableGetClassificationResponse
+>('https_onCall_file_getClassification');
 export async function getFileClass(fileId: string) {
   const response = await getFileClassificationApi({
-    client_id: 'helloworld',
-    file_id: fileId,
+    origin: 'wrapper',
+    clientId: 'helloworld',
+    fileId: fileId,
   });
-  const { file_classification } = response.data as FSFileDocument;
-  fileClass = file_classification;
+
+  const { classification } = response.data;
+  fileClass = classification;
 }
 
 export function checkFileClass(): IpcResponse {
