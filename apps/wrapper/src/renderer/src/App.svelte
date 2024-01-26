@@ -2,6 +2,7 @@
   import type { AppState } from '@armadillo/shared';
 
   import { authStore } from './lib/stores';
+
   import { appState } from './stores';
   import { onMount } from 'svelte';
 
@@ -16,12 +17,13 @@
   // Preload auth state
   $authStore;
 
-  let pingFailed = false;
   let initialPingDone = false;
   let appStateObj: AppState = {
-    passedCheck: undefined,
-    currentState: undefined,
+    passedCheck: null,
+    currentState: null,
     pingFailed: false,
+    privIp: null,
+    hostname: null,
   };
 
   appState.subscribe((state) => {
@@ -35,18 +37,19 @@
       const response = await window.api.checkPing();
 
       if (response.code !== 200) {
-        pingFailed = true;
+        appState.update((state) => ({
+          ...state,
+          pingFailed: true,
+        }));
       } else {
-        pingFailed = false;
+        appState.update((state) => ({
+          ...state,
+          currentState: 'fileClass',
+          pingFailed: false,
+        }));
       }
 
       initialPingDone = true;
-
-      appState.set({
-        passedCheck: true,
-        currentState: 'fileClass',
-        pingFailed: false,
-      });
     }, 900);
   });
 
@@ -56,9 +59,15 @@
     const response = await window.api.checkPing();
 
     if (response.code !== 200) {
-      pingFailed = true;
+      appState.update((state) => ({
+        ...state,
+        pingFailed: true,
+      }));
     } else {
-      pingFailed = false;
+      appState.update((state) => ({
+        ...state,
+        pingFailed: false,
+      }));
     }
   }, 1000);
 </script>
@@ -67,7 +76,7 @@
   <Failed />
 {:else if appStateObj.passedCheck}
   {#if initialPingDone}
-    {#if pingFailed}
+    {#if appStateObj.pingFailed}
       <div class="grid h-screen">
         <div class="place-self-center">
           <img src={WifiLogo} alt="no internet" class="m-auto h-40" />

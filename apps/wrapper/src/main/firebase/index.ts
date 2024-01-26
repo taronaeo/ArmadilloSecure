@@ -1,4 +1,4 @@
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getAuth, connectAuthEmulator, inMemoryPersistence } from 'firebase/auth';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
@@ -22,6 +22,9 @@ export const auth = getAuth(app);
 export const storage = getStorage(app);
 export const firestore = getFirestore(app);
 export const functions = getFunctions(app, 'asia-southeast1');
+
+// Store credentials in memory only.
+auth.setPersistence(inMemoryPersistence);
 
 if (dev) {
   console.warn(`

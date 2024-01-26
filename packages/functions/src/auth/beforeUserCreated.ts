@@ -1,22 +1,29 @@
-import type { UserDocument } from '@armadillo/shared';
+import type { FSUser } from '@armadillo/shared';
 
-import * as logger from 'firebase-functions/logger';
 import { FS_COLLECTION_USERS } from '@armadillo/shared';
-
 import { FieldValue } from 'firebase-admin/firestore';
+
+import { logger } from 'firebase-functions/v2';
 import { beforeUserCreated } from 'firebase-functions/v2/identity';
 
 import { firestore } from '../firebase';
 
-export const auth_onUserCreate = beforeUserCreated(async (event) => {
+/**
+ * Creates a new user document in Firestore when a new user is created.
+ *
+ * @param   event The event object containing information about the new user.
+ * @returns A user override object when the user document is created.
+ */
+export const auth_beforeUserCreated = beforeUserCreated(async (event) => {
   logger.log(event);
 
   const {
     data: { uid, email },
   } = event;
 
-  const user: UserDocument = {
+  const user: FSUser = {
     uid,
+    faceId: null,
     email,
     email_verified: false,
     full_name: null,

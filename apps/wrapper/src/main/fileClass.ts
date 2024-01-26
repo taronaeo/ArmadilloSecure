@@ -1,15 +1,14 @@
 // import https from 'https';
-import type { FSFileDocument } from '@armadillo/shared';
-import type { NetworkInterfaceInfo } from 'os';
+import type { IpcResponse, FSFileDocument, AppState } from '@armadillo/shared';
 
-import { networkInterfaces, platform } from 'os';
+import { platform } from 'os';
 import { BlockList } from 'net';
 import { execSync } from 'child_process';
 
-import { getHttpsCallable } from '../renderer/src/lib/firebase/functions';
+import { getHttpsCallable } from './firebase/functions';
+import { appState } from '../renderer/src/stores';
 
 let fileClass = '';
-
 const getFileClassificationApi = getHttpsCallable('onCall_getFileClassification');
 export async function getFileClass(fileId: string) {
   const response = await getFileClassificationApi({
@@ -18,22 +17,6 @@ export async function getFileClass(fileId: string) {
   });
   const { file_classification } = response.data as FSFileDocument;
   fileClass = file_classification;
-  // const options = {
-  //   hostname: 'asia-southeast1-it2566-armadillo.cloudfunctions.net',
-  //   path: '/http_onRequest_fileClassification',
-  //   method: 'POST',
-  //   headers: {
-  //     'X-ARMADILLO-CLIENTID': 'helloworld',
-  //     'X-ARMADILLO-FILEUUID': fileId,
-  //     'Content-Length': 0,
-  //   },
-  // };
-  // const req = https.request(options, (res) => {
-  //   res.on('data', (chunk) => {
-  //     fileClass = JSON.parse(chunk).data;
-  //   });
-  // });
-  // req.end();
 }
 
 export function checkFileClass(): IpcResponse {
@@ -56,55 +39,27 @@ export async function secretChecks(): Promise<IpcResponse> {
   const domainIpRange = ['192.168.1.0', '192.168.1.255'];
   //TODO be changed when firestore cloud func is up
 
-  const osNetworkInterfaces = networkInterfaces();
-  const nonLocalInterfaces = {};
+  let appStateObj: AppState = {
+    passedCheck: null,
+    currentState: null,
+    pingFailed: false,
+    privIp: null,
+    hostname: null,
+  };
+
+  appState.subscribe((state) => {
+    appStateObj = state;
+  });
+
+  const ipv4 = appStateObj.privIp;
   const blockList = new BlockList();
   const userOS = platform();
 
-  let ipv4 = '';
   let primaryDnsSuffix = '';
-
-  if (!osNetworkInterfaces) {
-    return {
-      code: 403,
-      message: 'No Network Interfaces Found',
-    };
-  }
-
-  for (const inet in osNetworkInterfaces) {
-    const addresses = osNetworkInterfaces[inet];
-    for (let i = 0; i < addresses!.length; i++) {
-      const address = addresses![i];
-      if (!address.internal) {
-        if (!nonLocalInterfaces[inet]) {
-          nonLocalInterfaces[inet] = [];
-        }
-        nonLocalInterfaces[inet].push(address);
-      }
-    }
-  }
-
-  let mainInt = nonLocalInterfaces['Wi-Fi'];
-
-  if (!mainInt) {
-    mainInt = nonLocalInterfaces['Ethernet'];
-    if (!mainInt) {
-      return {
-        code: 403,
-        message: 'No Valid Network Interfaces Found',
-      };
-    }
-  }
-
-  mainInt.forEach((adrs: NetworkInterfaceInfo) => {
-    if (adrs.family === 'IPv4') {
-      ipv4 = adrs.address;
-    }
-  });
 
   blockList.addRange(domainIpRange[0], domainIpRange[1]);
 
-  if (!blockList.check(ipv4)) {
+  if (ipv4 && !blockList.check(ipv4)) {
     return {
       code: 403,
       message: 'IP Address not part of Organization IP Address Range',
