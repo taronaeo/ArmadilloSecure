@@ -5,4 +5,4 @@ interface FSMetadata {
   readonly created_at: FieldValue;
 }
 
-export { FSMetadata };
+export type { FSMetadata };

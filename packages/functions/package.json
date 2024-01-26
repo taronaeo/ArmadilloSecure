@@ -21,6 +21,7 @@
     "format": "eslint --ext .ts . --fix"
   },
   "dependencies": {
+    "@aws-sdk/client-rekognition": "^3.484.0",
     "firebase-admin": "^11.11.1",
     "firebase-functions": "^4.3.1"
   },
