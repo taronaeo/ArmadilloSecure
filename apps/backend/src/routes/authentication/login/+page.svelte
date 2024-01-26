@@ -1,22 +1,16 @@
 <!-- JavaScript code -->
 <script lang="ts">
-  // import for forms
+  // Imports
   import { createForm } from 'svelte-forms-lib';
-  import { goto } from '$app/navigation';
   import type { FirebaseError } from 'firebase/app';
-
-  // import sign up function
   import { signInEmailPassword } from '$lib/firebase/auth';
-
-  //import yup for form validation
   import * as yup from 'yup';
 
+  // State variable
   let apiError: FirebaseError | null;
-
-  // JavaScript code for Loading Button animation
   let checkLoading = false;
 
-  // Yup validation code
+  // Form + Yup validation
   const { form, errors, handleChange, handleSubmit } = createForm({
     initialValues: {
       email: '',
@@ -28,16 +22,12 @@
     }),
 
     onSubmit: (data) => {
-      // Set checkLoading to true before form submission
       checkLoading = true;
 
-      // Perform form submission
       signInEmailPassword(data.email, data.password, (error) => {
-        // Handle submission result
         if (error) {
           apiError = error;
         }
-        // Reset checkLoading after handling errors and redirection
         checkLoading = false;
       });
     },

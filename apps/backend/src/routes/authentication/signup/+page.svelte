@@ -1,25 +1,19 @@
 <!-- JavaScript code -->
 <script lang="ts">
-  // import for forms
+  // Imports
   import { createForm } from 'svelte-forms-lib';
   import type { FirebaseError } from 'firebase/app';
-
-  // import sign up function
   import { signUpEmailPassword } from '$lib/firebase/auth';
-
-  //import yup for form validation
   import * as yup from 'yup';
 
-  // JavaScript code for Continue button
+  // State variable
   let apiError: FirebaseError | null;
-
-  // JavaScript code for Loading Button animation
   let checkLoading = false;
 
-  // Create a reference for the password
+  // Password reference for validation
   const passwordRef = yup.ref('password');
 
-  // Yup validation code
+  // Form + Yup validation
   const { form, errors, handleChange, handleSubmit } = createForm({
     initialValues: {
       email: '',
@@ -49,19 +43,14 @@
         .required('Please agree to the terms of service and privacy policy.'),
     }),
     onSubmit: async (data) => {
-      // Ensure passwords match before proceeding
       if (data.password !== data.confirmPassword) {
         console.error('Passwords do not match');
-        return; // Early exit if passwords don't match
+        return;
       }
-
-      // Set loading state indicator
       checkLoading = true;
 
-      // Attempt signup with Firebase
       await signUpEmailPassword(data.email, data.password, (error) => (apiError = error));
 
-      // Reset loading state after completion or error
       checkLoading = false;
     },
   });

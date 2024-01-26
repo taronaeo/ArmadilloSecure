@@ -7,6 +7,10 @@
     if (!$authStore) {
       return await goto('/authentication/login', { replaceState: true });
     }
+    // If the user is logged in but email not verified, redirect to verification page
+    if ($authStore && !$authStore.email_verified) {
+      return await goto('/onboard/verification', { replaceState: true });
+    }
   })();
 </script>
 

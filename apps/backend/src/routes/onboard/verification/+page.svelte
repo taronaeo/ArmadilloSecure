@@ -1,11 +1,13 @@
 <!-- JavaScript code -->
 <script lang="ts">
+  // Imports
   import { firestore } from '$lib/firebase';
   import type { FirebaseError } from 'firebase/app';
   import { authStore, authState } from '$lib/stores';
   import { doc, getDoc } from 'firebase/firestore';
   import { verifyEmail, signOut } from '$lib/firebase/auth';
 
+  // State variable
   let apiError: FirebaseError | null;
 </script>
 
@@ -26,11 +28,9 @@
       <!-- User Details -->
       {#if $authStore?.email}
         <div class="text-info">
-          {#if $authStore?.email}
-            {$authStore?.email.slice(0, 1) +
-              '*****' +
-              $authStore?.email.slice($authStore?.email.indexOf('@'))}
-          {/if}
+          {$authStore?.email.slice(0, 1) +
+            '*****' +
+            $authStore?.email.slice($authStore?.email.indexOf('@'))}
         </div>
       {:else}
         <span class="text-error">Loading user data...</span>

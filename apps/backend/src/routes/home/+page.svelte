@@ -8,48 +8,37 @@
   import { doc, getDoc } from 'firebase/firestore';
   import { authStore } from '$lib/stores';
 
+  // State variables
   let showInfoCard = false;
-
-  let fullName = '';
-  if ($authStore && $authStore.full_name) {
-    fullName = $authStore.full_name;
-  }
-
-  let profilePicUrl = `https://ui-avatars.com/api/?name=${fullName}&format=svg&rounded=true`;
-
-  // Self Destruct Modal Function
   let selfDestructModal: HTMLDialogElement;
+  let fileAccessModal: HTMLDialogElement;
 
+  // Reactive Declarations
+  $: fullName = $authStore?.full_name;
+  $: profilePicUrl = `https://ui-avatars.com/api/?name=${fullName}&format=svg&rounded=true`;
+
+  // Modal functions
   function showSelfDestructModal() {
     selfDestructModal.showModal();
   }
-
-  // Self fileAccess Modal Function
-  let fileAccessModal: HTMLDialogElement;
 
   function showfileAccessModal() {
     fileAccessModal.showModal();
   }
 
-  // Function to show the info card
+  // Handle details card
   const showDetails = (event: MouseEvent) => {
-    // Prevent the event from propagating to the document listener
     event.stopPropagation();
     showInfoCard = true;
   };
 
-  // Function to hide the info card
   const hideDetails = () => {
     showInfoCard = false;
   };
 
-  // Script to create a Current Date object
+  // Display date information
   const currentDate = new Date();
-
-  //Script to obtain current year
   const currentYear = currentDate.getFullYear().toString();
-
-  //Script to obtian Previous year
   const previousYear = (currentDate.getFullYear() - 1).toString();
 </script>
 
@@ -63,7 +52,7 @@
     <!-- Landing Page - Header -->
     <!-- User Details -->
 
-    {#if fullName !== ''}
+    {#if fullName}
       <div class="flex justify-end items-center">
         <img class="rounded w-9 mr-3" alt="Full Name" src={profilePicUrl} />
         <div class="">{fullName}</div>
@@ -111,7 +100,7 @@
           class="btn m-1 font-semibold normal-case px-6 border-white hover:border-white">
           Classification
           <span>
-            <img src="dropdownarrow.svg" alt="error" />
+            <img src="dropdownarrow.svg" alt="Drop Down Arrow" />
           </span>
         </div>
         <ul class="dropdown-content z-[1] menu p-2 shadow-2xl bg-base-100 rounded-box w-52 border">

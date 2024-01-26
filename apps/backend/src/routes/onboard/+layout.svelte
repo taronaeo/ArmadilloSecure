@@ -10,9 +10,12 @@
     if ($authStore && !$authStore.email_verified)
       return await goto('/onboard/verification', { replaceState: true });
 
-    // If the user is Logged in and email is verified, redirect to home page
-    if ($authStore && $authStore.email_verified)
+    // If the user is Logged in and email is verified, redirect to onboarding details page
+    if ($authStore && !$authStore.is_onboarded)
       return await goto('/onboard/details', { replaceState: true });
+
+    // If the user is logged in & onboarded, redirect directly to Home Page
+    if ($authStore && $authStore.is_onboarded) return await goto('/home', { replaceState: true });
   })();
 </script>
 
