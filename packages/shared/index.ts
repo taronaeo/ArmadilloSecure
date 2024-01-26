@@ -1,4 +1,5 @@
 // Constants
+export * from './constants/buckets';
 export * from './constants/collections';
 export * from './constants/rekognition';
 
