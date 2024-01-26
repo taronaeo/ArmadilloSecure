@@ -23,10 +23,10 @@ import { firestore, bucketHeadshots } from '../../../firebase';
  * 7. Uses AWS Rekognition to index the face in the headshot image.
  * 8. Stores the face ID in the Firestore database for the corresponding user.
  *
- * @param {Object} data - The event data containing information about the uploaded file.
- * @param {string} data.name - The name of the uploaded file.
- * @param {string} data.contentType - The content type of the uploaded file.
- * @returns {Promise<void>} - A promise that resolves when the operation is complete.
+ * @param   data              The event data containing information about the uploaded file.
+ * @param   data.name         The name of the uploaded file.
+ * @param   data.contentType  The content type of the uploaded file.
+ * @returns A promise that resolves when the operation is complete.
  */
 export const storage_onObjectFinalized_user_onHeadshotUpload = onObjectFinalized(
   {
