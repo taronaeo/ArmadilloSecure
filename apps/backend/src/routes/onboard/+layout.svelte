@@ -13,7 +13,7 @@
       return await goto('/onboard/verification', { replaceState: true });
     }
 
-    // If the user is Logged in and email is verified, redirect to onboarding details page
+    // If the user is logged in & is not onboarded, redirect to onboard/details
     if ($authStore && !$authStore.is_onboarded) {
       return await goto('/onboard/details', { replaceState: true });
     }
