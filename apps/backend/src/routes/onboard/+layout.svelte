@@ -4,18 +4,24 @@
 
   $: (async () => {
     //If the user is not logged in, Redirect to loginpage
-    if (!$authStore) return await goto('/authentication/login', { replaceState: true });
+    if (!$authStore) {
+      return await goto('/authentication/login', { replaceState: true });
+    }
 
     // If the user is Logged in but email not verified, redirect to verification page
-    if ($authStore && !$authStore.email_verified)
+    if ($authStore && !$authStore.email_verified) {
       return await goto('/onboard/verification', { replaceState: true });
+    }
 
     // If the user is Logged in and email is verified, redirect to onboarding details page
-    if ($authStore && !$authStore.is_onboarded)
+    if ($authStore && !$authStore.is_onboarded) {
       return await goto('/onboard/details', { replaceState: true });
+    }
 
     // If the user is logged in & onboarded, redirect directly to Home Page
-    if ($authStore && $authStore.is_onboarded) return await goto('/home', { replaceState: true });
+    if ($authStore && $authStore.is_onboarded) {
+      return await goto('/home', { replaceState: true });
+    }
   })();
 </script>
 

@@ -92,13 +92,5 @@
         </span>
       </button>
     </form>
-
-    <!-- Onboard Form - Link to Login -->
-    <p class="text-center">
-      Already have an account?
-      <a class="text-secondary hover:text-info duration-300" href="/authentication/login">
-        Log in
-      </a>
-    </p>
   </div>
 </div>

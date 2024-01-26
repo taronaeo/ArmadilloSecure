@@ -21,10 +21,10 @@
       password: yup.string().required('Please enter your Password.'),
     }),
 
-    onSubmit: (data) => {
+    onSubmit: async (data) => {
       checkLoading = true;
 
-      signInEmailPassword(data.email, data.password, (error) => {
+      await signInEmailPassword(data.email, data.password, (error) => {
         if (error) {
           apiError = error;
         }
