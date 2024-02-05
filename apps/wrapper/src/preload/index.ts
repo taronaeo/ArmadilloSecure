@@ -1,136 +1,41 @@
-import type { IpcResponse } from '@armadillo/shared';
-
 import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
+import { CFCallableGetSessionIdResponse } from '@armadillo/shared';
 
 const api = {
   getPrivIpHostName: async () => {
-    try {
-      const privIpHostnameObj = await ipcRenderer.invoke('getPrivIpHostName');
-      return {
-        code: 200,
-        message: privIpHostnameObj,
-      };
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+    const privIpHostnameObj = await ipcRenderer.invoke('getPrivIpHostName');
+    return privIpHostnameObj;
   },
-  getFileClass: async (fileId: string): Promise<IpcResponse> => {
-    try {
-      await ipcRenderer.invoke('getFileClass', fileId);
-      return {
-        code: 200,
-        message: 'Get File Class Invoked',
-      };
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  getFaceLivenessSessionId: async () => {
+    return ipcRenderer.invoke('getFaceLivenessSessionId');
   },
-  checkFileClass: async (): Promise<IpcResponse> => {
-    try {
-      const response = await ipcRenderer.invoke('checkFileClass');
-      return response;
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  getClientId: async () => {
+    return await ipcRenderer.invoke('getClientId');
   },
-  getAppName: async (): Promise<IpcResponse> => {
-    try {
-      const response = await ipcRenderer.invoke('getAppName');
-      return response;
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  refreshApp: async () => {
+    await ipcRenderer.invoke('refreshApp');
   },
-  secretChecks: async (): Promise<IpcResponse> => {
-    try {
-      const responseWithDns = await ipcRenderer.invoke('secretChecks');
-      return responseWithDns;
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  getFileClass: async (fileId: string): Promise<string> => {
+    return await ipcRenderer.invoke('getFileClass', fileId);
   },
-  ping: async (): Promise<IpcResponse> => {
-    try {
-      await ipcRenderer.invoke('ping');
-      return {
-        code: 200,
-        message: 'Ping Successful',
-      };
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  getAppName: async (): Promise<string> => {
+    return await ipcRenderer.invoke('getAppName');
   },
-  checkPing: async (): Promise<IpcResponse> => {
-    try {
-      const response = await ipcRenderer.invoke('checkPing');
-      return response;
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  ping: async (): Promise<void> => {
+    ipcRenderer.invoke('ping');
   },
-  checkCompromisation: async (): Promise<IpcResponse> => {
-    try {
-      const response = await ipcRenderer.invoke('checkCompromisation');
-      return response;
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  checkPing: async (): Promise<boolean> => {
+    return await ipcRenderer.invoke('checkPing');
   },
-  hasDefaultProgram: async (): Promise<IpcResponse> => {
-    try {
-      const response = await ipcRenderer.invoke('hasDefaultProgram');
-      return response;
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  checkCompromisation: async (): Promise<CFCallableGetSessionIdResponse> => {
+    return await ipcRenderer.invoke('checkCompromisation');
   },
-  launchFile: async (fileId: string): Promise<IpcResponse> => {
-    try {
-      const fileIsLaunched = await ipcRenderer.invoke('launchFile', fileId);
-      if (fileIsLaunched) {
-        return {
-          code: 200,
-          message: 'File Launched Successfully',
-        };
-      }
-      return {
-        code: 400,
-        message: 'File Could Not Be Launched',
-      };
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  defaultProgram: async (): Promise<string> => {
+    return await ipcRenderer.invoke('hasDefaultProgram');
+  },
+  launchFile: async (fileId: string): Promise<boolean> => {
+    return await ipcRenderer.invoke('launchFile', fileId);
   },
 };
 

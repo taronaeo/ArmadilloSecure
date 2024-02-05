@@ -1,16 +1,23 @@
+import type { CFCallableGetSessionIdResponse } from './CFCallableGetSessionId';
+
 interface IpcRequest {
-  getAppName: () => Promise<IpcResponse>;
-  getFileClass: (fileId: string) => Promise<IpcResponse>;
-  checkFileClass: () => Promise<IpcResponse>;
-  secretChecks: () => Promise<IpcResponse>;
-  ping: () => Promise<IpcResponse>;
-  checkPing: () => Promise<IpcResponse>;
-  checkCompromisation: () => Promise<IpcResponse>;
-  hasDefaultProgram: () => Promise<IpcResponse>;
-  launchFile: (fileId: string) => Promise<IpcResponse>;
-  getPrivIpHostName: () => Promise<IpcResponse>;
+  getAppName: () => Promise<string>;
+  getFileClass: (fileId: string) => Promise<string | null>;
+  getClientId: () => Promise<string>;
+  ping: () => Promise<void>;
+  checkPing: () => Promise<boolean>;
+  checkCompromisation: () => Promise<CFCallableGetSessionIdResponse>;
+  defaultProgram: () => Promise<string>;
+  launchFile: (fileId: string) => Promise<boolean>;
+  getPrivIpHostName: () => Promise<PrivIpHostName>;
+  getFaceLivenessSessionId: () => Promise<string>;
 }
 
+interface PrivIpHostName {
+  privIp: string | null;
+  hostname: string;
+  passedCheck: boolean;
+}
 interface IpcResponse {
   code: number;
   message: string;

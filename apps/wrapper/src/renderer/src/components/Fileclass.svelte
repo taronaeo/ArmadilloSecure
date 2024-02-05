@@ -1,62 +1,44 @@
 <script lang="ts">
-  import type { IpcResponse } from '@armadillo/shared';
-
   import logo from '../assets/logo.png';
   import { onMount } from 'svelte';
   import { appStore } from '../lib/stores';
 
   let fileClass = '';
-  $: if (fileClass !== '') {
-    topSecretChecks();
-  }
+
   let appName = '';
   let proceed = false;
 
   onMount(async () => {
-    await window.api.getFileClass('3be2565e-fe51-4e9d-820f-d6c1315d204d');
-    let classInterval = setInterval(async () => {
-      const fileClassResponse = await window.api.checkFileClass();
-      if (fileClassResponse.code === 200) {
-        fileClass = fileClassResponse.message;
-        clearInterval(classInterval);
-      }
-    }, 1000);
-    const appNameRes = await window.api.getAppName();
-    appName = appNameRes.message;
-    await topSecretChecks();
-  });
+    appName = await window.api.getAppName();
 
-  async function topSecretChecks() {
-    if (fileClass === 'TOPSECRET') {
-      const response: IpcResponse = await window.api.secretChecks();
+    try {
+      fileClass = await window.api.getFileClass('3be2565e-fe51-4e9d-820f-d6c1315d204d');
+    } catch {
+      appStore.update((state) => ({
+        ...state,
+        passedCheck: false,
+        errorMsg: 'File Classification Check Failed',
+      }));
+      return;
+    }
+    console.log(fileClass);
+
+    if (fileClass === 'TOPSECRET' || fileClass === 'SENSITIVE') {
       proceed = true;
-      console.log(response.code);
-      if (response.code === 200) {
-        appStore.update((state) => ({
-          ...state,
-          currentState: 'compromisationCheck',
-        }));
-      } else {
-        proceed = false;
-        appStore.update((state) => ({
-          ...state,
-          passedCheck: false,
-        }));
-      }
-    } else if (fileClass === 'SENSITIVE') {
-      proceed = true;
+
       appStore.update((state) => ({
         ...state,
         currentState: 'compromisationCheck',
       }));
     } else if (fileClass === 'OPEN') {
       proceed = true;
+
       appStore.update((state) => ({
         ...state,
         currentState: 'viewDoc',
       }));
     }
-  }
+  });
 </script>
 
 <div class="hidden" class:hidden={proceed}>

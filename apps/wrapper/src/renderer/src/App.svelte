@@ -11,31 +11,23 @@
   import Compromisation from './components/Compromisation.svelte';
   import ViewDoc from './components/ViewDoc.svelte';
   import FaceLiveness from './components/FaceLiveness.svelte';
+  import FilePass from './components/FilePass.svelte';
 
   // Preload auth state
   $authStore;
 
   let initialPingDone = false;
-
+  let pingFailed = false;
   let clientId = '';
 
   onMount(async () => {
-    const clientInfo = (await window.api.getPrivIpHostName()).message;
-    const privIp = clientInfo.privIp;
-    const hostname = clientInfo.hostname;
-
-    let randomDigits = '';
-    for (let i = 0; i < 4; i++) {
-      randomDigits += Math.floor(Math.random() * 10).toString();
-    }
-
-    clientId = `${privIp}::${hostname}::${randomDigits}`;
+    clientId = await window.api.getClientId();
 
     await window.api.ping();
     setTimeout(async () => {
-      const response = await window.api.checkPing();
+      pingFailed = await window.api.checkPing();
 
-      if (response.code !== 200) {
+      if (pingFailed) {
         appStore.update((state) => ({
           ...state,
           pingFailed: true,
@@ -53,24 +45,31 @@
   });
 
   setInterval(async () => {
-    await window.api.ping();
+    if (initialPingDone) {
+      await window.api.ping();
 
-    const response = await window.api.checkPing();
+      const pingFailed = await window.api.checkPing();
 
-    if (response.code !== 200) {
-      appStore.update((state) => ({
-        ...state,
-        pingFailed: true,
-      }));
-    } else {
-      appStore.update((state) => ({
-        ...state,
-        pingFailed: false,
-      }));
+      if (pingFailed) {
+        appStore.update((state) => ({
+          ...state,
+          pingFailed: true,
+        }));
+      } else {
+        appStore.update((state) => ({
+          ...state,
+          pingFailed: false,
+        }));
+      }
     }
   }, 1000);
 
-  $: console.log($appStore);
+  $: if ($authStore && $appStore.currentState === 'faceLiveness') {
+    appStore.update((state) => ({
+      ...state,
+      currentState: 'filePass',
+    }));
+  }
 </script>
 
 {#if !$appStore.passedCheck}
@@ -94,8 +93,13 @@
           <Compromisation />
         </div>
       {:else if $appStore.currentState === 'faceLiveness'}
+        {console.log(clientId)}
         <div>
           <FaceLiveness {clientId} />
+        </div>
+      {:else if $appStore.currentState === 'filePass'}
+        <div>
+          <FilePass />
         </div>
       {:else if $appStore.currentState === 'viewDoc'}
         <div>

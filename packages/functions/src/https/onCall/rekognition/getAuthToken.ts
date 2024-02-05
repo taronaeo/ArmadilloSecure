@@ -70,6 +70,7 @@ export const https_onCall_rekognition_getAuthToken = onCall<CFCallableGetAuthTok
     const fsAuditFileClassification = fsAuditRef.doc(`FILE_CLASSIFICATION-${clientId}`);
     const fsAuditFaceSession = fsAuditRef.doc(`FACE_SESSION-${clientId}`);
 
+    //! PROBLEMATIC
     const [fileClassificationSnapshot, faceSessionSnapshot] = await Promise.all([
       fsAuditFileClassification.get(),
       fsAuditFaceSession.get(),

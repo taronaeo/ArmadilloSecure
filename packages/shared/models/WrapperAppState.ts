@@ -4,7 +4,10 @@ interface AppState {
   pingFailed: boolean | null;
   privIp: string | null;
   hostname: string | null;
-  clientId: string | null;
+  clientId: string;
+  fileId: string;
+  errorMsg: string;
+  sessionId: string;
 }
 
 export type { AppState };

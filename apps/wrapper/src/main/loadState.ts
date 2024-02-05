@@ -57,11 +57,19 @@ export function getPrivIpHostName() {
 
 export function loadState() {
   const { passedCheck, privIp, hostname } = getPrivIpHostName();
+  let randomDigits = '';
+
+  for (let i = 0; i < 4; i++) {
+    randomDigits += Math.floor(Math.random() * 10).toString();
+  }
+
+  const clientId = `${hostname}::${privIp}::${randomDigits}`;
 
   appStore.update((state) => ({
     ...state,
     privIp,
     hostname,
     passedCheck,
+    clientId,
   }));
 }

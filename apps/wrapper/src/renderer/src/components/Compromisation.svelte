@@ -9,17 +9,17 @@
   });
 
   async function checkCompromisation(): Promise<void> {
-    const response = await window.api.checkCompromisation();
-    if (response.code != 200) {
-      appStore.update((state) => ({
-        ...state,
-        passedCheck: false,
-      }));
-      return;
-    } else {
+    try {
+      await window.api.checkCompromisation();
       appStore.update((state) => ({
         ...state,
         currentState: 'faceLiveness',
+      }));
+    } catch {
+      appStore.update((state) => ({
+        ...state,
+        passedCheck: false,
+        errorMsg: 'Compromisation Check Failed',
       }));
     }
   }

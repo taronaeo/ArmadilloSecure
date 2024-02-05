@@ -1,10 +1,8 @@
-import type { IpcResponse } from '@armadillo/shared';
-
 import { exec } from 'child_process';
 import { appStore } from '../renderer/src/lib/stores';
 
 let pingFailed = false;
-export function ping(): boolean {
+export function ping(): void {
   const host = 'www.google.com';
 
   exec(`ping ${host}`, (error, stdout) => {
@@ -16,24 +14,13 @@ export function ping(): boolean {
       pingFailed = false;
     }
   });
+}
 
+export function checkPing(): boolean {
   appStore.update((state) => ({
     ...state,
     pingFailed: pingFailed,
   }));
 
   return pingFailed;
-}
-
-export function checkPing(): IpcResponse {
-  if (pingFailed)
-    return {
-      code: 400,
-      message: 'Loss of Internet Connection',
-    };
-
-  return {
-    code: 200,
-    message: 'Client Has Internet Connection',
-  };
 }

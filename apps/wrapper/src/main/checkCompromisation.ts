@@ -1,4 +1,8 @@
 import { execSync } from 'child_process';
+import { getHttpsCallable } from './firebase/functions';
+import { CFCallableGetSessionIdRequest, CFCallableGetSessionIdResponse } from '@armadillo/shared';
+import { appStore } from '../renderer/src/lib/stores';
+import { get } from 'svelte/store';
 
 function convertToMillis(dateStr: string) {
   const dateInMillis = execSync(`Get-Date -date "${dateStr}" -UFormat %s`, {
@@ -7,7 +11,12 @@ function convertToMillis(dateStr: string) {
   return Number(dateInMillis) * 1000;
 }
 
-export function checkCompromisation() {
+export async function checkCompromisation() {
+  const getSessionIdAPI = getHttpsCallable<
+    CFCallableGetSessionIdRequest,
+    CFCallableGetSessionIdResponse
+  >('https_onCall_rekognition_getSessionId');
+
   const defenderStatus = execSync('Get-MpComputerStatus', { shell: 'powershell.exe' }).toString();
   const defenderStatusArr = defenderStatus.split('\n');
 
@@ -26,47 +35,20 @@ export function checkCompromisation() {
     //must change to full scan during production
   });
 
-  const monthInMillis: number = 2629746000;
-  const dayInMillis: number = 86400000;
   const antivirusSignaturesMillis: number = convertToMillis(antivirusSignatures);
   const antispywareSignaturesMillis: number = convertToMillis(antispywareSignatures);
   const fullScanEndTimeMillis: number = convertToMillis(fullScanEndTime);
-  const currentTime = new Date().getTime();
 
-  if (
-    isNaN(antispywareSignaturesMillis) ||
-    isNaN(antivirusSignaturesMillis) ||
-    isNaN(fullScanEndTimeMillis)
-  ) {
-    return {
-      code: 412,
-      message: 'Failed Precondition',
-    };
-  }
+  const { clientId, fileId } = get(appStore);
 
-  if (currentTime - antivirusSignaturesMillis >= monthInMillis) {
-    return {
-      code: 403,
-      message: 'Antivirus Signatures Outdated',
-    };
-  }
-
-  if (currentTime - antispywareSignaturesMillis >= monthInMillis) {
-    return {
-      code: 403,
-      message: 'Antispyware Signatures Outdated',
-    };
-  }
-
-  if (currentTime - fullScanEndTimeMillis <= dayInMillis) {
-    return {
-      code: 403,
-      message: 'Full System Scan Outdated',
-    };
-  }
-
-  return {
-    code: 200,
-    message: 'Compromisation Check Passed',
-  };
+  const sessionId = await getSessionIdAPI({
+    origin: 'wrapper',
+    clientId: clientId,
+    fileId: fileId,
+    fullScanEndTime: fullScanEndTimeMillis,
+    antivirusSignaturesLastUpdated: antivirusSignaturesMillis,
+    antispywareSignaturesLastUpdated: antispywareSignaturesMillis,
+  });
+  console.log(sessionId.data);
+  return sessionId.data;
 }

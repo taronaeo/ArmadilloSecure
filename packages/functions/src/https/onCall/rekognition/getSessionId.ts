@@ -35,6 +35,7 @@ export const https_onCall_rekognition_getSessionId = onCall<CFCallableGetSession
       antivirusSignaturesLastUpdated,
       antispywareSignaturesLastUpdated,
     } = data;
+    console.log(data);
 
     const DAY_IN_MILLISECONDS = 86400000; // 24 hours
     const MONTH_IN_MILLISECONDS = 2592000000; // 30 days
@@ -78,6 +79,7 @@ export const https_onCall_rekognition_getSessionId = onCall<CFCallableGetSession
     if (!antispywareSignaturesLastUpdated)
       throw new HttpsError('failed-precondition', 'Antispyware Signatures Last Updated Invalid');
 
+    const currentTime = new Date().getTime();
     const fsFileRef = firestore.collection(FS_COLLECTION_FILES).doc(fileId);
     const fsAuditRef = firestore.collection(FS_COLLECTION_AUDITS).doc(`FACE_SESSION-${clientId}`);
 
@@ -118,15 +120,15 @@ export const https_onCall_rekognition_getSessionId = onCall<CFCallableGetSession
       if (!fileExists) throw new HttpsError('not-found', 'File Not Found');
 
       // Check if full scan end time is outdated
-      if (fullScanEndTime >= DAY_IN_MILLISECONDS)
+      if (currentTime - fullScanEndTime <= DAY_IN_MILLISECONDS)
         throw new HttpsError('failed-precondition', 'Full Scan Outdated');
 
       // Check if antivirus signatures last updated is outdated
-      if (antivirusSignaturesLastUpdated >= MONTH_IN_MILLISECONDS)
+      if (currentTime - antivirusSignaturesLastUpdated >= MONTH_IN_MILLISECONDS)
         throw new HttpsError('failed-precondition', 'Antivirus Signatures Outdated');
 
       // Check if antispyware signatures last updated is outdated
-      if (antispywareSignaturesLastUpdated >= MONTH_IN_MILLISECONDS)
+      if (currentTime - antispywareSignaturesLastUpdated >= MONTH_IN_MILLISECONDS)
         throw new HttpsError('failed-precondition', 'Antispyware Signatures Outdated');
 
       return { sessionId };

@@ -6,7 +6,10 @@ const appStore = writable<AppState>({
   pingFailed: false,
   privIp: null,
   hostname: null,
-  clientId: null,
+  clientId: '',
+  fileId: '',
+  errorMsg: '',
+  sessionId: '',
 });
 
 export { appStore };

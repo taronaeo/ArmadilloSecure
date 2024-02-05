@@ -7,13 +7,13 @@
   let fileExtension = 'docx'; //temp code
 
   async function launchFile(): Promise<void> {
-    const response = await window.api.hasDefaultProgram();
-    if (response.code !== 200) {
+    const defaultProgram = await window.api.defaultProgram();
+    if (defaultProgram === '') {
       hasDefaultProgram = false;
       return;
     }
-    const launchFileRes = await window.api.launchFile('abc123');
-    if (launchFileRes.code !== 200) {
+    const fileLaunched = await window.api.launchFile('abc123');
+    if (!fileLaunched) {
       launchFileFailed = true;
       return;
     }

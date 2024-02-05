@@ -1,17 +1,17 @@
-import type { IpcResponse } from '@armadillo/shared';
-
 import { join } from 'path';
 import { ChildProcess } from 'child_process';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
+import { get } from 'svelte/store';
 
 import icon from '../../resources/icon.png?asset';
 import { getAppName } from './getAppName';
 import { ping, checkPing } from './ping';
 import { checkCompromisation } from './checkCompromisation';
-import { checkFileClass, getFileClass, secretChecks } from './fileClass';
+import { getFileClass } from './fileClass';
 import { defaultProgram, viewFileInSeparateProcess, delFiles } from './viewDoc';
-import { getPrivIpHostName } from './loadState';
+import { getPrivIpHostName, loadState } from './loadState';
+import { appStore } from '../renderer/src/lib/stores';
 
 let childKilled = false;
 function createWindow(): void {
@@ -75,6 +75,7 @@ let pid: number = 0;
 let fileOpened: boolean = false;
 
 app.whenReady().then(() => {
+  loadState();
   let pingFailed: boolean = false;
   let validFilePath: string = '';
   // Set app user model id for windows
@@ -89,52 +90,52 @@ app.whenReady().then(() => {
 
   createWindow();
 
-  ipcMain.handle('getPrivIpHostName', () => {
+  ipcMain.handle('getClientId', () => {
+    return get(appStore).clientId;
+  });
+
+  ipcMain.handle('getPrivIpHost Name', () => {
     return getPrivIpHostName();
   });
 
-  ipcMain.handle('getAppName', (): IpcResponse => {
+  ipcMain.handle('getAppName', (): string => {
+    appStore.update((state) => ({
+      ...state,
+      fileId: getAppName(process),
+    }));
     return getAppName(process);
   });
 
-  ipcMain.handle('getFileClass', (_, fileId): void => {
-    getFileClass(fileId);
+  ipcMain.handle('getFaceLivenessSessionId', (): string => {
+    return get(appStore).sessionId;
   });
 
-  ipcMain.handle('checkFileClass', (): IpcResponse => {
-    return checkFileClass();
-  });
-
-  ipcMain.handle('secretChecks', async (): Promise<IpcResponse> => {
-    return secretChecks();
+  ipcMain.handle('getFileClass', (_, fileId): Promise<string | null> => {
+    return getFileClass(fileId);
   });
 
   ipcMain.handle('ping', (): void => {
-    pingFailed = ping();
+    ping();
   });
 
-  ipcMain.handle('checkPing', (): IpcResponse => {
-    return checkPing();
+  ipcMain.handle('checkPing', (): boolean => {
+    pingFailed = checkPing();
+    return pingFailed;
   });
 
-  ipcMain.handle('checkCompromisation', (): IpcResponse => {
-    return checkCompromisation();
+  ipcMain.handle('checkCompromisation', async (): Promise<string> => {
+    const { sessionId } = await checkCompromisation();
+    console.log(sessionId);
+    appStore.update((state) => ({
+      ...state,
+      sessionId: sessionId,
+    }));
+    return sessionId;
   });
 
-  ipcMain.handle('hasDefaultProgram', (): IpcResponse => {
+  ipcMain.handle('hasDefaultProgram', (): string => {
     validFilePath = defaultProgram();
-
-    if (validFilePath === '') {
-      return {
-        code: 412,
-        message: 'User Does Not Have the Default Program for the File',
-      };
-    }
-
-    return {
-      code: 200,
-      message: 'User Has Default Program',
-    };
+    return validFilePath;
   });
 
   ipcMain.handle('launchFile', async (): Promise<boolean> => {
@@ -160,6 +161,7 @@ app.whenReady().then(() => {
     }, 2000);
 
     child.on('exit', async () => {
+      console.log('MARKER DELETED');
       if (!childKilled) {
         await delFiles();
         fileOpened = false;
