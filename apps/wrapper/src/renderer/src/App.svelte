@@ -65,6 +65,7 @@
   }, 1000);
 
   $: if ($authStore && $appStore.currentState === 'faceLiveness') {
+    console.log($authStore);
     appStore.update((state) => ({
       ...state,
       currentState: 'filePass',

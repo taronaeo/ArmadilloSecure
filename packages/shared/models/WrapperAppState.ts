@@ -8,6 +8,7 @@ interface AppState {
   fileId: string;
   errorMsg: string;
   sessionId: string;
+  fileHash: string;
 }
 
 export type { AppState };

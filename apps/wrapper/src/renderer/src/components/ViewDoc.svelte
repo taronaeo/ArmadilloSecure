@@ -1,6 +1,12 @@
 <script lang="ts">
+  import { doc, getDoc } from 'firebase/firestore';
+  import { ref, getBytes } from 'firebase/storage';
+
   import logo from '../assets/logo.png';
   import exclamation from '../assets/exclamation.svg';
+  import { fileStorage } from '../../../main/firebase/storage';
+  import { appStore, authStore } from '../lib/stores';
+  import { firestore } from '../../../main/firebase';
 
   let hasDefaultProgram = true;
   let launchFileFailed = false;
@@ -12,7 +18,20 @@
       hasDefaultProgram = false;
       return;
     }
-    const fileLaunched = await window.api.launchFile('abc123');
+
+    const backendAppStore = await window.api.getBackendStore();
+    const fileId = backendAppStore.fileId;
+    const userId = $authStore.uid;
+    const pathReference = ref(fileStorage, `${userId}/${fileId}`);
+    const fileDocRef = doc(firestore, 'files', fileId);
+    const fileSnap = await getDoc(fileDocRef);
+    const fileData = fileSnap.data();
+    const fileArrayBuffer = await getBytes(pathReference);
+    // Decrypt the ArrayBuffer
+    const encKey = $appStore.fileHash;
+    const iv = fileData.file_encryption_iv;
+
+    const fileLaunched = await window.api.launchFile(encKey, iv, fileArrayBuffer);
     if (!fileLaunched) {
       launchFileFailed = true;
       return;
@@ -62,7 +81,11 @@
           <span class="text-secondary">NOT</span> be saved on this computer.
         </div>
         <div class="my-8 text-center">
-          <button on:click={launchFile} class="btn bg-secondary text-neutral w-24">
+          <button
+            on:click={() => {
+              launchFile;
+            }}
+            class="btn bg-secondary text-neutral w-24">
             View Document
           </button>
         </div>

@@ -7,6 +7,12 @@ const api = {
     const privIpHostnameObj = await ipcRenderer.invoke('getPrivIpHostName');
     return privIpHostnameObj;
   },
+  getBackendStore: async () => {
+    return ipcRenderer.invoke('getBackendStore');
+  },
+  checkPassword: async (fileEncryptionHash) => {
+    return ipcRenderer.invoke('checkPassword', fileEncryptionHash);
+  },
   getFaceLivenessSessionId: async () => {
     return ipcRenderer.invoke('getFaceLivenessSessionId');
   },
@@ -34,8 +40,12 @@ const api = {
   defaultProgram: async (): Promise<string> => {
     return await ipcRenderer.invoke('hasDefaultProgram');
   },
-  launchFile: async (fileId: string): Promise<boolean> => {
-    return await ipcRenderer.invoke('launchFile', fileId);
+  launchFile: async (
+    encKey: string,
+    iv: string,
+    fileArrayBuffer: ArrayBuffer
+  ): Promise<boolean> => {
+    return await ipcRenderer.invoke('launchFile', encKey, iv, fileArrayBuffer);
   },
 };
 

@@ -17,5 +17,6 @@ declare global {
     fileId: string;
     errorMsg: string;
     sessionId: string;
+    fileHash: string;
   }
 }

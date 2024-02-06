@@ -10,6 +10,7 @@ const appStore = writable<AppState>({
   fileId: '',
   errorMsg: '',
   sessionId: '',
+  fileHash: '',
 });
 
 export { appStore };

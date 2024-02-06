@@ -1,10 +1,10 @@
 <script lang="ts">
-  // import { getBlob, ref } from 'firebase/storage';
   import logo from '../assets/logo.png';
-  import { firestore } from '../../../main/firebase';
-  // import { BUCKET_FILES } from '@armadillo/shared';
   import { appStore } from '../lib/stores';
-  import { doc, getDoc } from 'firebase/firestore';
+
+  import { getHttpsCallable } from '../../../main/firebase/functions';
+
+  let tryCounter = 0;
 
   async function hashFilePass() {
     const textAsBuffer = new TextEncoder().encode(filePass);
@@ -13,24 +13,38 @@
 
     const hash = hashArray.map((item) => item.toString(16).padStart(2, '0')).join('');
 
-    const docRef = doc(firestore, 'files', $appStore.fileId);
-    const docSnap = await getDoc(docRef);
+    try {
+      const getFilePasswordAPI = getHttpsCallable('https_onCall_getPassword');
 
-    let fileHash = '';
+      const backendStore = await window.api.getBackendStore();
+      const clientId = backendStore.clientId;
+      const fileId = backendStore.fileId;
 
-    if (docSnap.exists() && docSnap.data()) {
-      const data = docSnap.data();
-      fileHash = data.file_encryption_hash;
-      console.log(fileHash);
+      await getFilePasswordAPI({
+        origin: 'wrapper',
+        clientId: clientId,
+        fileId: fileId,
+        fileEncryptionHash: hash,
+      });
+      appStore.update((state) => ({
+        ...state,
+        currentState: 'viewDoc',
+        fileHash: hash,
+      }));
+    } catch (err) {
+      tryCounter += 1;
+      console.log(tryCounter);
+      if (tryCounter === 3) {
+        appStore.update((state) => ({
+          ...state,
+          passedCheck: false,
+          errorMsg: 'File Password Entered Wrong',
+        }));
+      }
     }
 
     return hash;
   }
-
-  // async function getFileFromFirebase() {
-  //   const pathReference = ref(storage, `${BUCKET_FILES}/${$appStore.fileId}`);
-  //   const fileBlob = getBlob(pathReference);
-  // }
 
   let filePass = '';
 </script>

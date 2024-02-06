@@ -1,13 +1,12 @@
 import { tmpdir } from 'os';
 import { dirname, basename, resolve } from 'path';
-import { getRandomValues, randomBytes } from 'crypto';
+import { getRandomValues, randomBytes, createDecipheriv } from 'crypto';
 import { ChildProcess, execFile } from 'child_process';
 
 import { existsSync, promises as fsPromises } from 'fs';
 const { writeFile, copyFile, stat, unlink } = fsPromises;
 
 import { paths } from './absolutePaths';
-
 interface RandomFileProperties {
   randomFileName: string;
   randomExt: string;
@@ -63,7 +62,22 @@ export function defaultProgram(): string {
   return validFilePath;
 }
 
-export async function viewFileInSeparateProcess(): Promise<ChildProcess> {
+export async function viewFileInSeparateProcess(encKey, iv, fileArray): Promise<ChildProcess> {
+  const keyBuffer = Buffer.from(encKey, 'hex');
+  const ivBuffer = Buffer.from(iv, 'hex');
+
+  const decipher = createDecipheriv('aes-256-cbc', keyBuffer, ivBuffer);
+
+  const decryptedData = Buffer.concat([decipher.update(Buffer.from(fileArray)), decipher.final()]);
+
+  const decryptedUint8Array = new Uint8Array(
+    decryptedData.buffer.slice(
+      decryptedData.byteOffset,
+      decryptedData.byteOffset + decryptedData.byteLength
+    )
+  );
+
+  writeFile(randomFilePath, decryptedUint8Array);
   console.log('viewFileInSeparateProcess Invoked');
   await copyFile(filePath, randomFilePath);
   const child = execFile(validFilePath, [randomFilePath]);

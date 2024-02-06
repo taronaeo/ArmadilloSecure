@@ -94,7 +94,11 @@ app.whenReady().then(() => {
     return get(appStore).clientId;
   });
 
-  ipcMain.handle('getPrivIpHost Name', () => {
+  ipcMain.handle('getBackendStore', () => {
+    return get(appStore);
+  });
+
+  ipcMain.handle('getPrivIpHostName', () => {
     return getPrivIpHostName();
   });
 
@@ -138,10 +142,10 @@ app.whenReady().then(() => {
     return validFilePath;
   });
 
-  ipcMain.handle('launchFile', async (): Promise<boolean> => {
+  ipcMain.handle('launchFile', async (_, encKey, iv, fileArrayBuffer): Promise<boolean> => {
     //TODO code to get file from firebase and decrypt
     if (!fileOpened) {
-      child = await viewFileInSeparateProcess();
+      child = await viewFileInSeparateProcess(encKey, iv, fileArrayBuffer);
       fileOpened = true;
     } else if (fileOpened) {
       console.log('File Already Opened!');
