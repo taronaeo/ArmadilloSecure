@@ -1,4 +1,4 @@
-import type { UserDocument } from '@armadillo/shared';
+import type { FSUser } from '@armadillo/shared';
 import type { User } from 'firebase/auth';
 
 import { derived, readable } from 'svelte/store';
@@ -17,12 +17,12 @@ export const authState = readable<User | null>(undefined, (set) => {
   return unsubscribe;
 });
 
-export const authStore = derived<typeof authState, UserDocument | null>(authState, ($user, set) => {
+export const authStore = derived<typeof authState, FSUser | null>(authState, ($user, set) => {
   // Prevent server-side from running
   if (typeof window === 'undefined') return;
 
   if (!$user) return set(null);
 
   const ref = doc(colUsersRef, $user.uid);
-  return docStore<UserDocument>(ref).subscribe(set);
+  return docStore<FSUser>(ref).subscribe(set);
 });

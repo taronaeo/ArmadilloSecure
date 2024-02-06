@@ -59,6 +59,8 @@
 
       const fileData: FSFile = {
         file_id: fileUniqueId,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+        file_domain: $authStore?.email?.split('@').pop()!, // TODO: Please change later
         file_classification: data.fileClass!,
         file_name: formFile.name,
         file_ext: formFile.name.split('.').pop() || '',
