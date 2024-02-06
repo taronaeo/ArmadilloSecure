@@ -7,7 +7,7 @@ import type {
 import {
   AWS_REKOGNITION_REGION,
   AWS_REKOGNITION_COLLECTION_ID,
-  AWS_REKOGNITION_COLLECTION_DEV_ID,
+  FS_COLLECTION_AUDITS,
 } from '@armadillo/shared';
 
 import { logger } from 'firebase-functions/v2';
@@ -37,12 +37,8 @@ export const https_onCall_rekognition_getAuthToken = onCall<CFCallableGetAuthTok
     const { origin, clientId, sessionId } = data;
     const fsUserCol = firestore.collection('users');
 
-    const DEV = process.env.FUNCTIONS_EMULATOR === 'true';
     const REKOGNITION_ACCESS_KEY_ID = process.env.REKOGNITION_ACCESS_KEY_ID;
     const REKOGNITION_ACCESS_KEY_SECRET = process.env.REKOGNITION_ACCESS_KEY_SECRET;
-    const REKOGNITION_COLLECTION_ID = !DEV
-      ? AWS_REKOGNITION_COLLECTION_ID
-      : AWS_REKOGNITION_COLLECTION_DEV_ID;
 
     // Check if environment variables are fetched from Secret Manager
     if (!REKOGNITION_ACCESS_KEY_ID || !REKOGNITION_ACCESS_KEY_SECRET) {
@@ -70,7 +66,17 @@ export const https_onCall_rekognition_getAuthToken = onCall<CFCallableGetAuthTok
     // Check if request includes a session id
     if (!sessionId) throw new HttpsError('failed-precondition', 'Session ID Invalid');
 
-    // TODO: Check with Firestore if auth flow has been done prior.
+    const fsAuditRef = firestore.collection(FS_COLLECTION_AUDITS);
+    const fsAuditFileClassification = fsAuditRef.doc(`FILE_CLASSIFICATION-${clientId}`);
+    const fsAuditFaceSession = fsAuditRef.doc(`FACE_SESSION-${clientId}`);
+
+    const [fileClassificationSnapshot, faceSessionSnapshot] = await Promise.all([
+      fsAuditFileClassification.get(),
+      fsAuditFaceSession.get(),
+    ]);
+
+    if (!fileClassificationSnapshot.exists || !faceSessionSnapshot.exists)
+      throw new HttpsError('internal', 'Audit Sequence Incomplete');
 
     const rekognitionClient = new RekognitionClient({
       region: AWS_REKOGNITION_REGION,
@@ -96,32 +102,33 @@ export const https_onCall_rekognition_getAuthToken = onCall<CFCallableGetAuthTok
     if (auditImages.length < 1) throw new HttpsError('internal', 'Unable to retrieve audit images');
 
     const rekognitionSearchCmd = new SearchFacesByImageCommand({
-      CollectionId: REKOGNITION_COLLECTION_ID,
+      CollectionId: AWS_REKOGNITION_COLLECTION_ID,
       Image: {
         Bytes: auditImages[0].Bytes,
       },
     });
 
     const { FaceMatches: faceMatches } = await rekognitionClient.send(rekognitionSearchCmd);
-    if (!faceMatches) throw new HttpsError('internal', 'Internal Error');
+    if (!faceMatches) throw new HttpsError('unauthenticated', 'Unable to authenticate face');
 
     for (const faceMatch of faceMatches) {
       if (!faceMatch.Face) continue;
 
-      const snapshot = await fsUserCol
-        .where('rekognitionId', '==', faceMatch.Face.FaceId)
-        .limit(1)
-        .get();
+      const { ExternalImageId: externalImageId } = faceMatch.Face;
+      if (!externalImageId) continue;
 
-      const users = snapshot.docs.map((doc) => doc.data() as FSUser);
-      if (users.length < 1) continue;
+      try {
+        const fsUserSnapshot = await fsUserCol.doc(externalImageId).get();
+        const fsUserData = fsUserSnapshot.data() as FSUser;
+        const authToken = await adminAuth.createCustomToken(fsUserData.uid);
 
-      const user = users[0];
-      const authToken = await adminAuth.createCustomToken(user.uid);
-
-      return { token: authToken };
+        return { token: authToken };
+      } catch (error) {
+        logger.error(error);
+        throw new HttpsError('internal', 'Internal Error');
+      }
     }
 
-    throw new HttpsError('unauthenticated', 'Unable to authenticate user');
+    throw new HttpsError('unauthenticated', 'Unable to authenticate face');
   }
 );

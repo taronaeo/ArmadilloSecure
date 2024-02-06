@@ -11,6 +11,8 @@
   import { fade } from 'svelte/transition';
   import * as yup from 'yup';
 
+  import FileUpload from '$lib/components/FileUpload.svelte';
+
   // State variables
   let showInfoCard = false;
   let selfDestructModal: HTMLDialogElement;
@@ -18,6 +20,8 @@
   let logoutModal: HTMLDialogElement;
   let settingsModal: HTMLDialogElement;
   let apiError: FirebaseError | null;
+
+  let showFileUploadModal = false;
 
   // Reactive Declarations
   $: fullName = $authStore?.full_name;
@@ -98,6 +102,8 @@
   });
 </script>
 
+<FileUpload bind:show={showFileUploadModal} />
+
 <!-- Landing Page - Card -->
 <div
   class="
@@ -105,7 +111,7 @@
   font-semibold normal-case">
   <!-- Landing Page - Content -->
   <div
-    class=" 
+    class="
       w-full max-w-7xl h-screen p-10 rounded-md
       transition-transform duration-1000 ease-in-out">
     <!-- Landing Page - Header -->
@@ -474,6 +480,27 @@
           </ul>
         </div>
       </div>
+      <ul class="dropdown-content z-[1] menu p-2 shadow-2xl bg-base-100 rounded-box w-52 border">
+        <li>
+          <a href="/">
+            <img src="fileicon.svg" alt="File Icon" />
+            New Folder
+          </a>
+        </li>
+        <hr />
+        <li>
+          <button on:click={() => (showFileUploadModal = !showFileUploadModal)}>
+            <img src="fileicon.svg" alt="File Icon" />
+            File Upload
+          </button>
+        </li>
+        <li>
+          <a href="/">
+            <img src="fileupload.svg" alt="File Icon" />
+            Folder Upload
+          </a>
+        </li>
+      </ul>
     </div>
 
     <!-- Dropdown buttons for User -->

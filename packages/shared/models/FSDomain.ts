@@ -1,4 +1,5 @@
-import { FSMetadata } from '@armadillo/shared';
+import type { FSMetadata } from '@armadillo/shared';
+
 
 interface FSDomain extends FSMetadata {
   domain_dns_suffix: string | null;
