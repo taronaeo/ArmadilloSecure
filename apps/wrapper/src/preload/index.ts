@@ -22,8 +22,8 @@ const api = {
   refreshApp: async () => {
     await ipcRenderer.invoke('refreshApp');
   },
-  getFileClass: async (fileId: string): Promise<string> => {
-    return await ipcRenderer.invoke('getFileClass', fileId);
+  getFileClass: async (): Promise<string> => {
+    return await ipcRenderer.invoke('getFileClass');
   },
   getAppName: async (): Promise<string> => {
     return await ipcRenderer.invoke('getAppName');
@@ -37,8 +37,8 @@ const api = {
   checkCompromisation: async (): Promise<CFCallableGetSessionIdResponse> => {
     return await ipcRenderer.invoke('checkCompromisation');
   },
-  defaultProgram: async (): Promise<string> => {
-    return await ipcRenderer.invoke('hasDefaultProgram');
+  defaultProgram: async (fileExt: string): Promise<string> => {
+    return await ipcRenderer.invoke('hasDefaultProgram', fileExt);
   },
   launchFile: async (
     encKey: string,

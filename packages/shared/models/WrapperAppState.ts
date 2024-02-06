@@ -9,6 +9,7 @@ interface AppState {
   errorMsg: string;
   sessionId: string;
   fileHash: string;
+  fileExt: string;
 }
 
 export type { AppState };

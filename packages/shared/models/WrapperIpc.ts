@@ -1,15 +1,16 @@
 import type { CFCallableGetPasswordResponse } from './CFCallableGetPassword';
 import type { CFCallableGetSessionIdResponse } from './CFCallableGetSessionId';
+import type { AppState } from './WrapperAppState';
 
 interface IpcRequest {
   getAppName: () => Promise<string>;
-  getFileClass: (fileId: string) => Promise<string | null>;
+  getFileClass: () => Promise<string | null>;
   getClientId: () => Promise<string>;
   ping: () => Promise<void>;
   checkPing: () => Promise<boolean>;
   checkCompromisation: () => Promise<CFCallableGetSessionIdResponse>;
-  defaultProgram: () => Promise<string>;
-  launchFile: (encKey: string, iv: string, fileArrayBuffer) => Promise<boolean>;
+  defaultProgram: (fileExt: string) => Promise<string>;
+  launchFile: (encKey: string, iv: string, fileArrayBuffer: ArrayBuffer) => Promise<boolean>;
   getPrivIpHostName: () => Promise<PrivIpHostName>;
   getFaceLivenessSessionId: () => Promise<string>;
   checkPassword: (fileEncryptionHash: string) => Promise<CFCallableGetPasswordResponse>;

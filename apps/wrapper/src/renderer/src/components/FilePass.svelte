@@ -3,6 +3,10 @@
   import { appStore } from '../lib/stores';
 
   import { getHttpsCallable } from '../../../main/firebase/functions';
+  import type {
+    CFCallableGetPasswordRequest,
+    CFCallableGetPasswordResponse,
+  } from '@armadillo/shared';
 
   let tryCounter = 0;
 
@@ -14,22 +18,27 @@
     const hash = hashArray.map((item) => item.toString(16).padStart(2, '0')).join('');
 
     try {
-      const getFilePasswordAPI = getHttpsCallable('https_onCall_getPassword');
+      const getFilePasswordAPI = getHttpsCallable<
+        CFCallableGetPasswordRequest,
+        CFCallableGetPasswordResponse
+      >('https_onCall_getPassword');
 
       const backendStore = await window.api.getBackendStore();
       const clientId = backendStore.clientId;
       const fileId = backendStore.fileId;
 
-      await getFilePasswordAPI({
+      const filePassRes = await getFilePasswordAPI({
         origin: 'wrapper',
         clientId: clientId,
         fileId: fileId,
         fileEncryptionHash: hash,
       });
+      console.log(filePassRes.data);
       appStore.update((state) => ({
         ...state,
         currentState: 'viewDoc',
         fileHash: hash,
+        fileExt: filePassRes.data.fileExt,
       }));
     } catch (err) {
       tryCounter += 1;

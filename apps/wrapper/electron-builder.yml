@@ -1,5 +1,5 @@
 appId: com.armadillo.wrapper
-productName: Armadillo Wrapper
+productName: Armadillo
 directories:
   buildResources: build
 files:
@@ -12,11 +12,11 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: ${productName}
+  executableName: Armadillo
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
-  shortcutName: ${productName}
-  uninstallDisplayName: ${productName}
+  shortcutName: Armadillo
+  uninstallDisplayName: Armadillo
   createDesktopShortcut: always
 mac:
   entitlementsInherit: build/entitlements.mac.plist

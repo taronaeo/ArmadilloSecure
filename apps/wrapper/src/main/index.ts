@@ -114,7 +114,8 @@ app.whenReady().then(() => {
     return get(appStore).sessionId;
   });
 
-  ipcMain.handle('getFileClass', (_, fileId): Promise<string | null> => {
+  ipcMain.handle('getFileClass', (): Promise<string | null> => {
+    const fileId = get(appStore).fileId;
     return getFileClass(fileId);
   });
 
@@ -137,8 +138,8 @@ app.whenReady().then(() => {
     return sessionId;
   });
 
-  ipcMain.handle('hasDefaultProgram', (): string => {
-    validFilePath = defaultProgram();
+  ipcMain.handle('hasDefaultProgram', (_, fileExt): string => {
+    validFilePath = defaultProgram(fileExt);
     return validFilePath;
   });
 

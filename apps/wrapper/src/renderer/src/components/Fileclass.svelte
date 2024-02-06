@@ -12,7 +12,7 @@
     appName = await window.api.getAppName();
 
     try {
-      fileClass = await window.api.getFileClass('3be2565e-fe51-4e9d-820f-d6c1315d204d');
+      fileClass = await window.api.getFileClass();
     } catch {
       appStore.update((state) => ({
         ...state,

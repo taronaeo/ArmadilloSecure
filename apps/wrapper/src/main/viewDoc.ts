@@ -51,9 +51,10 @@ export function genRandomFileAndExtension(): RandomFileProperties {
   };
 }
 
-export function defaultProgram(): string {
-  const fileExtension = 'docx';
-  for (const path of paths[fileExtension]) {
+export function defaultProgram(fileExt): string {
+  console.log(fileExt);
+  console.log(typeof fileExt);
+  for (const path of paths[fileExt]) {
     if (existsSync(path)) {
       validFilePath = path;
       break;

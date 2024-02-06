@@ -13,7 +13,7 @@
   let fileExtension = 'docx'; //temp code
 
   async function launchFile(): Promise<void> {
-    const defaultProgram = await window.api.defaultProgram();
+    const defaultProgram = await window.api.defaultProgram($appStore.fileExt);
     if (defaultProgram === '') {
       hasDefaultProgram = false;
       return;
@@ -81,11 +81,7 @@
           <span class="text-secondary">NOT</span> be saved on this computer.
         </div>
         <div class="my-8 text-center">
-          <button
-            on:click={() => {
-              launchFile;
-            }}
-            class="btn bg-secondary text-neutral w-24">
+          <button on:click={launchFile} class="btn bg-secondary text-neutral w-24">
             View Document
           </button>
         </div>

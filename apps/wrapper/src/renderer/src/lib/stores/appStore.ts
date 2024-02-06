@@ -11,6 +11,7 @@ const appStore = writable<AppState>({
   errorMsg: '',
   sessionId: '',
   fileHash: '',
+  fileExt: '',
 });
 
 export { appStore };
