@@ -31,7 +31,14 @@
     validationSchema: yup.object({
       fileUpload: yup.mixed().required('File is required!'),
       fileClass: yup.string().oneOf(['TOPSECRET', 'SENSITIVE', 'OPEN']),
-      filePassword: yup.string().required('File password is required'),
+      filePassword: yup
+        .string()
+        .required('File password is required')
+        .min(8, 'Password must at least be 8 characters longs')
+        .matches(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+          'Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 special character'
+        ),
       isChecked: yup
         .boolean()
         .oneOf(
@@ -62,7 +69,7 @@
         file_name: formFile.name,
         file_ext: formFile.name.split('.').pop() || '',
         file_owner_id: $authStore!.uid,
-        file_encryption_hash: filePwdHash, // Implement SHA256 file password hash
+        file_encryption_hash: filePwdHash,
         file_permissions: [],
         updated_at: serverTimestamp(),
         created_at: serverTimestamp(),
@@ -97,15 +104,12 @@
               bg-white text-left transform transition-all
                 sm:my-8 sm:w-full sm:max-w-lg">
           <form class="my-4 px-4" on:submit|preventDefault={handleSubmit}>
-            <div
-              class="bg-white px-4 pb-4 pt-5
-                      sm:p-6 sm:pb-4">
+            <div class="bg-white px-4 pb-4 pt-5">
               <div class="sm:flex sm:items-start">
                 <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                   <label for="fileUpload" class="text-base font-bold leading-6 text-gray-900">
                     Upload file
                   </label>
-
                   <input
                     id="fileUpload"
                     type="file"
@@ -146,9 +150,7 @@
             </div>
             <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
               <div class="sm:flex sm:items-start">
-                <div
-                  class="mt-3 text-center
-                          sm:ml-4 sm:mt-0 sm:text-left">
+                <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                   <label for="fileClass" class="text-base font-bold leading-6 text-gray-900">
                     Enter file password
                   </label>
@@ -157,7 +159,10 @@
                     id="filePassword"
                     placeholder="Enter File Password"
                     class="input input-bordered w-full max-w-xs"
-                    bind:value={$form.filePassword} />
+                    on:change={handleChange} />
+                </div>
+                <div class="mt-1 max-h-10 overflow-hidden">
+                  <span class="text-red-600">{$errors.filePassword}</span>
                 </div>
               </div>
             </div>
