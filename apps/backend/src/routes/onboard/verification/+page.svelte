@@ -1,11 +1,11 @@
 <!-- JavaScript code -->
 <script lang="ts">
   // Imports
-  import { firestore } from '$lib/firebase';
-  import type { FirebaseError } from 'firebase/app';
-  import { authStore, authState } from '$lib/stores';
-  import { doc, getDoc } from 'firebase/firestore';
   import { verifyEmail, signOut } from '$lib/firebase/auth';
+  import { authStore, authState } from '$lib/stores';
+  import type { FirebaseError } from 'firebase/app';
+  import { doc, getDoc } from 'firebase/firestore';
+  import { firestore } from '$lib/firebase';
 
   // State variable
   let apiError: FirebaseError | null;

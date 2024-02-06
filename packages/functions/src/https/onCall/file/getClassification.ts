@@ -5,7 +5,7 @@ import type {
   CFCallableGetClassificationResponse,
 } from '@armadillo/shared';
 
-import { FS_COLLECTION_AUDIT, FS_COLLECTION_FILES } from '@armadillo/shared';
+import { FS_COLLECTION_AUDITS, FS_COLLECTION_FILES } from '@armadillo/shared';
 
 import { logger } from 'firebase-functions/v2';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
@@ -41,7 +41,7 @@ export const https_onCall_file_getClassification = onCall<CFCallableGetClassific
 
     const fsFileRef = firestore.collection(FS_COLLECTION_FILES).doc(fileId);
     const fsAuditRef = firestore
-      .collection(FS_COLLECTION_AUDIT)
+      .collection(FS_COLLECTION_AUDITS)
       .doc(`fileClassification-${clientId}`);
 
     const auditDoc: FSAudit = {

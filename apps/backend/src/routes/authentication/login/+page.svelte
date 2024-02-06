@@ -1,9 +1,9 @@
 <!-- JavaScript code -->
 <script lang="ts">
   // Imports
-  import { createForm } from 'svelte-forms-lib';
-  import type { FirebaseError } from 'firebase/app';
   import { signInEmailPassword } from '$lib/firebase/auth';
+  import type { FirebaseError } from 'firebase/app';
+  import { createForm } from 'svelte-forms-lib';
   import * as yup from 'yup';
 
   // State variable

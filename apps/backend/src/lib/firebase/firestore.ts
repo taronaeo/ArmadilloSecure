@@ -7,6 +7,7 @@ import { firestore } from '$lib/firebase';
 
 export const colUsersRef = collection(firestore, 'users');
 export const colFilesRef = collection(firestore, 'files');
+export const colDomainsRef = collection(firestore, 'domains');
 
 export function docStore<T>(pathOrRef: string | DocumentReference) {
   let unsubscribe: () => void;
