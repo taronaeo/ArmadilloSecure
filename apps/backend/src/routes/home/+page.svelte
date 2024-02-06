@@ -8,10 +8,14 @@
   import { doc, getDoc } from 'firebase/firestore';
   import { authStore } from '$lib/stores';
 
+  import FileUpload from '$lib/components/FileUpload.svelte';
+
   // State variables
   let showInfoCard = false;
   let selfDestructModal: HTMLDialogElement;
   let fileAccessModal: HTMLDialogElement;
+
+  let showFileUploadModal = false;
 
   // Reactive Declarations
   $: fullName = $authStore?.full_name;
@@ -42,11 +46,13 @@
   const previousYear = (currentDate.getFullYear() - 1).toString();
 </script>
 
+<FileUpload bind:show={showFileUploadModal} />
+
 <!-- Landing Page - Card -->
 <div class="flex flex-row items-center justify-center h-screen">
   <!-- Landing Page - Content -->
   <div
-    class=" 
+    class="
       w-full max-w-7xl h-screen p-10 rounded-md
       transition-transform duration-1000 ease-in-out">
     <!-- Landing Page - Header -->
@@ -76,10 +82,10 @@
         </li>
         <hr />
         <li>
-          <a href="/">
+          <button on:click={() => (showFileUploadModal = !showFileUploadModal)}>
             <img src="fileicon.svg" alt="File Icon" />
             File Upload
-          </a>
+          </button>
         </li>
         <li>
           <a href="/">
