@@ -65,6 +65,7 @@ export const https_onCall_getPassword = onCall<CFCallableGetPasswordRequest>(
 
       return {
         fileId: fsFileData.file_id,
+        fileExt: fsFileData.file_ext,
         fileEncryptionHash: fsFileData.file_encryption_hash,
       };
     } catch (error) {

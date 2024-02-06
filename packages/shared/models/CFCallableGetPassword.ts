@@ -7,6 +7,7 @@ interface CFCallableGetPasswordRequest extends CFCallableBase {
 
 interface CFCallableGetPasswordResponse {
   fileId: string;
+  fileExt: string;
   fileEncryptionHash: string;
 }
 
