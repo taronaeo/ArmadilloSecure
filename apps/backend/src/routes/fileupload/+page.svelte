@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { FSFileDocument, FSFileClassification } from '@armadillo/shared';
+  import type { FSFile, FSFileClass } from '@armadillo/shared';
 
   import * as yup from 'yup';
   import { v4 } from 'uuid';
@@ -14,7 +14,8 @@
 
   interface FormValues {
     fileUpload: FileList | undefined;
-    fileClass: FSFileClassification | undefined;
+    fileClass: FSFileClass | undefined;
+    filePassword: string | undefined;
     isChecked: boolean;
   }
 
@@ -22,11 +23,13 @@
     initialValues: {
       fileUpload: undefined,
       fileClass: undefined,
+      filePassword: undefined,
       isChecked: false,
     },
     validationSchema: yup.object({
       fileUpload: yup.mixed().required('File is required!'),
       fileClass: yup.string().oneOf(['TOPSECRET', 'SENSITIVE', 'OPEN']),
+      filePassword: yup.string().required('File password is required'),
       isChecked: yup
         .boolean()
         .oneOf(
@@ -41,19 +44,26 @@
       // ! PLEASE REMEMBER TO SIGN IN WHEN TESTING !
 
       // Just to please TypeScript because we are already using validationSchema above.
-      if (!data.fileUpload || !data.fileClass || !data.isChecked) return;
+      if (!data.fileUpload || !data.fileClass || !data.isChecked || !data.filePassword) return;
 
       const fileUniqueId = v4();
       const formFile = data.fileUpload[0];
       const formFileBuffer = await formFile.arrayBuffer();
 
-      const fileData: FSFileDocument = {
+      const filePwdBuffer = new TextEncoder().encode(data.filePassword);
+      const filePwdHashBuffer = await crypto.subtle.digest('SHA-256', filePwdBuffer);
+      const filePwdHashArray = Array.from(new Uint8Array(filePwdHashBuffer));
+      const filePwdHash = filePwdHashArray
+        .map((char) => char.toString(16).padStart(2, '0'))
+        .join('');
+
+      const fileData: FSFile = {
         file_id: fileUniqueId,
         file_classification: data.fileClass!,
         file_name: formFile.name,
         file_ext: formFile.name.split('.').pop() || '',
         file_owner_id: $authStore!.uid,
-        file_encryption_hash: '',
+        file_encryption_hash: filePwdHash, // Implement SHA256 file password hash
         file_permissions: [],
         updated_at: serverTimestamp(),
         created_at: serverTimestamp(),
@@ -127,10 +137,26 @@
                   <option value="SENSITIVE">SENSITIVE</option>
                   <option value="OPEN">OPEN</option>
                 </select>
-
                 <div class="mt-1 max-h-10">
                   <span class="text-red-600">{$errors.fileClass}</span>
                 </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div
+                class="mt-3 text-center
+                          sm:ml-4 sm:mt-0 sm:text-left">
+                <label for="fileClass" class="text-base font-bold leading-6 text-gray-900">
+                  Enter file password
+                </label>
+                <input
+                  type="password"
+                  id="filePassword"
+                  placeholder="Enter File Password"
+                  class="input input-bordered w-full max-w-xs"
+                  bind:value={$form.filePassword} />
               </div>
             </div>
           </div>
