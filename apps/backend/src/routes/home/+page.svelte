@@ -15,8 +15,8 @@
   let showInfoCard = false;
   let selfDestructModal: HTMLDialogElement;
   let fileAccessModal: HTMLDialogElement;
-  let LogoutModal: HTMLDialogElement;
-  let SettingsModal: HTMLDialogElement;
+  let logoutModal: HTMLDialogElement;
+  let settingsModal: HTMLDialogElement;
   let apiError: FirebaseError | null;
 
   // Reactive Declarations
@@ -32,12 +32,12 @@
     fileAccessModal.showModal();
   }
 
-  function showLogoutModal() {
-    LogoutModal.showModal();
+  function showlogoutModal() {
+    logoutModal.showModal();
   }
 
-  function showSettingsModal() {
-    SettingsModal.showModal();
+  function showsettingsModal() {
+    settingsModal.showModal();
   }
 
   // Handle details card
@@ -160,11 +160,11 @@
             class="dropdown-content z-[1] menu p-2 shadow-2xl bg-base-100 rounded-box w-52 border">
             <li class="flex flex-row justify-center">
               <!-- Settings Modal -->
-              <button on:click={showSettingsModal} class="w-full">
+              <button on:click={showsettingsModal} class="w-full">
                 <img src="settings.svg" alt="Setting Icon" />
                 Settings
               </button>
-              <dialog bind:this={SettingsModal} class="modal flex justify-center">
+              <dialog bind:this={settingsModal} class="modal flex justify-center">
                 <div class="modal-box h-screen max-w-2xl">
                   <form method="dialog">
                     <button
@@ -439,12 +439,12 @@
             <hr />
             <li class="flex flex-row justify-center">
               <!-- Logout Modal -->
-              <button on:click={showLogoutModal} class="w-full hover:bg-red-500">
+              <button on:click={showlogoutModal} class="w-full hover:bg-red-500">
                 <img src="logout.svg" alt="File Icon" />
                 Logout
               </button>
               <dialog
-                bind:this={LogoutModal}
+                bind:this={logoutModal}
                 class="
                   flex justify-center
                   modal modal-bottom sm:modal-middle">
