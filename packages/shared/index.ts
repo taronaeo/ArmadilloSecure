@@ -8,10 +8,11 @@ export * from './models/WrapperAppState';
 export * from './models/WrapperIpc';
 
 // Firestore Models
+export * from './models/FSAudit';
 export * from './models/FSUser';
+export * from './models/FSDomain';
 export * from './models/FSFile';
 export * from './models/FSFileClass';
-export * from './models/FSAudit';
 export * from './models/FSMetadata';
 
 // Cloud Functions Callable Models
