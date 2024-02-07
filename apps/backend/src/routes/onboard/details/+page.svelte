@@ -1,11 +1,12 @@
 <!-- JavaScript code for Continue button -->
 <script lang="ts">
-  import { createForm } from 'svelte-forms-lib';
+  // Imports
   import type { FirebaseError } from 'firebase/app';
-  import * as yup from 'yup';
-  import { authStore } from '$lib/stores';
-  import { firestore } from '$lib/firebase';
   import { doc, setDoc } from 'firebase/firestore';
+  import { createForm } from 'svelte-forms-lib';
+  import { firestore } from '$lib/firebase';
+  import { authStore } from '$lib/stores';
+  import * as yup from 'yup';
 
   // State variable
   let apiError: FirebaseError | null;

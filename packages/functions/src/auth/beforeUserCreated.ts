@@ -1,6 +1,6 @@
-import type { FSUser } from '@armadillo/shared';
+import type { FSUser, FSDomain } from '@armadillo/shared';
 
-import { FS_COLLECTION_USERS } from '@armadillo/shared';
+import { FS_COLLECTION_USERS, FS_COLLECTION_DOMAINS } from '@armadillo/shared';
 import { FieldValue } from 'firebase-admin/firestore';
 
 import { logger } from 'firebase-functions/v2';
@@ -21,6 +21,14 @@ export const auth_beforeUserCreated = beforeUserCreated(async (event) => {
     data: { uid, email },
   } = event;
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+  const domainAddress = email?.split('@').pop()!; // Bad practice, but should change later.
+
+  const batch = firestore.batch();
+  const userRef = firestore.collection(FS_COLLECTION_USERS).doc(uid);
+  const domainRef = firestore.collection(FS_COLLECTION_DOMAINS).doc(domainAddress);
+  const domainSnapshot = await domainRef.get();
+
   const user: FSUser = {
     uid,
     faceId: null,
@@ -33,10 +41,24 @@ export const auth_beforeUserCreated = beforeUserCreated(async (event) => {
     updated_at: FieldValue.serverTimestamp(),
     created_at: FieldValue.serverTimestamp(),
   };
+  batch.set(userRef, user);
+
+  if (!domainSnapshot.exists) {
+    const domain: FSDomain = {
+      domain_dns_suffix: null,
+      domain_ipv4_start: null,
+      domain_ipv4_end: null,
+      domain_administrators: [uid],
+      updated_at: FieldValue.serverTimestamp(),
+      created_at: FieldValue.serverTimestamp(),
+    };
+
+    batch.set(domainRef, domain, { merge: true });
+  }
 
   try {
     logger.log(user);
-    await firestore.collection(FS_COLLECTION_USERS).doc(uid).set(user, { merge: true });
+    await batch.commit();
   } catch (error) {
     logger.error(error);
   }
