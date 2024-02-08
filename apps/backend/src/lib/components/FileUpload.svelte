@@ -151,7 +151,7 @@
             <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
               <div class="sm:flex sm:items-start">
                 <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                  <label for="fileClass" class="text-base font-bold leading-6 text-gray-900">
+                  <label for="filePassword" class="text-base font-bold leading-6 text-gray-900">
                     Enter file password
                   </label>
                   <input
@@ -160,9 +160,11 @@
                     placeholder="Enter File Password"
                     class="input input-bordered w-full max-w-xs"
                     on:change={handleChange} />
-                </div>
-                <div class="mt-1 max-h-10 overflow-hidden">
-                  <span class="text-red-600">{$errors.filePassword}</span>
+                  {#if $errors.filePassword}
+                    <div class="mt-1">
+                      <span class="text-red-600 block">{$errors.filePassword}</span>
+                    </div>
+                  {/if}
                 </div>
               </div>
             </div>
