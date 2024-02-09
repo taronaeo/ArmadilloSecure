@@ -4,40 +4,27 @@
   import { appStore } from '../lib/stores';
 
   let fileClass = '';
-
-  let appName = '';
   let proceed = false;
 
   onMount(async () => {
-    appName = await window.api.getAppName();
-
     try {
       fileClass = await window.api.getFileClass();
     } catch {
       appStore.update((state) => ({
         ...state,
         passedCheck: false,
-        errorMsg: 'File Classification Check Failed',
+        errorMsg: `File Classification Check Failed, ${$appStore.fileId}`,
       }));
       return;
     }
-    console.log(fileClass);
 
-    if (fileClass === 'TOPSECRET' || fileClass === 'SENSITIVE') {
-      proceed = true;
+    proceed = true;
 
-      appStore.update((state) => ({
-        ...state,
-        currentState: 'compromisationCheck',
-      }));
-    } else if (fileClass === 'OPEN') {
-      proceed = true;
-
-      appStore.update((state) => ({
-        ...state,
-        currentState: 'viewDoc',
-      }));
-    }
+    appStore.update((state) => ({
+      ...state,
+      currentState: 'compromisationCheck',
+      fileClass: fileClass,
+    }));
   });
 </script>
 
@@ -51,10 +38,10 @@
       <h1 class="text-center text-lg">
         You are trying to access file:
         <span class="text-secondary">
-          {#if appName === ''}
+          {#if !$appStore.fileId}
             <span class="text-white loading loading-spinner loading-md mx-2 -mb-2"></span>
           {:else}
-            {appName}
+            {$appStore.fileId}
           {/if}
         </span>
       </h1>

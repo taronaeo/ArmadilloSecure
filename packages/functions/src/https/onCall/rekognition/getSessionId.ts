@@ -2,6 +2,7 @@ import type {
   FSAudit,
   CFCallableGetSessionIdRequest,
   CFCallableGetSessionIdResponse,
+  FSFile,
 } from '@armadillo/shared';
 
 import { FS_COLLECTION_AUDITS, FS_COLLECTION_FILES } from '@armadillo/shared';
@@ -109,15 +110,15 @@ export const https_onCall_rekognition_getSessionId = onCall<CFCallableGetSession
       },
     });
 
-    const { SessionId: sessionId } = await rekognitionClient.send(rekognitionCommand);
-    if (!sessionId) throw new HttpsError('internal', 'Unable to retrieve Session ID');
-
     try {
       await fsAuditRef.set(auditDoc, { merge: true });
 
       const fileSnapshot = await fsFileRef.get();
       const fileExists = fileSnapshot.exists;
       if (!fileExists) throw new HttpsError('not-found', 'File Not Found');
+
+      const fileData = fileSnapshot.data() as FSFile;
+      if (fileData.file_classification === 'OPEN') return { sessionId: 'BYPASS' };
 
       // Check if full scan end time is outdated
       if (currentTime - fullScanEndTime <= DAY_IN_MILLISECONDS)
@@ -130,6 +131,9 @@ export const https_onCall_rekognition_getSessionId = onCall<CFCallableGetSession
       // Check if antispyware signatures last updated is outdated
       if (currentTime - antispywareSignaturesLastUpdated >= MONTH_IN_MILLISECONDS)
         throw new HttpsError('failed-precondition', 'Antispyware Signatures Outdated');
+
+      const { SessionId: sessionId } = await rekognitionClient.send(rekognitionCommand);
+      if (!sessionId) throw new HttpsError('internal', 'Unable to retrieve Session ID');
 
       return { sessionId };
     } catch (error) {

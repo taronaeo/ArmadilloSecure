@@ -27,7 +27,7 @@ export async function checkCompromisation() {
   defenderStatusArr.forEach((property) => {
     if (property.includes('AntivirusSignatureLastUpdated')) {
       antivirusSignatures = property.split(': ')[1];
-    } else if (property.includes('QuickScanEndTime')) {
+    } else if (property.includes('FullScanEndTime')) {
       fullScanEndTime = property.split(': ')[1];
     } else if (property.includes('AntispywareSignatureLastUpdated')) {
       antispywareSignatures = property.split(': ')[1];

@@ -3,6 +3,9 @@ import { electronAPI } from '@electron-toolkit/preload';
 import { CFCallableGetSessionIdResponse } from '@armadillo/shared';
 
 const api = {
+  selfDestruct: async () => {
+    await ipcRenderer.invoke('selfDestruct');
+  },
   getPrivIpHostName: async () => {
     const privIpHostnameObj = await ipcRenderer.invoke('getPrivIpHostName');
     return privIpHostnameObj;

@@ -28,9 +28,6 @@ export const https_onCall_getPassword = onCall<CFCallableGetPasswordRequest>(
 
     const { origin, clientId, fileId, fileEncryptionHash } = data;
 
-    // Check if request is authenticated
-    if (!auth) throw new HttpsError('failed-precondition', 'Authentication Error');
-
     // Check if origin is valid
     if (!origin || (origin !== 'web' && origin !== 'wrapper'))
       throw new HttpsError('failed-precondition', 'Origin Invalid');
@@ -54,19 +51,24 @@ export const https_onCall_getPassword = onCall<CFCallableGetPasswordRequest>(
       if (!fsFileExists) throw new HttpsError('not-found', 'File Not Found');
 
       const fsFileData = fsFileSnapshot.data() as FSFile;
+      if (fsFileData.file_classification !== 'OPEN' && !auth)
+        throw new HttpsError('failed-precondition', 'Authentication Error');
+
+      //If file class is not 'OPEN' and user is authenticated but not authorized to access file
+      if (auth && !fsFileData.file_permissions.includes(auth.uid))
+        throw new HttpsError('permission-denied', 'Unauthorised Error');
+
       if (!fsFileData.file_id || !fsFileData.file_encryption_hash || !fsFileData.file_permissions)
         throw new HttpsError('internal', 'Internal Server Error');
 
       if (fileEncryptionHash !== fsFileData.file_encryption_hash)
         throw new HttpsError('permission-denied', 'Unauthorised Error');
 
-      if (!fsFileData.file_permissions.includes(auth.uid))
-        throw new HttpsError('permission-denied', 'Unauthorised Error');
-
       return {
         fileId: fsFileData.file_id,
         fileExt: fsFileData.file_ext,
         fileEncryptionHash: fsFileData.file_encryption_hash,
+        fileOwner: fsFileData.file_owner_id,
       };
     } catch (error) {
       logger.error(error);

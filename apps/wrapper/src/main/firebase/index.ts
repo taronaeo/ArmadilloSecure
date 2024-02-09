@@ -5,7 +5,8 @@ import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
 import { getApp, getApps, initializeApp } from 'firebase/app';
 
-const dev = import.meta.env.DEV;
+// const dev = import.meta.env.DEV;
+const dev = false; // TODO: Change this during production
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAWjGtaLVj-_DxscJuAEPOer6zUM9-OmsE',

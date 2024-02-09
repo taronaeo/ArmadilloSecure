@@ -1,27 +1,12 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { appStore } from '../lib/stores';
-
   import logo from '../assets/logo.png';
 
-  onMount(() => {
-    checkCompromisation();
-  });
-
-  async function checkCompromisation(): Promise<void> {
-    try {
-      await window.api.checkCompromisation();
-      appStore.update((state) => ({
-        ...state,
-        currentState: 'faceLiveness',
-      }));
-    } catch {
-      appStore.update((state) => ({
-        ...state,
-        passedCheck: false,
-        errorMsg: 'Compromisation Check Failed',
-      }));
-    }
+  function swapToLiveness() {
+    appStore.update((state) => ({
+      ...state,
+      currentState: 'faceLiveness',
+    }));
   }
 </script>
 
@@ -32,32 +17,31 @@
       <div class="text-center font-bold text-lg"> Armadillo Verification Process</div>
       <div class="flex flex-col">
         <div class="py-6 px-4 mt-8">File Classification</div>
-        <div class="py-6 px-4 text-secondary bg-neutral">Compromisation Check</div>
-        <div class="py-6 px-4">Authentication</div>
+        <div class="py-6 px-4">Compromisation Check</div>
+        <div class="py-6 px-4 text-secondary bg-neutral">Authentication</div>
         <div class="py-6 px-4">View Document</div>
       </div>
     </div>
     <div class="m-6 col-span-3">
-      <h1 class="text-2xl font-bold">Compromisation Check</h1>
+      <h1 class="text-2xl font-bold">Facial Authentication Guidelines</h1>
       <div class="py-6">
         <div>
-          Check if computer is compromised (<span class="text-secondary">Windows Defender</span>)
-        </div>
-        <br />
-        <div>
-          Windows Defender must have:
+          Make sure that you follows these guidelines or authentication will fail
           <ul class="list-decimal list-inside">
-            <li
-              >Performed a <span class="font-bold">FULL</span> scan in the past
-              <span class="text-secondary">24 hours</span></li>
-            <li
-              >Antivirus signatures must be updated in the past
-              <span class="text-secondary">1 month</span>
+            <li>
+              Be indoors in a <span class="font-bold text-secondary">sufficiently lit</span> area
+            </li>
+            <li>
+              Light must not be <span class="font-bold text-secondary">too intensive</span>
+            </li>
+            <li>
+              Device must be at <span class="font-bold text-secondary">100% brightness</span>
             </li>
           </ul>
         </div>
         <div class="my-8 text-center">
-          <span class="loading loading-spinner loading-lg text-secondary"> </span></div>
+          <button on:click={swapToLiveness} class="btn btn-secondary">Proceed</button>
+        </div>
       </div>
     </div>
   </div>

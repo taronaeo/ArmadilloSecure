@@ -26,6 +26,8 @@
       const backendStore = await window.api.getBackendStore();
       const clientId = backendStore.clientId;
       const fileId = backendStore.fileId;
+      console.log(clientId);
+      console.log(fileId);
 
       const filePassRes = await getFilePasswordAPI({
         origin: 'wrapper',
@@ -39,6 +41,7 @@
         currentState: 'viewDoc',
         fileHash: hash,
         fileExt: filePassRes.data.fileExt,
+        fileOwner: filePassRes.data.fileOwner,
       }));
     } catch (err) {
       tryCounter += 1;
@@ -74,6 +77,7 @@
       <h1 class="text-2xl font-bold">File is Locked</h1>
       <div class="py-6">
         <div> Please key in the file password below </div>
+        <div>You have <span class="text-secondary">{3 - tryCounter}</span> tries left.</div>
         <div class="mt-5">
           <input bind:value={filePass} class="inline-block w-full input input-secondary" />
         </div>

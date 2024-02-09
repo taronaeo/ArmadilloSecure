@@ -14,6 +14,7 @@ import { getPrivIpHostName, loadState } from './loadState';
 import { appStore } from '../renderer/src/lib/stores';
 
 let childKilled = false;
+let selfDestructed = false;
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -90,6 +91,23 @@ app.whenReady().then(() => {
 
   createWindow();
 
+  ipcMain.handle('selfDestruct', () => {
+    selfDestructed = true;
+    if (!fileOpened) {
+      app.exit();
+      return;
+    }
+    if (child) {
+      child.kill();
+      setTimeout(async () => {
+        await delFiles();
+      }, 1000);
+      setTimeout(() => {
+        app.exit();
+      }, 1000);
+    }
+  });
+
   ipcMain.handle('getClientId', () => {
     return get(appStore).clientId;
   });
@@ -103,11 +121,14 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('getAppName', (): string => {
+    const appPath = process.env['PORTABLE_EXECUTABLE_FILE'] || process.execPath;
+    const fileId = getAppName(appPath);
+
     appStore.update((state) => ({
       ...state,
-      fileId: getAppName(process),
+      fileId: fileId,
     }));
-    return getAppName(process);
+    return fileId;
   });
 
   ipcMain.handle('getFaceLivenessSessionId', (): string => {
@@ -144,12 +165,12 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('launchFile', async (_, encKey, iv, fileArrayBuffer): Promise<boolean> => {
-    //TODO code to get file from firebase and decrypt
     if (!fileOpened) {
       child = await viewFileInSeparateProcess(encKey, iv, fileArrayBuffer);
       fileOpened = true;
     } else if (fileOpened) {
       console.log('File Already Opened!');
+      return true;
     }
 
     if (!child || !child.pid) {
@@ -159,18 +180,21 @@ app.whenReady().then(() => {
     pid = child.pid;
 
     setInterval(async () => {
-      if (fileOpened && pingFailed) {
+      if (fileOpened && pingFailed && !childKilled) {
+        childKilled = true;
         child!.kill();
+        fileOpened = false;
         setTimeout(async () => await delFiles(), 2000);
       }
     }, 2000);
 
     child.on('exit', async () => {
-      console.log('MARKER DELETED');
-      if (!childKilled) {
+      console.log('EXITED');
+      if (!childKilled && !selfDestructed) {
         await delFiles();
         fileOpened = false;
       }
+      childKilled = false;
     });
     return true;
   });

@@ -5,29 +5,31 @@
   import logo from '../assets/logo.png';
   import exclamation from '../assets/exclamation.svg';
   import { fileStorage } from '../../../main/firebase/storage';
-  import { appStore, authStore } from '../lib/stores';
+  import { appStore } from '../lib/stores';
   import { firestore } from '../../../main/firebase';
 
   let hasDefaultProgram = true;
   let launchFileFailed = false;
-  let fileExtension = 'docx'; //temp code
+  const fileExtension = $appStore.fileExt; //temp code
+
+  const fileId = $appStore.fileId;
+  const fileDocRef = doc(firestore, 'files', fileId);
 
   async function launchFile(): Promise<void> {
-    const defaultProgram = await window.api.defaultProgram($appStore.fileExt);
+    const defaultProgram = await window.api.defaultProgram(fileExtension);
+
     if (defaultProgram === '') {
       hasDefaultProgram = false;
       return;
     }
 
-    const backendAppStore = await window.api.getBackendStore();
-    const fileId = backendAppStore.fileId;
-    const userId = $authStore.uid;
-    const pathReference = ref(fileStorage, `${userId}/${fileId}`);
-    const fileDocRef = doc(firestore, 'files', fileId);
+    const fileOwner = $appStore.fileOwner;
+
+    const pathReference = ref(fileStorage, `${fileOwner}/${fileId}`);
     const fileSnap = await getDoc(fileDocRef);
     const fileData = fileSnap.data();
+
     const fileArrayBuffer = await getBytes(pathReference);
-    // Decrypt the ArrayBuffer
     const encKey = $appStore.fileHash;
     const iv = fileData.file_encryption_iv;
 
@@ -53,7 +55,6 @@
     </div>
   </div>
 {/if}
-
 <div class="flex">
   <div class="grid grid-cols-4 items-center">
     <div class=" border-r-2 h-screen border-neutral">

@@ -51,7 +51,7 @@ export function genRandomFileAndExtension(): RandomFileProperties {
   };
 }
 
-export function defaultProgram(fileExt): string {
+export function defaultProgram(fileExt: string): string {
   console.log(fileExt);
   console.log(typeof fileExt);
   for (const path of paths[fileExt]) {
@@ -63,7 +63,11 @@ export function defaultProgram(fileExt): string {
   return validFilePath;
 }
 
-export async function viewFileInSeparateProcess(encKey, iv, fileArray): Promise<ChildProcess> {
+export async function viewFileInSeparateProcess(
+  encKey: string,
+  iv: string,
+  fileArray: ArrayBuffer
+): Promise<ChildProcess> {
   const keyBuffer = Buffer.from(encKey, 'hex');
   const ivBuffer = Buffer.from(iv, 'hex');
 

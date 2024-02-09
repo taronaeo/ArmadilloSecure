@@ -8,7 +8,9 @@ export function ping(): void {
   exec(`ping ${host}`, (error, stdout) => {
     if (error) {
       pingFailed = true;
-    } else if (!stdout.includes('Packets: Sent = 4, Received = 4')) {
+    } else if (
+      !stdout.includes('Packets: Sent = 4, Received = 4' || 'Packets: Sent = 4, Received = 3')
+    ) {
       pingFailed = true;
     } else {
       pingFailed = false;

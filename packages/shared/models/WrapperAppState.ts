@@ -10,6 +10,8 @@ interface AppState {
   sessionId: string;
   fileHash: string;
   fileExt: string;
+  fileOwner: string;
+  fileClass: string;
 }
 
 export type { AppState };

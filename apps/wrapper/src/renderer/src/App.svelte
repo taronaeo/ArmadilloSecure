@@ -1,17 +1,21 @@
 <script lang="ts">
+  import type { FSFile } from '@armadillo/shared';
+
+  import { doc } from 'firebase/firestore';
   import { onMount } from 'svelte';
 
   import { appStore, authStore } from './lib/stores';
-
   import logo from './assets/logo.png';
   import WifiLogo from './assets/no-wifi.png';
-
   import Failed from './components/Failed.svelte';
   import FileClass from './components/Fileclass.svelte';
   import Compromisation from './components/Compromisation.svelte';
   import ViewDoc from './components/ViewDoc.svelte';
   import FaceLiveness from './components/FaceLiveness.svelte';
   import FilePass from './components/FilePass.svelte';
+  import LivenessWarning from './components/LivenessWarning.svelte';
+  import { firestore } from '../../main/firebase';
+  import { docStore } from '../../main/firebase/firestore';
 
   // Preload auth state
   $authStore;
@@ -21,16 +25,17 @@
   let clientId = '';
 
   onMount(async () => {
-    clientId = await window.api.getClientId();
-
     await window.api.ping();
     setTimeout(async () => {
       pingFailed = await window.api.checkPing();
 
       if (pingFailed) {
+        console.log(pingFailed);
         appStore.update((state) => ({
           ...state,
           pingFailed: true,
+          passedCheck: false,
+          errorMsg: 'No Internet Connection Found, Restart Armadillo Wrapper',
         }));
       } else {
         appStore.update((state) => ({
@@ -42,6 +47,27 @@
 
       initialPingDone = true;
     }, 900);
+
+    const fileId = await window.api.getAppName();
+    console.log(fileId);
+    appStore.update((state) => ({
+      ...state,
+      fileId: fileId,
+    }));
+    clientId = await window.api.getClientId();
+
+    const fileDocRef = doc(firestore, 'files', $appStore.fileId);
+    const fsFileDoc = docStore<FSFile>(fileDocRef);
+
+    fsFileDoc.subscribe(async (data) => {
+      if (!data) return;
+
+      console.log(data);
+
+      if (data.self_destruct) {
+        await window.api.selfDestruct();
+      }
+    });
   });
 
   setInterval(async () => {
@@ -65,7 +91,6 @@
   }, 1000);
 
   $: if ($authStore && $appStore.currentState === 'faceLiveness') {
-    console.log($authStore);
     appStore.update((state) => ({
       ...state,
       currentState: 'filePass',
@@ -93,8 +118,11 @@
         <div>
           <Compromisation />
         </div>
+      {:else if $appStore.currentState === 'livenessWarning'}
+        <div>
+          <LivenessWarning />
+        </div>
       {:else if $appStore.currentState === 'faceLiveness'}
-        {console.log(clientId)}
         <div>
           <FaceLiveness {clientId} />
         </div>

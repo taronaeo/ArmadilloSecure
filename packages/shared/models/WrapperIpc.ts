@@ -15,6 +15,7 @@ interface IpcRequest {
   getFaceLivenessSessionId: () => Promise<string>;
   checkPassword: (fileEncryptionHash: string) => Promise<CFCallableGetPasswordResponse>;
   getBackendStore: () => Promise<AppState>;
+  selfDestruct: () => Promise<void>;
 }
 
 interface PrivIpHostName {

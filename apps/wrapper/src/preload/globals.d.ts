@@ -19,5 +19,7 @@ declare global {
     sessionId: string;
     fileHash: string;
     fileExt: string;
+    fileOwner: string;
+    fileClass: string;
   }
 }

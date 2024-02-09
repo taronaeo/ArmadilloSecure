@@ -11,9 +11,16 @@
   async function checkCompromisation(): Promise<void> {
     try {
       await window.api.checkCompromisation();
+
+      let nextState = 'livenessWarning';
+
+      if ($appStore.fileClass === 'OPEN') {
+        nextState = 'filePass';
+      }
+
       appStore.update((state) => ({
         ...state,
-        currentState: 'faceLiveness',
+        currentState: nextState,
       }));
     } catch {
       appStore.update((state) => ({
