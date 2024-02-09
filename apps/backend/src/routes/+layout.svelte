@@ -1,9 +1,10 @@
 <script>
   import '../app.css';
-  import { authStore } from '$lib/stores';
+  import { authStore, domainStore } from '$lib/stores';
 
   // Preload auth state
   $authStore;
+  $domainStore;
 </script>
 
 {#if $authStore === undefined}
