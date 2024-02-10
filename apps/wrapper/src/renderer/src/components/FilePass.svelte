@@ -1,12 +1,13 @@
 <script lang="ts">
-  import logo from '../assets/logo.png';
-  import { appStore } from '../lib/stores';
-
-  import { getHttpsCallable } from '../../../main/firebase/functions';
   import type {
     CFCallableGetPasswordRequest,
     CFCallableGetPasswordResponse,
   } from '@armadillo/shared';
+
+  import { appStore } from '../lib/stores';
+  import { getHttpsCallable } from '../../../main/firebase/functions';
+
+  import logo from '../assets/logo.png';
 
   let tryCounter = 0;
 

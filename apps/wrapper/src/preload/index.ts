@@ -1,6 +1,7 @@
+import type { CFCallableGetSessionIdResponse } from '@armadillo/shared';
+
 import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
-import { CFCallableGetSessionIdResponse } from '@armadillo/shared';
 
 const api = {
   selfDestruct: async () => {

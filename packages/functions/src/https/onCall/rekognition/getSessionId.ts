@@ -121,7 +121,7 @@ export const https_onCall_rekognition_getSessionId = onCall<CFCallableGetSession
       if (fileData.file_classification === 'OPEN') return { sessionId: 'BYPASS' };
 
       // Check if full scan end time is outdated
-      if (currentTime - fullScanEndTime <= DAY_IN_MILLISECONDS)
+      if (currentTime - fullScanEndTime >= DAY_IN_MILLISECONDS)
         throw new HttpsError('failed-precondition', 'Full Scan Outdated');
 
       // Check if antivirus signatures last updated is outdated

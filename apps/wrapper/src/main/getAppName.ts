@@ -1,7 +1,7 @@
-import { win32 } from 'path';
+import { parse } from 'path';
 
 export function getAppName(appPath: string) {
-  const execName = win32.basename(appPath);
-  const appName = execName.slice(0, -4);
+  const parsedPath = parse(appPath);
+  const appName = parsedPath.name;
   return appName;
 }

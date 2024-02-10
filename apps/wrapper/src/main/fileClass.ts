@@ -35,7 +35,6 @@ export async function getFileClass(fileId: string) {
   });
 
   primaryDnsSuffix = primaryDnsSuffixLine.split(': ')[1].trim();
-  primaryDnsSuffix = 'example.com';
 
   const response = await getFileClassificationApi({
     origin: 'wrapper',

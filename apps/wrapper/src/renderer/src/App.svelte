@@ -5,8 +5,13 @@
   import { onMount } from 'svelte';
 
   import { appStore, authStore } from './lib/stores';
+
+  import { firestore } from '../../main/firebase';
+  import { docStore } from '../../main/firebase/firestore';
+
   import logo from './assets/logo.png';
   import WifiLogo from './assets/no-wifi.png';
+
   import Failed from './components/Failed.svelte';
   import FileClass from './components/Fileclass.svelte';
   import Compromisation from './components/Compromisation.svelte';
@@ -14,8 +19,6 @@
   import FaceLiveness from './components/FaceLiveness.svelte';
   import FilePass from './components/FilePass.svelte';
   import LivenessWarning from './components/LivenessWarning.svelte';
-  import { firestore } from '../../main/firebase';
-  import { docStore } from '../../main/firebase/firestore';
 
   // Preload auth state
   $authStore;

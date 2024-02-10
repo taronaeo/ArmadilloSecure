@@ -1,8 +1,13 @@
+import type {
+  CFCallableGetSessionIdRequest,
+  CFCallableGetSessionIdResponse,
+} from '@armadillo/shared';
+
 import { execSync } from 'child_process';
-import { getHttpsCallable } from './firebase/functions';
-import { CFCallableGetSessionIdRequest, CFCallableGetSessionIdResponse } from '@armadillo/shared';
-import { appStore } from '../renderer/src/lib/stores';
 import { get } from 'svelte/store';
+
+import { getHttpsCallable } from './firebase/functions';
+import { appStore } from '../renderer/src/lib/stores';
 
 function convertToMillis(dateStr: string) {
   const dateInMillis = execSync(`Get-Date -date "${dateStr}" -UFormat %s`, {

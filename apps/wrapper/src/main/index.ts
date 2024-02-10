@@ -1,7 +1,8 @@
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
+import { electronApp, optimizer, is } from '@electron-toolkit/utils';
+
 import { join } from 'path';
 import { ChildProcess } from 'child_process';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
 import { get } from 'svelte/store';
 
 import icon from '../../resources/icon.png?asset';
