@@ -8,7 +8,7 @@
   import { firestore } from '$lib/firebase';
   import { authStore } from '$lib/stores';
   import * as yup from 'yup';
-  import { fileStorage, headshotStorage } from '$lib/firebase/storage';
+  import { headshotStorage } from '$lib/firebase/storage';
   import { BUCKET_HEADSHOTS } from '@armadillo/shared';
 
   // State variable
