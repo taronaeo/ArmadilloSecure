@@ -11,6 +11,15 @@ import { onObjectFinalized } from 'firebase-functions/v2/storage';
 
 import { bucketFiles, firestore } from '../../../firebase';
 
+/**
+ * Handles the encryption of a file when it is uploaded to the storage.
+ *
+ * @param data              The data object containing information about the uploaded file.
+ * @param data.name         The name of the uploaded file.
+ * @param data.size         The size of the uploaded file in bytes.
+ * @param data.contentType  The content type of the uploaded file.
+ * @returns A promise that resolves when the encryption process is complete.
+ */
 export const storage_onObjectFinalized_file_onFileUploadEncrypt = onObjectFinalized(
   {
     bucket: BUCKET_FILES,
