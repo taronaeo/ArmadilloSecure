@@ -9,7 +9,8 @@
   import { authStore } from '$lib/stores';
 
   import { colFilesRef } from '$lib/firebase/firestore';
-  import { ref, getStorage, uploadBytes } from 'firebase/storage';
+  import { fileStorage } from '$lib/firebase/storage';
+  import { ref, uploadBytes } from 'firebase/storage';
   import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
   interface FormValues {
@@ -48,10 +49,12 @@
     }),
     onSubmit: async (data) => {
       // Just to please TypeScript because we are already using validationSchema above.
+      if (!$authStore) return;
       if (!data.fileUpload || !data.fileClass || !data.isChecked || !data.filePassword) return;
 
-      const fileUniqueId = v4();
       const formFile = data.fileUpload[0];
+      const formFileName = v4();
+      const formFileExt = formFile.name.split('.').pop() || '';
       const formFileBuffer = await formFile.arrayBuffer();
 
       const filePwdBuffer = new TextEncoder().encode(data.filePassword);
@@ -62,7 +65,8 @@
         .join('');
 
       const fileData: FSFile = {
-        file_id: fileUniqueId,
+        file_id: formFileName,
+        file_status: 'UPLOADED',
         // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
         file_domain: $authStore?.email?.split('@').pop()!, // TODO: Please change later
         file_classification: data.fileClass!,
@@ -70,13 +74,14 @@
         file_ext: formFile.name.split('.').pop() || '',
         file_owner_id: $authStore!.uid,
         file_encryption_hash: filePwdHash,
+        file_encryption_iv: '',
         file_permissions: [],
         updated_at: serverTimestamp(),
         created_at: serverTimestamp(),
       };
 
-      const docRef = doc(colFilesRef);
-      const storageRef = ref(getStorage(), `armadillo-files/${fileUniqueId}`);
+      const docRef = doc(colFilesRef, formFileName);
+      const storageRef = ref(fileStorage, `${$authStore.uid}/${formFileName}.${formFileExt}`);
 
       const setDocPromise = setDoc(docRef, fileData);
       const uploadDocPromise = uploadBytes(storageRef, formFileBuffer);
