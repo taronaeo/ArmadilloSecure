@@ -72,7 +72,7 @@
         // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
         file_domain: $authStore?.email?.split('@').pop()!, // TODO: Please change later
         file_classification: data.fileClass!,
-        file_name: formFile.name,
+        file_name: `${formFileName}.${formFileExt}`,
         file_ext: formFileExt,
         file_owner_id: $authStore!.uid,
         file_encryption_hash: filePwdHash,
