@@ -25,7 +25,7 @@
 
     const fileOwner = $appStore.fileOwner;
 
-    const pathReference = ref(fileStorage, `${fileOwner}/${fileId}`);
+    const pathReference = ref(fileStorage, `${fileOwner}/enc_${fileId}.${fileExtension}`);
     const fileSnap = await getDoc(fileDocRef);
     const fileData = fileSnap.data();
 
