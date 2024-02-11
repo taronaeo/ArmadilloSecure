@@ -54,6 +54,5 @@ export async function checkCompromisation() {
     antivirusSignaturesLastUpdated: antivirusSignaturesMillis,
     antispywareSignaturesLastUpdated: antispywareSignaturesMillis,
   });
-  console.log(sessionId.data);
   return sessionId.data;
 }

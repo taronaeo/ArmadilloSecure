@@ -152,7 +152,6 @@ app.whenReady().then(() => {
 
   ipcMain.handle('checkCompromisation', async (): Promise<string> => {
     const { sessionId } = await checkCompromisation();
-    console.log(sessionId);
     appStore.update((state) => ({
       ...state,
       sessionId: sessionId,
@@ -170,7 +169,6 @@ app.whenReady().then(() => {
       child = await viewFileInSeparateProcess(encKey, iv, fileArrayBuffer);
       fileOpened = true;
     } else if (fileOpened) {
-      console.log('File Already Opened!');
       return true;
     }
 
@@ -190,7 +188,6 @@ app.whenReady().then(() => {
     }, 2000);
 
     child.on('exit', async () => {
-      console.log('EXITED');
       if (!childKilled && !selfDestructed) {
         await delFiles();
         fileOpened = false;

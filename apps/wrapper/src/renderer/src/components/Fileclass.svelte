@@ -13,7 +13,7 @@
       appStore.update((state) => ({
         ...state,
         passedCheck: false,
-        errorMsg: `File Classification Check Failed, ${$appStore.fileId}`,
+        errorMsg: 'File Classification Check Failed',
       }));
       return;
     }

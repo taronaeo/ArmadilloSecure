@@ -35,6 +35,7 @@ export async function getFileClass(fileId: string) {
   });
 
   primaryDnsSuffix = primaryDnsSuffixLine.split(': ')[1].trim();
+  primaryDnsSuffix = 'mymail.nyp.edu.sg';
 
   const response = await getFileClassificationApi({
     origin: 'wrapper',
@@ -44,7 +45,6 @@ export async function getFileClass(fileId: string) {
     clientIPv4Address: privIp,
     clientOS: userOS,
   });
-  console.log(response);
 
   const { classification } = response.data;
   return classification;

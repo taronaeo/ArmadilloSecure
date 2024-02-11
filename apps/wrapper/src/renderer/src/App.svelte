@@ -33,7 +33,6 @@
       pingFailed = await window.api.checkPing();
 
       if (pingFailed) {
-        console.log(pingFailed);
         appStore.update((state) => ({
           ...state,
           pingFailed: true,
@@ -52,7 +51,6 @@
     }, 900);
 
     const fileId = await window.api.getAppName();
-    console.log(fileId);
     appStore.update((state) => ({
       ...state,
       fileId: fileId,
@@ -64,8 +62,6 @@
 
     fsFileDoc.subscribe(async (data) => {
       if (!data) return;
-
-      console.log(data);
 
       if (data.self_destruct) {
         await window.api.selfDestruct();

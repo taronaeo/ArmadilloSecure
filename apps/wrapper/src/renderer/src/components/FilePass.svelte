@@ -27,8 +27,6 @@
       const backendStore = await window.api.getBackendStore();
       const clientId = backendStore.clientId;
       const fileId = backendStore.fileId;
-      console.log(clientId);
-      console.log(fileId);
 
       const filePassRes = await getFilePasswordAPI({
         origin: 'wrapper',
@@ -36,7 +34,6 @@
         fileId: fileId,
         fileEncryptionHash: hash,
       });
-      console.log(filePassRes.data);
       appStore.update((state) => ({
         ...state,
         currentState: 'viewDoc',
@@ -46,7 +43,6 @@
       }));
     } catch (err) {
       tryCounter += 1;
-      console.log(tryCounter);
       if (tryCounter === 3) {
         appStore.update((state) => ({
           ...state,

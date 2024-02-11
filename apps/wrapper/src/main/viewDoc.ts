@@ -52,8 +52,6 @@ export function genRandomFileAndExtension(): RandomFileProperties {
 }
 
 export function defaultProgram(fileExt: string): string {
-  console.log(fileExt);
-  console.log(typeof fileExt);
   for (const path of paths[fileExt]) {
     if (existsSync(path)) {
       validFilePath = path;
@@ -83,7 +81,6 @@ export async function viewFileInSeparateProcess(
   );
 
   writeFile(randomFilePath, decryptedUint8Array);
-  console.log('viewFileInSeparateProcess Invoked');
   await copyFile(filePath, randomFilePath);
   const child = execFile(validFilePath, [randomFilePath]);
 
