@@ -1,10 +1,10 @@
 import { tmpdir } from 'os';
-import { dirname, basename, resolve } from 'path';
+import { resolve } from 'path';
 import { getRandomValues, randomBytes, createDecipheriv } from 'crypto';
 import { ChildProcess, execFile } from 'child_process';
 
 import { existsSync, promises as fsPromises } from 'fs';
-const { writeFile, copyFile, stat, unlink } = fsPromises;
+const { writeFile, unlink } = fsPromises;
 
 import { paths } from './absolutePaths';
 interface RandomFileProperties {
@@ -16,9 +16,6 @@ let validFilePath = '';
 
 const obscurityFiles: string[] = [];
 const tempPath = tmpdir();
-const fileDir = dirname('C:\\Users\\dexte\\Pictures\\testFile\\Testfile');
-const fileName = basename('C:\\Users\\dexte\\Pictures\\testFile\\Testfile');
-const filePath = resolve(fileDir, fileName);
 const randomFileInfo = genRandomFileAndExtension();
 
 const randomFilePath = resolve(
@@ -80,12 +77,10 @@ export async function viewFileInSeparateProcess(
     )
   );
 
-  writeFile(randomFilePath, decryptedUint8Array);
-  await copyFile(filePath, randomFilePath);
+  await writeFile(randomFilePath, decryptedUint8Array);
   const child = execFile(validFilePath, [randomFilePath]);
 
-  const fileStats = await stat(filePath);
-  const fileSize = fileStats.size;
+  const fileSize = decryptedUint8Array.length;
 
   for (let i = 0; i < 10; i++) {
     const obscurityFileName = genRandomFileAndExtension().randomFileName;
