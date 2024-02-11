@@ -19,3 +19,4 @@ export * from './https/onCall/rekognition/getAuthToken';
 export * from './https/onCall/file/getPassword';
 
 export * from './storage/onObjectFinalized/user/onHeadshotUpload';
+export * from './storage/onObjectFinalized/file/onFileUploadEncrypt';
