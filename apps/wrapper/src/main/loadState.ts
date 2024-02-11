@@ -1,9 +1,9 @@
 import type { NetworkInterfaceInfo } from 'os';
 
 import { networkInterfaces, hostname } from 'os';
-import { appState } from '../renderer/src/stores';
+import { appStore } from '../renderer/src/lib/stores';
 
-function getPrivIpHostName() {
+export function getPrivIpHostName() {
   const osNetworkInterfaces = networkInterfaces();
   const nonLocalInterfaces = {};
   const clientHostname = hostname();
@@ -32,7 +32,6 @@ function getPrivIpHostName() {
   }
 
   let mainInt = nonLocalInterfaces['Wi-Fi'];
-
   if (!mainInt) {
     mainInt = nonLocalInterfaces['Ethernet'];
     if (!mainInt) {
@@ -57,10 +56,20 @@ function getPrivIpHostName() {
 }
 
 export function loadState() {
-  appState.update((state) => ({
+  const { passedCheck, privIp, hostname } = getPrivIpHostName();
+  let randomDigits = '';
+
+  for (let i = 0; i < 4; i++) {
+    randomDigits += Math.floor(Math.random() * 10).toString();
+  }
+
+  const clientId = `${hostname}::${privIp}::${randomDigits}`;
+
+  appStore.update((state) => ({
     ...state,
-    passedCheck: getPrivIpHostName().passedCheck,
-    privIp: getPrivIpHostName().privIp,
-    hostname: getPrivIpHostName().hostname,
+    privIp,
+    hostname,
+    passedCheck,
+    clientId,
   }));
 }

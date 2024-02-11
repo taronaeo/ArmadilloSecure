@@ -1,19 +1,40 @@
 <script lang="ts">
+  import { doc, getDoc } from 'firebase/firestore';
+  import { ref, getBytes } from 'firebase/storage';
+
   import logo from '../assets/logo.png';
   import exclamation from '../assets/exclamation.svg';
+  import { fileStorage } from '../../../main/firebase/storage';
+  import { appStore } from '../lib/stores';
+  import { firestore } from '../../../main/firebase';
 
   let hasDefaultProgram = true;
   let launchFileFailed = false;
-  let fileExtension = 'docx'; //temp code
+  const fileExtension = $appStore.fileExt; //temp code
+
+  const fileId = $appStore.fileId;
+  const fileDocRef = doc(firestore, 'files', fileId);
 
   async function launchFile(): Promise<void> {
-    const response = await window.api.hasDefaultProgram();
-    if (response.code !== 200) {
+    const defaultProgram = await window.api.defaultProgram(fileExtension);
+
+    if (defaultProgram === '') {
       hasDefaultProgram = false;
       return;
     }
-    const launchFileRes = await window.api.launchFile('abc123');
-    if (launchFileRes.code !== 200) {
+
+    const fileOwner = $appStore.fileOwner;
+
+    const pathReference = ref(fileStorage, `${fileOwner}/${fileId}`);
+    const fileSnap = await getDoc(fileDocRef);
+    const fileData = fileSnap.data();
+
+    const fileArrayBuffer = await getBytes(pathReference);
+    const encKey = $appStore.fileHash;
+    const iv = fileData.file_encryption_iv;
+
+    const fileLaunched = await window.api.launchFile(encKey, iv, fileArrayBuffer);
+    if (!fileLaunched) {
       launchFileFailed = true;
       return;
     }
@@ -34,7 +55,6 @@
     </div>
   </div>
 {/if}
-
 <div class="flex">
   <div class="grid grid-cols-4 items-center">
     <div class=" border-r-2 h-screen border-neutral">

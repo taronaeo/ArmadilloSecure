@@ -9,6 +9,7 @@ interface FSFile extends FSMetadata {
   readonly file_owner_id: string;
   readonly file_encryption_hash: string;
   readonly file_permissions: string[];
+  readonly self_destruct: boolean;
 }
 
 export type { FSFile };

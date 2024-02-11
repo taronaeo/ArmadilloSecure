@@ -1,20 +1,21 @@
-import type { IpcResponse, AppState } from '@armadillo/shared';
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
+import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 
 import { join } from 'path';
 import { ChildProcess } from 'child_process';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
-import { appState } from '../renderer/src/stores';
+import { get } from 'svelte/store';
 
 import icon from '../../resources/icon.png?asset';
 import { getAppName } from './getAppName';
 import { ping, checkPing } from './ping';
 import { checkCompromisation } from './checkCompromisation';
-import { checkFileClass, getFileClass, secretChecks } from './fileClass';
+import { getFileClass } from './fileClass';
 import { defaultProgram, viewFileInSeparateProcess, delFiles } from './viewDoc';
-import { loadState } from './loadState';
+import { getPrivIpHostName, loadState } from './loadState';
+import { appStore } from '../renderer/src/lib/stores';
 
 let childKilled = false;
+let selfDestructed = false;
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -77,32 +78,6 @@ let fileOpened: boolean = false;
 
 app.whenReady().then(() => {
   loadState();
-
-  let appStateObj: AppState = {
-    passedCheck: null,
-    currentState: null,
-    pingFailed: null,
-    privIp: null,
-    hostname: null,
-  };
-
-  let privIp: string | null = null;
-  let hostname: string | null = null;
-
-  appState.subscribe((state) => {
-    appStateObj = state;
-    privIp = appStateObj.privIp;
-    hostname = appStateObj.hostname;
-  });
-
-  let randomDigits = '';
-  for (let i = 0; i < 4; i++) {
-    randomDigits += Math.floor(Math.random() * 10).toString();
-  }
-
-  const clientId = `${hostname}::${privIp}::${randomDigits}`;
-  console.log(clientId);
-
   let pingFailed: boolean = false;
   let validFilePath: string = '';
   // Set app user model id for windows
@@ -117,57 +92,84 @@ app.whenReady().then(() => {
 
   createWindow();
 
-  ipcMain.handle('getAppName', (): IpcResponse => {
-    return getAppName(process);
+  ipcMain.handle('selfDestruct', () => {
+    selfDestructed = true;
+    if (!fileOpened) {
+      app.exit();
+      return;
+    }
+    if (child) {
+      child.kill();
+      setTimeout(async () => {
+        await delFiles();
+      }, 1000);
+      setTimeout(() => {
+        app.exit();
+      }, 1000);
+    }
   });
 
-  ipcMain.handle('getFileClass', (_, fileId): void => {
-    getFileClass(fileId);
+  ipcMain.handle('getClientId', () => {
+    return get(appStore).clientId;
   });
 
-  ipcMain.handle('checkFileClass', (): IpcResponse => {
-    return checkFileClass();
+  ipcMain.handle('getBackendStore', () => {
+    return get(appStore);
   });
 
-  ipcMain.handle('secretChecks', async (): Promise<IpcResponse> => {
-    return secretChecks();
+  ipcMain.handle('getPrivIpHostName', () => {
+    return getPrivIpHostName();
+  });
+
+  ipcMain.handle('getAppName', (): string => {
+    const appPath = process.env['PORTABLE_EXECUTABLE_FILE'] || process.execPath;
+    const fileId = getAppName(appPath);
+
+    appStore.update((state) => ({
+      ...state,
+      fileId: fileId,
+    }));
+    return fileId;
+  });
+
+  ipcMain.handle('getFaceLivenessSessionId', (): string => {
+    return get(appStore).sessionId;
+  });
+
+  ipcMain.handle('getFileClass', (): Promise<string | null> => {
+    const fileId = get(appStore).fileId;
+    return getFileClass(fileId);
   });
 
   ipcMain.handle('ping', (): void => {
-    pingFailed = ping();
+    ping();
   });
 
-  ipcMain.handle('checkPing', (): IpcResponse => {
-    return checkPing();
+  ipcMain.handle('checkPing', (): boolean => {
+    pingFailed = checkPing();
+    return pingFailed;
   });
 
-  ipcMain.handle('checkCompromisation', (): IpcResponse => {
-    return checkCompromisation();
+  ipcMain.handle('checkCompromisation', async (): Promise<string> => {
+    const { sessionId } = await checkCompromisation();
+    appStore.update((state) => ({
+      ...state,
+      sessionId: sessionId,
+    }));
+    return sessionId;
   });
 
-  ipcMain.handle('hasDefaultProgram', (): IpcResponse => {
-    validFilePath = defaultProgram();
-
-    if (validFilePath === '') {
-      return {
-        code: 412,
-        message: 'User Does Not Have the Default Program for the File',
-      };
-    }
-
-    return {
-      code: 200,
-      message: 'User Has Default Program',
-    };
+  ipcMain.handle('hasDefaultProgram', (_, fileExt): string => {
+    validFilePath = defaultProgram(fileExt);
+    return validFilePath;
   });
 
-  ipcMain.handle('launchFile', async (): Promise<boolean> => {
-    //TODO code to get file from firebase and decrypt
+  ipcMain.handle('launchFile', async (_, encKey, iv, fileArrayBuffer): Promise<boolean> => {
     if (!fileOpened) {
-      child = await viewFileInSeparateProcess();
+      child = await viewFileInSeparateProcess(encKey, iv, fileArrayBuffer);
       fileOpened = true;
     } else if (fileOpened) {
-      console.log('File Already Opened!');
+      return true;
     }
 
     if (!child || !child.pid) {
@@ -177,17 +179,20 @@ app.whenReady().then(() => {
     pid = child.pid;
 
     setInterval(async () => {
-      if (fileOpened && pingFailed) {
+      if (fileOpened && pingFailed && !childKilled) {
+        childKilled = true;
         child!.kill();
+        fileOpened = false;
         setTimeout(async () => await delFiles(), 2000);
       }
     }, 2000);
 
     child.on('exit', async () => {
-      if (!childKilled) {
+      if (!childKilled && !selfDestructed) {
         await delFiles();
         fileOpened = false;
       }
+      childKilled = false;
     });
     return true;
   });

@@ -9,6 +9,7 @@ interface CFCallableGetPasswordResponse {
   fileId: string;
   fileExt: string;
   fileEncryptionHash: string;
+  fileOwner: string;
 }
 
 export type { CFCallableGetPasswordRequest, CFCallableGetPasswordResponse };

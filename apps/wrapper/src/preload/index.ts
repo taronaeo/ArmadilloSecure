@@ -1,126 +1,55 @@
+import type { CFCallableGetSessionIdResponse } from '@armadillo/shared';
+
 import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
-// Custom APIs for renderer
-
-interface IpcResponse {
-  code: number;
-  message: string;
-}
 
 const api = {
-  getFileClass: async (fileId: string): Promise<IpcResponse> => {
-    try {
-      await ipcRenderer.invoke('getFileClass', fileId);
-      return {
-        code: 200,
-        message: 'Get File Class Invoked',
-      };
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  selfDestruct: async () => {
+    await ipcRenderer.invoke('selfDestruct');
   },
-  checkFileClass: async (): Promise<IpcResponse> => {
-    try {
-      const response = await ipcRenderer.invoke('checkFileClass');
-      return response;
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  getPrivIpHostName: async () => {
+    const privIpHostnameObj = await ipcRenderer.invoke('getPrivIpHostName');
+    return privIpHostnameObj;
   },
-  getAppName: async (): Promise<IpcResponse> => {
-    try {
-      const response = await ipcRenderer.invoke('getAppName');
-      return response;
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  getBackendStore: async () => {
+    return ipcRenderer.invoke('getBackendStore');
   },
-  secretChecks: async (): Promise<IpcResponse> => {
-    try {
-      const responseWithDns = await ipcRenderer.invoke('secretChecks');
-      return responseWithDns;
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  checkPassword: async (fileEncryptionHash) => {
+    return ipcRenderer.invoke('checkPassword', fileEncryptionHash);
   },
-  ping: async (): Promise<IpcResponse> => {
-    try {
-      await ipcRenderer.invoke('ping');
-      return {
-        code: 200,
-        message: 'Ping Successful',
-      };
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  getFaceLivenessSessionId: async () => {
+    return ipcRenderer.invoke('getFaceLivenessSessionId');
   },
-  checkPing: async (): Promise<IpcResponse> => {
-    try {
-      const response = await ipcRenderer.invoke('checkPing');
-      return response;
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  getClientId: async () => {
+    return await ipcRenderer.invoke('getClientId');
   },
-  checkCompromisation: async (): Promise<IpcResponse> => {
-    try {
-      const response = await ipcRenderer.invoke('checkCompromisation');
-      return response;
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  refreshApp: async () => {
+    await ipcRenderer.invoke('refreshApp');
   },
-  hasDefaultProgram: async (): Promise<IpcResponse> => {
-    try {
-      const response = await ipcRenderer.invoke('hasDefaultProgram');
-      return response;
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  getFileClass: async (): Promise<string> => {
+    return await ipcRenderer.invoke('getFileClass');
   },
-  launchFile: async (fileId: string): Promise<IpcResponse> => {
-    try {
-      const fileIsLaunched = await ipcRenderer.invoke('launchFile', fileId);
-      if (fileIsLaunched) {
-        return {
-          code: 200,
-          message: 'File Launched Successfully',
-        };
-      }
-      return {
-        code: 400,
-        message: 'File Could Not Be Launched',
-      };
-    } catch {
-      return {
-        code: 500,
-        message: 'Internal Server Error',
-      };
-    }
+  getAppName: async (): Promise<string> => {
+    return await ipcRenderer.invoke('getAppName');
+  },
+  ping: async (): Promise<void> => {
+    ipcRenderer.invoke('ping');
+  },
+  checkPing: async (): Promise<boolean> => {
+    return await ipcRenderer.invoke('checkPing');
+  },
+  checkCompromisation: async (): Promise<CFCallableGetSessionIdResponse> => {
+    return await ipcRenderer.invoke('checkCompromisation');
+  },
+  defaultProgram: async (fileExt: string): Promise<string> => {
+    return await ipcRenderer.invoke('hasDefaultProgram', fileExt);
+  },
+  launchFile: async (
+    encKey: string,
+    iv: string,
+    fileArrayBuffer: ArrayBuffer
+  ): Promise<boolean> => {
+    return await ipcRenderer.invoke('launchFile', encKey, iv, fileArrayBuffer);
   },
 };
 
@@ -135,8 +64,6 @@ if (process.contextIsolated) {
     console.error(error);
   }
 } else {
-  // @ts-ignore (define in dts)
   window.electron = electronAPI;
-  // @ts-ignore (define in dts)
   window.api = api;
 }

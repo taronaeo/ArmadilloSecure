@@ -1,4 +1,4 @@
-import { FSMetadata } from '@armadillo/shared';
+import type { FSMetadata } from '@armadillo/shared';
 
 interface FSUser extends FSMetadata {
   readonly uid: string;
