@@ -37,7 +37,7 @@
       filePassword: yup
         .string()
         .required('File password is required')
-        .min(8, 'Password must at least be 8 characters longs')
+        .min(8, 'Password must at least be 8 characters long')
         .matches(
           /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
           'Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 special character'
@@ -77,9 +77,10 @@
         file_owner_id: $authStore.uid,
         file_encryption_hash: filePwdHash,
         file_encryption_iv: '',
-        file_permissions: [],
+        file_permissions: [$authStore.uid],
         updated_at: serverTimestamp(),
         created_at: serverTimestamp(),
+        self_destruct: false,
       };
 
       const docRef = doc(colFilesRef, formFileName);
