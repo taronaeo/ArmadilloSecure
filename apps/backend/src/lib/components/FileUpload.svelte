@@ -2,6 +2,8 @@
   import type { FSFile, FSFileClass } from '@armadillo/shared';
 
   import * as yup from 'yup';
+  import * as mime from 'mime';
+
   import { v4 } from 'uuid';
   import { createForm } from 'svelte-forms-lib';
 
@@ -71,7 +73,7 @@
         file_domain: $authStore?.email?.split('@').pop()!, // TODO: Please change later
         file_classification: data.fileClass!,
         file_name: formFile.name,
-        file_ext: formFile.name.split('.').pop() || '',
+        file_ext: formFileExt,
         file_owner_id: $authStore!.uid,
         file_encryption_hash: filePwdHash,
         file_encryption_iv: '',
@@ -84,7 +86,9 @@
       const storageRef = ref(fileStorage, `${$authStore.uid}/${formFileName}.${formFileExt}`);
 
       const setDocPromise = setDoc(docRef, fileData);
-      const uploadDocPromise = uploadBytes(storageRef, formFileBuffer);
+      const uploadDocPromise = uploadBytes(storageRef, formFileBuffer, {
+        contentType: mime.getType(formFileExt) || 'application/octet-stream',
+      });
 
       await Promise.all([setDocPromise, uploadDocPromise]).catch(console.error);
       toggleModal();
