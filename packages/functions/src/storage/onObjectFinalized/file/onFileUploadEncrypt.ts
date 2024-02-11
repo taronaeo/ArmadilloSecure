@@ -80,9 +80,9 @@ export const storage_onObjectFinalized_file_onFileUploadEncrypt = onObjectFinali
     const csFileEncRef = bucketFiles.file(csFileEncName);
 
     try {
-      await Promise.all([csFileRef.delete(), csFileEncRef.save(Buffer.from(fsFileEncObject))]);
+      await csFileEncRef.save(Buffer.from(fsFileEncObject));
     } catch (error) {
-      logger.error(`Error encrypting file ${fileName}!`);
+      logger.error(`Error saving encrypted file ${fileName}!`);
       logger.error(error);
     }
 
