@@ -3,26 +3,55 @@
   // Imports
   import type { FirebaseError } from 'firebase/app';
   import { doc, setDoc } from 'firebase/firestore';
+  import { ref, uploadBytes } from 'firebase/storage';
   import { createForm } from 'svelte-forms-lib';
   import { firestore } from '$lib/firebase';
   import { authStore } from '$lib/stores';
   import * as yup from 'yup';
+  import { headshotStorage } from '$lib/firebase/storage';
+  import { BUCKET_HEADSHOTS } from '@armadillo/shared';
 
   // State variable
   let apiError: FirebaseError | null;
   let checkLoading = false;
 
+  function isPng(filename: string) {
+    if (!filename) return false;
+
+    const fileNameArray = filename.split('.');
+    const fileExt = fileNameArray[fileNameArray.length - 1];
+
+    if (fileExt === 'png') return true;
+    console.log(fileExt === 'png');
+
+    return false;
+  }
+
   // Form + Yup validation
   const { form, errors, handleChange, handleSubmit } = createForm({
     initialValues: {
       fullName: '',
+      fileUpload: undefined,
     },
     validationSchema: yup.object().shape({
       fullName: yup.string().required('Full name is a required field'),
+      fileUpload: yup
+        .mixed()
+        .required('Headshot is required')
+        .test('is-valid-type', 'Only PNG files allowed', (value) => {
+          const fileList = value as FileList;
+          return isPng(fileList[0].name);
+        })
+        .test('is-valid-size', 'Max allowed size is 16MB', (value) => {
+          const fileList = value as FileList;
+          return fileList[0].size <= 16000000;
+        }),
     }),
 
     // On submit, if the user isn't logged in, do not continue the process, else populate the data and determine onboard true
     onSubmit: async (data) => {
+      if (!data.fileUpload || !data.fullName) return;
+
       if (!$authStore) return;
       const uid = $authStore.uid;
       checkLoading = true;
@@ -33,12 +62,20 @@
         {
           full_name: data.fullName,
           is_onboarded: true,
+          headshot_url: `gs://${BUCKET_HEADSHOTS}/${uid}/headshot.png`,
         },
         {
           merge: true,
         }
       ).catch((error) => {
         apiError = error;
+      });
+
+      const storageRef = ref(headshotStorage, `${uid}/headshot.png`);
+      const formFileList = data.fileUpload as FileList;
+      const formFileBuffer = await formFileList[0].arrayBuffer();
+      uploadBytes(storageRef, formFileBuffer, {
+        contentType: 'image/png',
       });
 
       checkLoading = false;
@@ -75,6 +112,22 @@
         </label>
         <div>
           <span class="text-red-600">{$errors.fullName}</span>
+        </div>
+
+        <div class="mr-4 rounded-md mt-4">
+          <label for="headshot" class="">
+            Headshot Upload
+            <input
+              id="fileUpload"
+              type="file"
+              name="fileUpload"
+              on:change={handleChange}
+              class="mt-2 file-input file-input-md w-full" />
+          </label>
+        </div>
+
+        <div>
+          <span class="text-red-600">{$errors.fileUpload}</span>
         </div>
       </div>
 
