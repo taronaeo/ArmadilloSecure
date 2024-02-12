@@ -95,6 +95,10 @@
     return;
   }
 
+  function convertToArray(filePermissions: any): string[] {
+    return typeof filePermissions.arrayUnion !== 'function' && filePermissions;
+  }
+
   function convertToDate(createdAt: FieldValue) {
     if (!createdAt) return;
 
@@ -778,7 +782,7 @@
                   {/if}
 
                   <!-- Users with Access -->
-                  {#each file.file_permissions as userId}
+                  {#each convertToArray(file.file_permissions) as userId}
                     <div class="flex items-center py-2">
                       <img
                         class="rounded w-9 mr-3"
@@ -868,12 +872,6 @@
             <div class="py-2 text-sm">
               <p>Status</p>
               <p class="text-info">File Status to be inserted here</p>
-            </div>
-
-            <!-- File Recommened Section -->
-            <div class="py-2 text-sm">
-              <p>Recommended Sesntitivity Level</p>
-              <p class="text-info">AI or whatever u want to put</p>
             </div>
 
             <!-- Manual Self Destruct Button -->
