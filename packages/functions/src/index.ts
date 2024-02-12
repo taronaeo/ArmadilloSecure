@@ -20,4 +20,3 @@ export * from './https/onCall/file/getPassword';
 
 export * from './storage/onObjectFinalized/user/onHeadshotUpload';
 export * from './storage/onObjectFinalized/file/onFileUploadEncrypt';
-export * from './storage/onObjectFinalized/file/onFileUploadVirusChecks';
