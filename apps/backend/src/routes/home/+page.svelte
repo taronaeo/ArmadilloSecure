@@ -1,6 +1,6 @@
 <!-- JavaScript code -->
 <script lang="ts">
-  import type { FSFile, FSDomain } from '@armadillo/shared';
+  import type { FSFile, FSDomain, FSUser } from '@armadillo/shared';
 
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
@@ -11,21 +11,25 @@
   import { createForm } from 'svelte-forms-lib';
 
   import {
+    or,
     doc,
     where,
     query,
     setDoc,
+    getDoc,
+    getDocs,
     updateDoc,
     deleteDoc,
     Timestamp,
     onSnapshot,
+    arrayUnion,
     FieldValue,
     serverTimestamp,
   } from 'firebase/firestore';
 
   import { firestore } from '$lib/firebase';
   import { signOut } from '$lib/firebase/auth';
-  import { colFilesRef } from '$lib/firebase/firestore';
+  import { colFilesRef, colUsersRef } from '$lib/firebase/firestore';
 
   import { domainStore, authStore } from '$lib/stores';
 
@@ -39,6 +43,7 @@
   let logoutModal: HTMLDialogElement;
   let settingsModal: HTMLDialogElement;
   let selectedFileId = '';
+  let manageAccessEmailInput = '';
   let showInfoCard = false;
   let showFileUploadModal = false;
   let userFileDocs: FSFile[] = [];
@@ -52,7 +57,13 @@
   onMount(() => {
     if (!$authStore) return;
 
-    const fsFilesRef = query(colFilesRef, where('file_owner_id', '==', $authStore.uid));
+    const fsFilesRef = query(
+      colFilesRef,
+      or(
+        where('file_owner_id', '==', $authStore.uid),
+        where('file_permissions', 'array-contains', $authStore.uid)
+      )
+    );
     const unsubscribe = onSnapshot(fsFilesRef, (querySnapshot) => {
       userFileDocs = querySnapshot.docs.map((docSnapshot) => docSnapshot.data() as FSFile);
     });
@@ -78,9 +89,9 @@
   }
 
   function getClassByStatus(fileClass: string) {
-    if (fileClass === 'OPEN') return 'text-success';
+    if (fileClass === 'OPEN') return 'text-error';
     if (fileClass === 'SENSITIVE') return 'text-warning';
-    if (fileClass === 'TOPSECRET') return 'text-error';
+    if (fileClass === 'TOPSECRET') return 'text-success';
     return;
   }
 
@@ -92,6 +103,14 @@
     const date = dayjs(timestampDate).format('DD MMM, YYYY');
 
     return date;
+  }
+
+  async function getUser(uid: string) {
+    const fsUserRef = doc(colUsersRef, uid);
+    const fsUserDoc = await getDoc(fsUserRef);
+    const fsUserData = fsUserDoc.data() as FSUser;
+
+    return fsUserData;
   }
 
   function checkIfFileMatchesDateFilter(file: FSFile) {
@@ -111,11 +130,10 @@
       case 'PREVIOUSYEAR':
         return fileCreationDate.year() === today.year() - 1;
       default:
-        return true; // No date filter applied
+        return true;
     }
   }
 
-  // Handle details card
   const showDetails = (file: FSFile) => {
     selectedFileId = file.file_id;
     showInfoCard = true;
@@ -129,7 +147,7 @@
     if ($authStore && $authStore.email) {
       return $authStore.email.split('@')[1];
     } else {
-      return null; // Or a default value
+      return null;
     }
   })();
 
@@ -213,6 +231,44 @@
     await updateDoc(docRef, {
       self_destruct: true,
     });
+  }
+
+  async function addAccessByEmail(fileId: string) {
+    const fsFileRef = doc(colFilesRef, fileId);
+
+    const searchUserQuery = query(colUsersRef, where('email', '==', manageAccessEmailInput));
+    const searchUserSnapshot = await getDocs(searchUserQuery);
+
+    const searchUserSnapshotArray = searchUserSnapshot.docs;
+    if (searchUserSnapshotArray.length !== 1) return console.error('Account not found!');
+
+    const [searchUserResult] = searchUserSnapshotArray;
+    const foundUser = searchUserResult.data() as FSUser;
+    const updatedFileDoc: Pick<FSFile, 'file_permissions' | 'updated_at'> = {
+      file_permissions: arrayUnion(foundUser.uid),
+      updated_at: serverTimestamp(),
+    };
+
+    await setDoc(fsFileRef, updatedFileDoc, { merge: true }).catch(console.error);
+
+    console.log('Permissions Successfully Updated!');
+  }
+
+  async function getOwnerName(ownerId: string) {
+    try {
+      const fsUserRef = doc(colUsersRef, ownerId);
+      const fsUserDoc = await getDoc(fsUserRef);
+
+      if (fsUserDoc.exists()) {
+        const fsUserData = fsUserDoc.data() as FSUser;
+        return fsUserData.full_name;
+      } else {
+        return 'Owner Not Found';
+      }
+    } catch (error) {
+      console.error('Error fetching owner details:', error);
+      return 'Error';
+    }
   }
 </script>
 
@@ -337,7 +393,7 @@
                           focus:ring-secondary focus:border-secondary focus:outline-none
                         " />
                     </div>
-                    <div class="flex justify-end">
+                    <!-- <div class="flex justify-end">
                       <button
                         type="submit"
                         class="
@@ -345,7 +401,7 @@
                         hover:ring-2 hover:ring-info">
                         Save
                       </button>
-                    </div>
+                    </div> -->
                   </div>
 
                   <!-- User Domain Information Section -->
@@ -693,15 +749,22 @@
               <dialog bind:this={fileAccessModal} class="modal modal-bottom sm:modal-middle">
                 <div class="modal-box">
                   <h3 class="font-bold text-lg pb-2">{file.file_name}</h3>
-                  <input
-                    type="text"
-                    placeholder="Add People"
-                    class="
-                  input input-bordered input-info w-full text-sm
-                  focus:ring-info focus:border-info focus:outline-none" />
+
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      bind:value={manageAccessEmailInput}
+                      placeholder="Add People by Email"
+                      class="input input-bordered w-full max-w-2xl text-sm
+                              focus:ring-info focus:border-info duration-300 focus:outline-none" />
+
+                    <button class="btn" on:click={() => addAccessByEmail(file.file_id)}>
+                      Add
+                    </button>
+                  </div>
                   <p class="py-4 font-semibold">People with Access</p>
 
-                  <!-- Users with Access -->
+                  <!-- Owner with Access -->
                   {#if $authStore?.full_name}
                     <div class="flex items-center py-2">
                       <img class="rounded w-9 mr-3" alt="User Profile Circle" src={profilePicUrl} />
@@ -713,6 +776,36 @@
                   {:else}
                     <span class="text-error">Loading user data...</span>
                   {/if}
+
+                  <!-- Users with Access -->
+                  {#each file.file_permissions as userId}
+                    <div class="flex items-center py-2">
+                      <img
+                        class="rounded w-9 mr-3"
+                        alt="User Profile Circle"
+                        src={`https://ui-avatars.com/api/?name=${userId}&format=svg&rounded=true`} />
+                      <div class="flex flex-col">
+                        <div class="font-bold">
+                          {#await getUser(userId)}
+                            <p>Retrieving...</p>
+                          {:then user}
+                            <p>{user.full_name}</p>
+                          {:catch error}
+                            <p>Error fetching user</p>
+                          {/await}
+                        </div>
+                        <div class="text-sm">
+                          {#await getUser(userId)}
+                            <p>Retrieving...</p>
+                          {:then user}
+                            <p>{user.email}</p>
+                          {:catch error}
+                            <p>Error fetching user</p>
+                          {/await}
+                        </div>
+                      </div>
+                    </div>
+                  {/each}
 
                   <div class="modal-action flex justify-between">
                     <!-- Copy Link Button -->
@@ -735,22 +828,28 @@
               </dialog>
             </div>
 
-            <!-- File Name -->
+            <!-- File Owner -->
             <div class="py-2 text-sm">
-              <p>Name</p>
-              <p class="text-info">{file.file_name}</p>
-            </div>
-
-            <!-- File Type Section -->
-            <div class="py-2 text-sm">
-              <p>Type</p>
-              <p class="text-info">{file.file_ext}</p>
+              <p>Owner</p>
+              {#await getOwnerName(file.file_owner_id)}
+                <p>Retrieving...</p>
+              {:then ownerName}
+                <p class="text-info">{ownerName}</p>
+              {:catch error}
+                <p>Error fetching owner</p>
+              {/await}
             </div>
 
             <!-- File Classification Section -->
             <div class="py-2 text-sm">
               <p>Class</p>
               <p class={getClassByStatus(file.file_classification)}>{file.file_classification}</p>
+            </div>
+
+            <!-- File Type Section -->
+            <div class="py-2 text-sm">
+              <p>Type</p>
+              <p class="text-info">{file.file_ext}</p>
             </div>
 
             <!-- File Domain Section -->

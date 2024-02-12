@@ -75,7 +75,7 @@
         created_at: serverTimestamp(),
       };
 
-      const docRef = doc(colFilesRef);
+      const docRef = doc(colFilesRef, fileUniqueId);
       const storageRef = ref(getStorage(), `armadillo-files/${fileUniqueId}`);
 
       const setDocPromise = setDoc(docRef, fileData);
