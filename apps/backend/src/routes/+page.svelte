@@ -1,3 +1,9 @@
+<script lang="ts">
+  import { goto } from '$app/navigation';
+
+  $: goto('/authentication/login');
+</script>
+
 <svelte:head>
   <title>Armadillo Project</title>
 </svelte:head>
