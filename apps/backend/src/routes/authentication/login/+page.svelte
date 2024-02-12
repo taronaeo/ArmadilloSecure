@@ -1,10 +1,10 @@
 <!-- JavaScript code -->
 <script lang="ts">
   // Imports
-  import { signInEmailPassword } from '$lib/firebase/auth';
   import type { FirebaseError } from 'firebase/app';
-  import { createForm } from 'svelte-forms-lib';
   import * as yup from 'yup';
+  import { createForm } from 'svelte-forms-lib';
+  import { signInEmailPassword } from '$lib/firebase/auth';
 
   // State variable
   let apiError: FirebaseError | null;

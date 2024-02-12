@@ -12,6 +12,7 @@
     "format": "prettier --write . && eslint . --fix"
   },
   "dependencies": {
+    "dayjs": "^1.11.10",
     "firebase": "^10.7.0",
     "svelte-forms-lib": "^2.0.1",
     "uuidv4": "^6.2.13",
