@@ -76,7 +76,10 @@
         <div> Please key in the file password below </div>
         <div>You have <span class="text-secondary">{3 - tryCounter}</span> tries left.</div>
         <div class="mt-5">
-          <input bind:value={filePass} class="inline-block w-full input input-secondary" />
+          <input
+            bind:value={filePass}
+            type="password"
+            class="inline-block w-full input input-secondary" />
         </div>
         <div class="mt-8 text-center">
           <button on:click={hashFilePass} class="btn btn-secondary">Proceed</button>
