@@ -194,7 +194,8 @@
                           on:change={handleChange}
                           bind:value={$form.isChecked} />
                         <span class="label-text text-black m-2.5 font-bold">
-                          I have specified the right classification
+                          I have specified the right classification and acknowledge that the file
+                          contents may be redacted in accordance to the classification chosen.
                         </span>
                       </div>
                     </label>
