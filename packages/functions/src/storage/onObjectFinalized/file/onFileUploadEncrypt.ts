@@ -39,11 +39,11 @@ export const storage_onObjectFinalized_file_onFileUploadEncrypt = onObjectFinali
 
     const fileName = basename(name);
     const fileOwner = basename(dirname(name));
-    if (fileName.startsWith('enc_')) return logger.log(`File ${fileName} is already encrypted!`);
+    if (!fileName.startsWith('red_')) return logger.log(`File ${fileName} is not redacted yet!`);
     if (fileOwner === '.') return logger.log(`File ${fileName} is not owned by any user!`);
 
-    const { name: fsFileName } = parse(fileName);
-    const fsFileRef = firestore.collection(FS_COLLECTION_FILES).doc(fsFileName);
+    const { name: fsFileName, base: fsFileBase } = parse(fileName);
+    const fsFileRef = firestore.collection(FS_COLLECTION_FILES).doc(fsFileName.replace('red_', ''));
     const fsFileSnapshot = await fsFileRef.get();
     const fsFileData = fsFileSnapshot.data() as FSFile;
 
@@ -76,11 +76,18 @@ export const storage_onObjectFinalized_file_onFileUploadEncrypt = onObjectFinali
       csFileObject
     );
 
-    const csFileEncName = `${fileOwner}/enc_${fileName}`;
+    const csFileOriName = `${fileOwner}/${fsFileBase.replace('red_', '')}`;
+    const csFileEncName = `${fileOwner}/enc_${fsFileBase.replace('red_', '')}`;
+
+    const csFileOriRef = bucketFiles.file(csFileOriName);
     const csFileEncRef = bucketFiles.file(csFileEncName);
 
     try {
-      await csFileEncRef.save(Buffer.from(fsFileEncObject));
+      await Promise.all([
+        csFileRef.delete(),
+        csFileOriRef.delete(),
+        csFileEncRef.save(Buffer.from(fsFileEncObject), { contentType }),
+      ]);
     } catch (error) {
       logger.error(`Error saving encrypted file ${fileName}!`);
       logger.error(error);
