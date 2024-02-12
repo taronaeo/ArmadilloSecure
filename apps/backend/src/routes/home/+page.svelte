@@ -248,6 +248,15 @@
 
     const [searchUserResult] = searchUserSnapshotArray;
     const foundUser = searchUserResult.data() as FSUser;
+
+    const foundUserEmailArr = foundUser.email?.split('@') as Array<string>;
+    const foundUserDomain = foundUserEmailArr[foundUserEmailArr.length - 1];
+
+    const currentUserEmailArr = $authStore?.email?.split('@') as Array<string>;
+    const currentUserDomain = currentUserEmailArr[currentUserEmailArr.length - 1];
+
+    if (foundUserDomain !== currentUserDomain) return;
+
     const updatedFileDoc: Pick<FSFile, 'file_permissions' | 'updated_at'> = {
       file_permissions: arrayUnion(foundUser.uid),
       updated_at: serverTimestamp(),
@@ -680,7 +689,7 @@
                       >{file.file_classification}</td>
                     <td class="py-3">{convertToDate(file.created_at)}</td>
                     <td class="py-3">{file.file_ext}</td>
-                    <td class="py-3">file status</td>
+                    <td class="py-3">{file.file_status}</td>
                     <th class="text-center">
                       <button
                         on:click={() => showDetails(file)}
@@ -755,16 +764,21 @@
                   <h3 class="font-bold text-lg pb-2">{file.file_name}</h3>
 
                   <div class="input-group">
-                    <input
-                      type="text"
-                      bind:value={manageAccessEmailInput}
-                      placeholder="Add People by Email"
-                      class="input input-bordered w-full max-w-2xl text-sm
+                    {#if file.file_owner_id === $authStore?.uid}
+                      <input
+                        type="text"
+                        bind:value={manageAccessEmailInput}
+                        placeholder="Add People by Email"
+                        class="input input-bordered w-full max-w-2xl text-sm
                               focus:ring-info focus:border-info duration-300 focus:outline-none" />
 
-                    <button class="btn" on:click={() => addAccessByEmail(file.file_id)}>
-                      Add
-                    </button>
+                      <button class="btn" on:click={() => addAccessByEmail(file.file_id)}>
+                        Add
+                      </button>
+                    {/if}
+                  </div>
+                  <div class="font-light text-sm italic text-red-200">
+                    Can only assign access to the same domain as you
                   </div>
                   <p class="py-4 font-semibold">People with Access</p>
 
@@ -783,32 +797,26 @@
 
                   <!-- Users with Access -->
                   {#each convertToArray(file.file_permissions) as userId}
-                    <div class="flex items-center py-2">
-                      <img
-                        class="rounded w-9 mr-3"
-                        alt="User Profile Circle"
-                        src={`https://ui-avatars.com/api/?name=${userId}&format=svg&rounded=true`} />
-                      <div class="flex flex-col">
-                        <div class="font-bold">
-                          {#await getUser(userId)}
-                            <p>Retrieving...</p>
-                          {:then user}
-                            <p>{user.full_name}</p>
-                          {:catch error}
-                            <p>Error fetching user</p>
-                          {/await}
+                    {#if userId !== $authStore?.uid}
+                      {#await getUser(userId) then user}
+                        <div class="flex items-center py-2">
+                          <img
+                            class="rounded w-9 mr-3"
+                            alt="User Profile Circle"
+                            src={`https://ui-avatars.com/api/?name=${user.full_name}&format=svg&rounded=true`} />
+                          <div class="flex flex-col">
+                            <div class="font-bold">
+                              <p>{user.full_name}</p>
+                            </div>
+                            <div class="text-sm">
+                              <p>{user.email}</p>
+                            </div>
+                          </div>
                         </div>
-                        <div class="text-sm">
-                          {#await getUser(userId)}
-                            <p>Retrieving...</p>
-                          {:then user}
-                            <p>{user.email}</p>
-                          {:catch error}
-                            <p>Error fetching user</p>
-                          {/await}
-                        </div>
-                      </div>
-                    </div>
+                      {:catch}
+                        <div class="flex items-center py-2"> Error Getting User! </div>
+                      {/await}
+                    {/if}
                   {/each}
 
                   <div class="modal-action flex justify-between">
@@ -871,50 +879,52 @@
             <!-- File Status Section -->
             <div class="py-2 text-sm">
               <p>Status</p>
-              <p class="text-info">File Status to be inserted here</p>
+              <p class="text-info">{file.file_status}</p>
             </div>
 
             <!-- Manual Self Destruct Button -->
-            <div class="pt-4">
-              <div class="py-2">
-                <button
-                  class="py-4 w-full btn"
-                  on:click={() => {
-                    showSelfDestructModal();
-                    selfDestructFile(file.file_id);
-                  }}>
-                  SELF-DESTRUCT
-                </button>
-                <dialog bind:this={selfDestructModal} class="modal modal-bottom sm:modal-middle">
-                  <div class="modal-box">
-                    <h3 class="font-bold text-lg">Warning</h3>
-                    <p class="py-4">
-                      This will
-                      <span class="text-error"> destroy all active instances of this file </span>
-                      , are you sure?
-                    </p>
-                    <button class="btn btn-outline btn-error px-8"> Self-Destruct </button>
-                    <div class="modal-action">
-                      <form method="dialog">
-                        <!-- if there is a button in form, it will close the modal -->
-                        <button class="btn">Close</button>
-                      </form>
+            {#if $authStore?.uid === file.file_owner_id}
+              <div class="pt-4">
+                <div class="py-2">
+                  <button
+                    class="py-4 w-full btn"
+                    on:click={() => {
+                      showSelfDestructModal();
+                      selfDestructFile(file.file_id);
+                    }}>
+                    SELF-DESTRUCT
+                  </button>
+                  <dialog bind:this={selfDestructModal} class="modal modal-bottom sm:modal-middle">
+                    <div class="modal-box">
+                      <h3 class="font-bold text-lg">Warning</h3>
+                      <p class="py-4">
+                        This will
+                        <span class="text-error"> destroy all active instances of this file </span>
+                        , are you sure?
+                      </p>
+                      <button class="btn btn-outline btn-error px-8"> Self-Destruct </button>
+                      <div class="modal-action">
+                        <form method="dialog">
+                          <!-- if there is a button in form, it will close the modal -->
+                          <button class="btn">Close</button>
+                        </form>
+                      </div>
                     </div>
-                  </div>
-                </dialog>
-              </div>
+                  </dialog>
+                </div>
 
-              <!-- Delete Button -->
-              <div class="py-2">
-                <button
-                  class="
-                    w-full px-8
-                    btn btn-outline btn-error"
-                  on:click={() => deleteFile(file.file_id)}>
-                  Delete
-                </button>
+                <!-- Delete Button -->
+                <div class="py-2">
+                  <button
+                    class="
+                        w-full px-8
+                        btn btn-outline btn-error"
+                    on:click={() => deleteFile(file.file_id)}>
+                    Delete
+                  </button>
+                </div>
               </div>
-            </div>
+            {/if}
           </div>
         </div>
       {/if}
