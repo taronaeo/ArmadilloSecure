@@ -70,13 +70,18 @@ export const https_onCall_rekognition_getAuthToken = onCall<CFCallableGetAuthTok
     const fsAuditFileClassification = fsAuditRef.doc(`FILE_CLASSIFICATION-${clientId}`);
     const fsAuditFaceSession = fsAuditRef.doc(`FACE_SESSION-${clientId}`);
 
-    const [fileClassificationSnapshot, faceSessionSnapshot] = await Promise.all([
-      fsAuditFileClassification.get(),
-      fsAuditFaceSession.get(),
-    ]);
+    try {
+      const [fileClassificationSnapshot, faceSessionSnapshot] = await Promise.all([
+        fsAuditFileClassification.get(),
+        fsAuditFaceSession.get(),
+      ]);
 
-    if (!fileClassificationSnapshot.exists || !faceSessionSnapshot.exists)
-      throw new HttpsError('internal', 'Audit Sequence Incomplete');
+      if (!fileClassificationSnapshot.exists || !faceSessionSnapshot.exists)
+        throw new HttpsError('internal', 'Audit Sequence Incomplete');
+    } catch (error) {
+      logger.error('Audit Check Marker');
+      logger.error(error);
+    }
 
     const rekognitionClient = new RekognitionClient({
       region: AWS_REKOGNITION_REGION,
@@ -90,48 +95,51 @@ export const https_onCall_rekognition_getAuthToken = onCall<CFCallableGetAuthTok
       SessionId: sessionId,
     });
 
-    const {
-      Status: status,
-      Confidence: confidence,
-      AuditImages: auditImages,
-    } = await rekognitionClient.send(rekognitionLivenessCmd);
+    try {
+      const {
+        Status: status,
+        Confidence: confidence,
+        AuditImages: auditImages,
+      } = await rekognitionClient.send(rekognitionLivenessCmd);
 
-    if (!status || !confidence || !auditImages) throw new HttpsError('internal', 'Internal Error');
-    if (status !== 'SUCCEEDED') throw new HttpsError('internal', 'Unable to retrieve session data');
-    if (confidence < 95) throw new HttpsError('failed-precondition', 'Liveness check failed');
-    if (auditImages.length < 1) throw new HttpsError('internal', 'Unable to retrieve audit images');
-
-    const rekognitionSearchCmd = new SearchFacesByImageCommand({
-      CollectionId: AWS_REKOGNITION_COLLECTION_ID,
-      Image: {
-        Bytes: auditImages[0].Bytes,
-      },
-    });
-
-    const { FaceMatches: faceMatches } = await rekognitionClient.send(rekognitionSearchCmd);
-    if (!faceMatches) throw new HttpsError('unauthenticated', 'Unable to authenticate face');
-
-    for (const faceMatch of faceMatches) {
-      if (!faceMatch.Face) continue;
-
-      const { ExternalImageId: externalImageId } = faceMatch.Face;
-      if (!externalImageId) continue;
-
-      try {
-        const fsUserRef = fsUserCol.doc(externalImageId);
-        const fsUserSnapshot = await fsUserRef.get();
-
-        const fsUserExists = fsUserSnapshot.exists;
-        if (!fsUserExists) continue;
-
-        const fsUserData = fsUserSnapshot.data() as FSUser;
-        const authToken = await adminAuth.createCustomToken(fsUserData.uid);
-
-        return { token: authToken };
-      } catch (error) {
-        logger.error(error);
+      if (!status || !confidence || !auditImages)
         throw new HttpsError('internal', 'Internal Error');
+      if (status !== 'SUCCEEDED')
+        throw new HttpsError('internal', 'Unable to retrieve session data');
+      if (confidence < 95) throw new HttpsError('failed-precondition', 'Liveness check failed');
+      if (auditImages.length < 1)
+        throw new HttpsError('internal', 'Unable to retrieve audit images');
+
+      const rekognitionSearchCmd = new SearchFacesByImageCommand({
+        CollectionId: AWS_REKOGNITION_COLLECTION_ID,
+        Image: {
+          Bytes: auditImages[0].Bytes,
+        },
+      });
+
+      const { FaceMatches: faceMatches } = await rekognitionClient.send(rekognitionSearchCmd);
+      if (!faceMatches) throw new HttpsError('unauthenticated', 'Unable to authenticate face');
+
+      for (const faceMatch of faceMatches) {
+        if (!faceMatch.Face) continue;
+
+        const { ExternalImageId: externalImageId } = faceMatch.Face;
+        if (!externalImageId) continue;
+
+        try {
+          const fsUserSnapshot = await fsUserCol.doc(externalImageId).get();
+          const fsUserData = fsUserSnapshot.data() as FSUser;
+          const authToken = await adminAuth.createCustomToken(fsUserData.uid);
+
+          return { token: authToken };
+        } catch (error) {
+          logger.error(error);
+          throw new HttpsError('internal', 'Internal Error');
+        }
       }
+    } catch (error) {
+      logger.error('Send Command Marker');
+      logger.error(error);
     }
 
     throw new HttpsError('unauthenticated', 'Unable to authenticate face');

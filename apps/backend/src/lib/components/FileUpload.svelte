@@ -2,6 +2,8 @@
   import type { FSFile, FSFileClass } from '@armadillo/shared';
 
   import * as yup from 'yup';
+  import * as mime from 'mime';
+
   import { v4 } from 'uuid';
   import { createForm } from 'svelte-forms-lib';
 
@@ -9,7 +11,8 @@
   import { authStore } from '$lib/stores';
 
   import { colFilesRef } from '$lib/firebase/firestore';
-  import { ref, getStorage, uploadBytes } from 'firebase/storage';
+  import { fileStorage } from '$lib/firebase/storage';
+  import { ref, uploadBytes } from 'firebase/storage';
   import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
   interface FormValues {
@@ -34,7 +37,7 @@
       filePassword: yup
         .string()
         .required('File password is required')
-        .min(8, 'Password must at least be 8 characters longs')
+        .min(8, 'Password must at least be 8 characters long')
         .matches(
           /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
           'Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 special character'
@@ -48,10 +51,12 @@
     }),
     onSubmit: async (data) => {
       // Just to please TypeScript because we are already using validationSchema above.
+      if (!$authStore) return;
       if (!data.fileUpload || !data.fileClass || !data.isChecked || !data.filePassword) return;
 
-      const fileUniqueId = v4();
       const formFile = data.fileUpload[0];
+      const formFileName = v4();
+      const formFileExt = formFile.name.split('.').pop() || '';
       const formFileBuffer = await formFile.arrayBuffer();
 
       const filePwdBuffer = new TextEncoder().encode(data.filePassword);
@@ -62,24 +67,29 @@
         .join('');
 
       const fileData: FSFile = {
-        file_id: fileUniqueId,
+        file_id: formFileName,
+        file_status: 'UPLOADED',
         // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
         file_domain: $authStore?.email?.split('@').pop()!, // TODO: Please change later
-        file_classification: data.fileClass!,
+        file_classification: data.fileClass,
         file_name: formFile.name,
-        file_ext: formFile.name.split('.').pop() || '',
-        file_owner_id: $authStore!.uid,
+        file_ext: formFileExt,
+        file_owner_id: $authStore.uid,
         file_encryption_hash: filePwdHash,
-        file_permissions: [],
+        file_encryption_iv: '',
+        file_permissions: [$authStore.uid],
         updated_at: serverTimestamp(),
         created_at: serverTimestamp(),
+        self_destruct: false,
       };
 
-      const docRef = doc(colFilesRef, fileUniqueId);
-      const storageRef = ref(getStorage(), `armadillo-files/${fileUniqueId}`);
+      const docRef = doc(colFilesRef, formFileName);
+      const storageRef = ref(fileStorage, `${$authStore.uid}/${formFileName}.${formFileExt}`);
 
       const setDocPromise = setDoc(docRef, fileData);
-      const uploadDocPromise = uploadBytes(storageRef, formFileBuffer);
+      const uploadDocPromise = uploadBytes(storageRef, formFileBuffer, {
+        contentType: mime.getType(formFileExt) || 'application/octet-stream',
+      });
 
       await Promise.all([setDocPromise, uploadDocPromise]).catch(console.error);
       toggleModal();

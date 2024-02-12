@@ -1,24 +1,32 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { appStore } from '../lib/stores';
+
   import logo from '../assets/logo.png';
-  import { appState } from '../stores';
 
   onMount(() => {
     checkCompromisation();
   });
 
   async function checkCompromisation(): Promise<void> {
-    const response = await window.api.checkCompromisation();
-    if (response.code != 200) {
-      appState.update((state) => ({
+    try {
+      await window.api.checkCompromisation();
+
+      let nextState = 'livenessWarning';
+
+      if ($appStore.fileClass === 'OPEN') {
+        nextState = 'filePass';
+      }
+
+      appStore.update((state) => ({
+        ...state,
+        currentState: nextState,
+      }));
+    } catch {
+      appStore.update((state) => ({
         ...state,
         passedCheck: false,
-      }));
-      return;
-    } else {
-      appState.update((state) => ({
-        ...state,
-        currentState: 'viewDoc',
+        errorMsg: 'Compromisation Check Failed',
       }));
     }
   }

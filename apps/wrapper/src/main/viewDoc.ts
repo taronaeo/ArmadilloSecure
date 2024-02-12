@@ -1,13 +1,12 @@
 import { tmpdir } from 'os';
-import { dirname, basename, resolve } from 'path';
-import { getRandomValues, randomBytes } from 'crypto';
+import { resolve } from 'path';
+import { getRandomValues, randomBytes, createDecipheriv } from 'crypto';
 import { ChildProcess, execFile } from 'child_process';
 
 import { existsSync, promises as fsPromises } from 'fs';
-const { writeFile, copyFile, stat, unlink } = fsPromises;
+const { writeFile, unlink } = fsPromises;
 
 import { paths } from './absolutePaths';
-
 interface RandomFileProperties {
   randomFileName: string;
   randomExt: string;
@@ -17,9 +16,6 @@ let validFilePath = '';
 
 const obscurityFiles: string[] = [];
 const tempPath = tmpdir();
-const fileDir = dirname('C:\\Users\\dexte\\Pictures\\testFile\\Testfile');
-const fileName = basename('C:\\Users\\dexte\\Pictures\\testFile\\Testfile');
-const filePath = resolve(fileDir, fileName);
 const randomFileInfo = genRandomFileAndExtension();
 
 const randomFilePath = resolve(
@@ -52,9 +48,8 @@ export function genRandomFileAndExtension(): RandomFileProperties {
   };
 }
 
-export function defaultProgram(): string {
-  const fileExtension = 'docx';
-  for (const path of paths[fileExtension]) {
+export function defaultProgram(fileExt: string): string {
+  for (const path of paths[fileExt]) {
     if (existsSync(path)) {
       validFilePath = path;
       break;
@@ -63,13 +58,29 @@ export function defaultProgram(): string {
   return validFilePath;
 }
 
-export async function viewFileInSeparateProcess(): Promise<ChildProcess> {
-  console.log('viewFileInSeparateProcess Invoked');
-  await copyFile(filePath, randomFilePath);
+export async function viewFileInSeparateProcess(
+  encKey: string,
+  iv: string,
+  fileArray: ArrayBuffer
+): Promise<ChildProcess> {
+  const keyBuffer = Buffer.from(encKey, 'hex');
+  const ivBuffer = Buffer.from(iv, 'hex');
+
+  const decipher = createDecipheriv('aes-256-cbc', keyBuffer, ivBuffer);
+
+  const decryptedData = Buffer.concat([decipher.update(Buffer.from(fileArray)), decipher.final()]);
+
+  const decryptedUint8Array = new Uint8Array(
+    decryptedData.buffer.slice(
+      decryptedData.byteOffset,
+      decryptedData.byteOffset + decryptedData.byteLength
+    )
+  );
+
+  await writeFile(randomFilePath, decryptedUint8Array);
   const child = execFile(validFilePath, [randomFilePath]);
 
-  const fileStats = await stat(filePath);
-  const fileSize = fileStats.size;
+  const fileSize = decryptedUint8Array.length;
 
   for (let i = 0; i < 10; i++) {
     const obscurityFileName = genRandomFileAndExtension().randomFileName;

@@ -13,5 +13,13 @@ declare global {
     pingFailed: boolean | null;
     privIp: string | null;
     hostname: string | null;
+    clientId: string;
+    fileId: string;
+    errorMsg: string;
+    sessionId: string;
+    fileHash: string;
+    fileExt: string;
+    fileOwner: string;
+    fileClass: string;
   }
 }

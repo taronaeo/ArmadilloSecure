@@ -7,8 +7,13 @@
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self' data:;
-                connect-src ws: https://*.amazonaws.com http://127.0.0.1:5001
-                                https://asia-southeast1-it2566-armadillo.cloudfunctions.net;
+                connect-src ws: https://*.amazonaws.com
+                                https://firestore.googleapis.com
+                                https://firebasestorage.googleapis.com
+                                https://identitytoolkit.googleapis.com
+                                https://asia-southeast1-it2566-armadillo.cloudfunctions.net
+                                http://127.0.0.1:9099 http://127.0.0.1:5001 http://127.0.0.1:8080 http://127.0.0.1:9000
+                                http://127.0.0.1:9199 http://127.0.0.1:5173;
                 style-src 'self' 'unsafe-inline';
                 script-src 'self' 'unsafe-eval';" />
   </head>
