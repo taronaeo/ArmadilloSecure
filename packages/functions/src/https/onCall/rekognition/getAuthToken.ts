@@ -127,7 +127,12 @@ export const https_onCall_rekognition_getAuthToken = onCall<CFCallableGetAuthTok
         if (!externalImageId) continue;
 
         try {
-          const fsUserSnapshot = await fsUserCol.doc(externalImageId).get();
+          const fsUserRef = fsUserCol.doc(externalImageId);
+          const fsUserSnapshot = await fsUserRef.get();
+
+          const fsUserExists = fsUserSnapshot.exists;
+          if (!fsUserExists) continue;
+
           const fsUserData = fsUserSnapshot.data() as FSUser;
           const authToken = await adminAuth.createCustomToken(fsUserData.uid);
 

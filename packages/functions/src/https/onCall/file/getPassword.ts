@@ -11,6 +11,11 @@ import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
 import { firestore } from '../../../firebase';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function ensureArray(filePermissions: any): string[] {
+  return typeof filePermissions.arrayUnion !== 'function' && filePermissions;
+}
+
 /**
  * Compares the provided password hash with the one stored in Firestore.
  *
@@ -55,7 +60,7 @@ export const https_onCall_getPassword = onCall<CFCallableGetPasswordRequest>(
         throw new HttpsError('failed-precondition', 'Authentication Error');
 
       //If file class is not 'OPEN' and user is authenticated but not authorized to access file
-      if (auth && !fsFileData.file_permissions.includes(auth.uid))
+      if (auth && !ensureArray(fsFileData.file_permissions).includes(auth.uid))
         throw new HttpsError('permission-denied', 'Unauthorised Error');
 
       if (!fsFileData.file_id || !fsFileData.file_encryption_hash || !fsFileData.file_permissions)

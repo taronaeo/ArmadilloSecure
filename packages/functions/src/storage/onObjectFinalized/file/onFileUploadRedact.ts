@@ -89,7 +89,7 @@ export const storage_onObjectFinalized_file_onFileUploadRedact = onObjectFinaliz
     // Skip redaction process if file is classified as TOP SECRET
     if (fsFileData.file_classification === 'TOPSECRET') {
       try {
-        await csFileRef.rename(`red_${csFileBase}`);
+        await csFileRef.rename(`${fileOwner}/red_${csFileBase}`);
         return logger.log(`File ${csFileName} is classified as TOP SECRET! Redaction skipped!`);
       } catch (error) {
         return logger.error(
@@ -101,7 +101,7 @@ export const storage_onObjectFinalized_file_onFileUploadRedact = onObjectFinaliz
     // Skip redaction process if file content type is not 'text/plain'
     if (contentType !== 'text/plain') {
       try {
-        await csFileRef.rename(`red_${csFileBase}`);
+        await csFileRef.rename(`${fileOwner}/red_${csFileBase}`);
         return logger.log(
           `File ${csFileName} is not content type 'text/plain'! Redaction skipped!`
         );
